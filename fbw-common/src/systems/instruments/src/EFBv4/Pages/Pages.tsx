@@ -52,6 +52,7 @@ export class Switch extends DisplayComponent<SwitchProps> {
       <div ref={this.props.ref} class={`h-full w-full ${this.props.class}`}>
         {this.props.pages.map(([page, component]) =>
           UIVIewUtils.isUIVIew(component.instance) ? (
+            // TODO we need to also destroy those views when this is destroyed!
             <UIVIewWrapper view={component} isVisible={this.pageVisibility(page)} />
           ) : (
             <PageWrapper isVisible={this.pageVisibility(page)}>{component}</PageWrapper>

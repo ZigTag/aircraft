@@ -78,6 +78,6 @@ export class ColoredMetar extends DisplayComponent<ColoredMetarProps> {
   }
 
   render(): VNode {
-    return <div ref={this.contentRoot} class="flex flex-wrap" />;
+    return <div ref={this.contentRoot} class="mt-4 flex flex-wrap font-mono" />;
   }
 }

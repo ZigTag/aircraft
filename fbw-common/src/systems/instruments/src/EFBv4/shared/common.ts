@@ -30,6 +30,17 @@ export namespace PageEnum {
     Error,
   }
 
+  export enum WeatherWidgetState {
+    Loading,
+    Loaded,
+    Error,
+  }
+
+  export enum WeatherWidgetType {
+    Visual,
+    Raw,
+  }
+
   export enum SettingsPage {
     Index,
     AircraftOptionsPinPrograms,

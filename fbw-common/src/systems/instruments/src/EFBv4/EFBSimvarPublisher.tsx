@@ -8,6 +8,8 @@ export interface EFBSimvars {
   monthOfYear: number;
   dayOfMonth: number;
   efbBrightness: number;
+  isLookingAtLeftEfb: boolean;
+  isLookingAtRightEfb: boolean;
 }
 
 export enum EFBVars {
@@ -18,6 +20,8 @@ export enum EFBVars {
   monthOfYear = 'E:ZULU MONTH OF YEAR',
   dayOfMonth = 'E:ZULU DAY OF MONTH',
   efbBrightness = 'L:A32NX_EFB_BRIGHTNESS',
+  isLookingAtLeftEfb = 'A:IS CAMERA RAY INTERSECT WITH NODE:1',
+  isLookingAtRightEfb = 'A:IS CAMERA RAY INTERSECT WITH NODE:2',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -30,6 +34,8 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['monthOfYear', { name: EFBVars.monthOfYear, type: SimVarValueType.Number }],
     ['dayOfMonth', { name: EFBVars.dayOfMonth, type: SimVarValueType.Number }],
     ['efbBrightness', { name: EFBVars.efbBrightness, type: SimVarValueType.Number }],
+    ['isLookingAtLeftEfb', { name: EFBVars.isLookingAtLeftEfb, type: SimVarValueType.Bool }],
+    ['isLookingAtRightEfb', { name: EFBVars.isLookingAtRightEfb, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

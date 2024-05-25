@@ -9,11 +9,14 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FlypadClient, MetarParserType } from '@flybywiresim/fbw-sdk';
 import { PageEnum } from '../../../shared/common';
-import { Switch, Pages } from '../../Pages';
+import { Pages, Switch } from '../../Pages';
 import { flypadClientContext } from '../../../Contexts';
 import { ColoredMetar } from './ColoredMetar';
 import { t } from '../../../Components/LocalizedText';
 import { RemindersSection } from './ReminderSection';
+import { SimpleInput } from 'instruments/src/EFBv4/Components/SimpleInput';
+import { Toggle } from '../../../Components/Toggle';
+import WeatherWidgetType = PageEnum.WeatherWidgetType;
 
 const emptyMetar = {
   raw_text: '',
@@ -66,7 +69,7 @@ export class WeatherReminder extends DisplayComponent<any> {
       <RemindersSection>
         <div class="space-y-6">
           <WeatherWidget name="origin" />
-          <div className="bg-theme-accent h-1 w-full rounded-full" />
+          <div class="h-1 w-full rounded-full bg-theme-accent" />
           <WeatherWidget name="destination" />
         </div>
       </RemindersSection>
@@ -81,25 +84,47 @@ interface WeatherWidgetProps extends ComponentProps {
 export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadClient]> {
   public override contextType = [flypadClientContext] as const;
 
-  private readonly baroType = Subject.create('HPA');
-
-  private readonly metarSource = Subject.create('MSFS');
-
   private readonly metarError = Subject.create('');
-
-  private readonly usingColoredMetar = Subject.create(PageEnum.WeatherWidgetPage.Some);
 
   private readonly metar = Subject.create<MetarParserType>(emptyMetar);
 
-  private readonly isMetar: Subscribable<PageEnum.WeatherWidgetPage>;
+  private get client(): FlypadClient {
+    return this.getContext(flypadClientContext).get();
+  }
 
-  private readonly howMetar: Subscribable<PageEnum.WeatherWidgetPage>;
+  private async showMetarForIcao(icao: string): Promise<void> {
+    const metar = await this.client.getMetar(icao);
 
-  private readonly showMetar = Subject.create(false);
+    this.metar.set(metar);
+  }
 
-  private readonly metarPages: Pages;
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
 
-  private readonly pages: Pages;
+    this.client.initialized.on(() => {
+      this.showMetarForIcao('CYKF');
+    });
+  }
+
+  render(): VNode {
+    return (
+      <div>
+        <WeatherWidgetData
+          metar={this.metar}
+          metarError={this.metarError}
+          onIcaoEntered={(icao) => this.showMetarForIcao(icao)}
+        />
+      </div>
+    );
+  }
+}
+
+interface WeatherWidgetVisualProps {
+  metar: Subscribable<MetarParserType | null>;
+}
+
+class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
+  private readonly baroType = Subject.create('HPA');
 
   private readonly baroOutput: Subscribable<string>;
 
@@ -109,36 +134,18 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
 
   private readonly dewpointOutput: Subscribable<string>;
 
-  private get client(): FlypadClient {
-    return this.getContext(flypadClientContext).get();
-  }
-
   constructor(props: any) {
     super(props);
 
     const getBaroTypeForAirport = (icao: string) =>
       ['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA';
 
-    this.isMetar = this.metar.map((value) =>
-      value ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-    );
-
-    this.howMetar = MappedSubject.create(
-      ([metar, showMetar]) => {
-        if (!showMetar) {
-          return PageEnum.WeatherWidgetPage.None;
-        }
-        if (metar.raw_text) {
-          return PageEnum.WeatherWidgetPage.Some;
-        }
-        return PageEnum.WeatherWidgetPage.Error;
-      },
-      this.metar,
-      this.showMetar,
-    );
-
     this.baroOutput = MappedSubject.create(
       ([metar, baroType]) => {
+        if (!metar) {
+          return 'N/A';
+        }
+
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
 
         switch (displayedBaroType) {
@@ -150,210 +157,156 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
             return 'N/A';
         }
       },
-      this.metar,
+      this.props.metar,
       this.baroType,
     );
 
-    this.windOutput = this.metar.map(
-      (metar) => `${metar.wind.degrees.toFixed(0)}° / ${metar.wind.speed_kts.toFixed(0)} kts`,
+    // FIXME get rid of those non-null assertions somehow
+
+    this.windOutput = this.props.metar.map(
+      (metar) => `${metar!.wind.degrees.toFixed(0)}° / ${metar!.wind.speed_kts.toFixed(0)} kts`,
     );
 
-    this.temperatureOutput = this.metar.map((metar) => `${metar.temperature.celsius.toFixed(0)} °C`);
+    this.temperatureOutput = this.props.metar.map((metar) => `${metar!.temperature.celsius.toFixed(0)} °C`);
 
-    this.dewpointOutput = this.metar.map((metar) => `${metar.dewpoint.celsius.toFixed(0)} °C`);
+    this.dewpointOutput = this.props.metar.map((metar) => `${metar!.dewpoint.celsius.toFixed(0)} °C`);
+  }
 
-    this.metarPages = [
-      [
-        PageEnum.WeatherWidgetPage.None,
-        <div class="mt-4 flex w-full flex-row items-center justify-between">
-          <div class="flex flex-col items-center space-y-1">
-            <i class="bi-speedometer2 text-[35px] text-inherit" />
-            <p class="text-center">{t('Dashboard.ImportantInformation.Weather.AirPressure')}</p>
-            <Switch
-              pages={[
-                [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.baroOutput}</p>],
-                [
-                  PageEnum.WeatherWidgetPage.None,
-                  <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
-                ],
-              ]}
-              activePage={this.metar.map((value) =>
-                value.raw_text && value.barometer ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-              )}
-            />
-          </div>
-          <div class="flex flex-col items-center space-y-1">
-            <i class="bi-wind text-[35px] text-inherit" />
-            <p class="text-center">{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
-            <Switch
-              pages={[
-                [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.windOutput}</p>],
-                [
-                  PageEnum.WeatherWidgetPage.None,
-                  <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
-                ],
-              ]}
-              activePage={this.metar.map((value) =>
-                value.raw_text ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-              )}
-            />
-          </div>
-          <div class="flex flex-col items-center space-y-1">
-            <i class="bi-thermometer-half text-[35px] text-inherit" />
-            <p class="text-center">{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
-            <Switch
-              pages={[
-                [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.temperatureOutput}</p>],
-                [
-                  PageEnum.WeatherWidgetPage.None,
-                  <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
-                ],
-              ]}
-              activePage={this.metar.map((value) =>
-                value.raw_text ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-              )}
-            />
-          </div>
-          <div class="flex flex-col items-center space-y-1">
-            <i class="bi-droplet text-[35px] text-inherit" />
-            <p class="text-center">{t('Dashboard.ImportantInformation.Weather.DewPoint')}</p>
-            <Switch
-              pages={[
-                [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.dewpointOutput}</p>],
-                [
-                  PageEnum.WeatherWidgetPage.None,
-                  <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
-                ],
-              ]}
-              activePage={this.metar.map((value) =>
-                value.raw_text ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-              )}
-            />
-          </div>
-        </div>,
-      ],
-      [
-        PageEnum.WeatherWidgetPage.Some,
-        <div class="mt-4 font-mono text-xl">
+  render(): VNode | null {
+    return (
+      <div class="mt-4 flex w-full flex-row items-center justify-between">
+        <div class="flex flex-col items-center space-y-1">
+          <i class="bi-speedometer2 text-[35px] text-inherit" />
+          <p class="text-center">{t('Dashboard.ImportantInformation.Weather.AirPressure')}</p>
           <Switch
             pages={[
-              [PageEnum.WeatherWidgetPage.Some, <ColoredMetar metar={this.metar} />],
-              [PageEnum.WeatherWidgetPage.None, <>{this.metar.map((value) => value?.raw_text)}</>],
+              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.baroOutput}</p>],
+              [
+                PageEnum.WeatherWidgetPage.None,
+                <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
+              ],
             ]}
-            activePage={this.usingColoredMetar}
+            activePage={this.props.metar.map((value) =>
+              value && value.barometer ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
+            )}
           />
-        </div>,
-      ],
-      [PageEnum.WeatherWidgetPage.Error, <div class="mt-4 text-xl">{this.metarError}</div>],
-    ];
-
-    this.pages = [
-      [PageEnum.WeatherWidgetPage.None, <p>{t('Dashboard.ImportantInformation.Weather.Loading')}</p>],
-      [
-        PageEnum.WeatherWidgetPage.Some,
-        <>
-          <div className="flex flex-row items-center justify-between" />
-          <div style={{ minHeight: '100px' }}>
-            <Switch pages={this.metarPages} activePage={this.howMetar} />
-          </div>
-        </>,
-      ],
-    ];
-
-    this.metar.set({
-      barometer: { hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246 },
-      ceiling: { code: 'OVC', feet_agl: 500, meters_agl: 152.4 },
-      clouds: [{ code: 'OVC', base_feet_agl: 500, base_meters_agl: 152.4 }],
-      color_codes: [1, 0, 0, 0, 2, 0, 2, 2, 0, 5, 5],
-      conditions: [{ code: 'BR' }],
-      dewpoint: { celsius: 6, fahrenheit: 42.8 },
-      flight_category: 'IFR',
-      humidity_percent: 100,
-      icao: 'CYKF',
-      observed: new Date(),
-      raw_parts: ['CYKF', '172321Z', 'AUTO', '20012KT', '3SM', 'BR', 'OVC005', '06/06', 'A2975', 'RMK', 'SLP082'],
-      raw_text: 'CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082',
-      temperature: { celsius: 6, fahrenheit: 42.8 },
-      visibility: { miles: '3', miles_float: 3, meters: '5000', meters_float: 4828.032 },
-      wind: {
-        degrees: 200,
-        degrees_from: 200,
-        degrees_to: 200,
-        speed_kts: 12,
-        speed_mps: 6.173333309325926,
-        gust_kts: 12,
-        gust_mps: 6.173333309325926,
-      },
-    });
-  }
-
-  onAfterRender(node: VNode) {
-    super.onAfterRender(node);
-
-    this.metar.set({
-      barometer: { hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246 },
-      ceiling: { code: 'OVC', feet_agl: 500, meters_agl: 152.4 },
-      clouds: [{ code: 'OVC', base_feet_agl: 500, base_meters_agl: 152.4 }],
-      color_codes: [1, 0, 0, 0, 2, 0, 2, 2, 0, 5, 5],
-      conditions: [{ code: 'BR' }],
-      dewpoint: { celsius: 6, fahrenheit: 42.8 },
-      flight_category: 'IFR',
-      humidity_percent: 100,
-      icao: 'CYKF',
-      observed: new Date(),
-      raw_parts: ['CYKF', '172321Z', 'AUTO', '20012KT', '3SM', 'BR', 'OVC005', '06/06', 'A2975', 'RMK', 'SLP082'],
-      raw_text: 'CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082',
-      temperature: { celsius: 6, fahrenheit: 42.8 },
-      visibility: { miles: '3', miles_float: 3, meters: '5000', meters_float: 4828.032 },
-      wind: {
-        degrees: 200,
-        degrees_from: 200,
-        degrees_to: 200,
-        speed_kts: 12,
-        speed_mps: 6.173333309325926,
-        gust_kts: 12,
-        gust_mps: 6.173333309325926,
-      },
-    });
-
-    this.client.initialized.on(async (client) => {
-      const metar = await client.getMetar('CYKF');
-
-      this.metar.set(metar);
-    });
-
-    this.metar.set({
-      barometer: { hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246 },
-      ceiling: { code: 'OVC', feet_agl: 500, meters_agl: 152.4 },
-      clouds: [{ code: 'OVC', base_feet_agl: 500, base_meters_agl: 152.4 }],
-      color_codes: [1, 0, 0, 0, 2, 0, 2, 2, 0, 5, 5],
-      conditions: [{ code: 'BR' }],
-      dewpoint: { celsius: 6, fahrenheit: 42.8 },
-      flight_category: 'IFR',
-      humidity_percent: 100,
-      icao: 'CYKF',
-      observed: new Date(),
-      raw_parts: ['CYKF', '172321Z', 'AUTO', '20012KT', '3SM', 'BR', 'OVC005', '06/06', 'A2975', 'RMK', 'SLP082'],
-      raw_text: 'CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082',
-      temperature: { celsius: 6, fahrenheit: 42.8 },
-      visibility: { miles: '3', miles_float: 3, meters: '5000', meters_float: 4828.032 },
-      wind: {
-        degrees: 200,
-        degrees_from: 200,
-        degrees_to: 200,
-        speed_kts: 12,
-        speed_mps: 6.173333309325926,
-        gust_kts: 12,
-        gust_mps: 6.173333309325926,
-      },
-    });
-  }
-
-  render(): VNode {
-    return (
-      <div>
-        <Switch pages={this.pages} activePage={this.isMetar} />
+        </div>
+        <div class="flex flex-col items-center space-y-1">
+          <i class="bi-wind text-[35px] text-inherit" />
+          <p class="text-center">{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
+          <Switch
+            pages={[
+              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.windOutput}</p>],
+              [
+                PageEnum.WeatherWidgetPage.None,
+                <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
+              ],
+            ]}
+            activePage={this.props.metar.map((value) =>
+              value ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
+            )}
+          />
+        </div>
+        <div class="flex flex-col items-center space-y-1">
+          <i class="bi-thermometer-half text-[35px] text-inherit" />
+          <p class="text-center">{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
+          <Switch
+            pages={[
+              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.temperatureOutput}</p>],
+              [
+                PageEnum.WeatherWidgetPage.None,
+                <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
+              ],
+            ]}
+            activePage={this.props.metar.map((value) =>
+              value ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
+            )}
+          />
+        </div>
+        <div class="flex flex-col items-center space-y-1">
+          <i class="bi-droplet text-[35px] text-inherit" />
+          <p class="text-center">{t('Dashboard.ImportantInformation.Weather.DewPoint')}</p>
+          <Switch
+            pages={[
+              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.dewpointOutput}</p>],
+              [
+                PageEnum.WeatherWidgetPage.None,
+                <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
+              ],
+            ]}
+            activePage={this.props.metar.map((value) =>
+              value ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
+            )}
+          />
+        </div>
       </div>
+    );
+  }
+}
+
+interface WeatherWidgetDataProps {
+  metar: Subscribable<MetarParserType | null>;
+
+  metarError: Subscribable<string>;
+
+  onIcaoEntered: (icao: string) => void;
+}
+
+export class WeatherWidgetData extends DisplayComponent<WeatherWidgetDataProps> {
+  private readonly widgetType = Subject.create(PageEnum.WeatherWidgetType.Visual);
+
+  private readonly icao = Subject.create<string | null>(null);
+
+  private readonly widgetTypePages: Pages = [
+    [PageEnum.WeatherWidgetType.Visual, <WeatherWidgetVisual metar={this.props.metar} />],
+    [PageEnum.WeatherWidgetType.Raw, <ColoredMetar metar={this.props.metar} />],
+  ];
+
+  private readonly statePages: Pages = [
+    [PageEnum.WeatherWidgetState.Loading, <p>{t('Dashboard.ImportantInformation.Weather.Loading')}</p>],
+    [
+      PageEnum.WeatherWidgetState.Loaded,
+      <>
+        <div class="flex flex-row items-center justify-between">
+          <SimpleInput
+            class="w-32 text-center !text-2xl font-medium uppercase"
+            placeholder="ICAO" // TODO support simbriefIcao from v3
+            value={this.icao}
+            onChange={this.props.onIcaoEntered}
+            maxLength={4}
+          />
+          {/*<TooltipWrapper*/} {/* TODO port TooltipWrapper */}
+          {/*  text={*/}
+          {/*    showMetar*/}
+          {/*      ? t('Dashboard.ImportantInformation.Weather.TT.SwitchToIconView')*/}
+          {/*      : t('Dashboard.ImportantInformation.Weather.TT.SwitchToRawMetarView')*/}
+          {/*  }*/}
+          {/*>*/}
+          <div class="flex flex-row space-x-2">
+            <p>{t('Dashboard.ImportantInformation.Weather.Raw')}</p>
+            <Toggle
+              value={this.widgetType.map((it) => it === WeatherWidgetType.Raw)}
+              onToggle={(value) => this.widgetType.set(value ? WeatherWidgetType.Raw : WeatherWidgetType.Visual)}
+            />
+          </div>
+          {/*</TooltipWrapper>*/}
+        </div>
+        <div style={{ minHeight: '100px' }}>
+          <Switch pages={this.widgetTypePages} activePage={this.widgetType} />
+        </div>
+      </>,
+    ],
+    [PageEnum.WeatherWidgetState.Error, <div class="mt-4 text-xl">{this.props.metarError}</div>],
+  ];
+
+  render(): VNode | null {
+    return (
+      <Switch
+        pages={this.statePages}
+        activePage={this.props.metar.map((it) =>
+          it ? PageEnum.WeatherWidgetState.Loaded : PageEnum.WeatherWidgetState.Loading,
+        )}
+      />
     );
   }
 }
