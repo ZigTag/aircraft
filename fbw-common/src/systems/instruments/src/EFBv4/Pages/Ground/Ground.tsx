@@ -1,10 +1,11 @@
 import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { PageTitle } from '../../Components/PageTitle';
 
 export class Ground extends DisplayComponent<any> {
   render(): VNode {
     return (
       <div>
-        <span class="text-3xl">Ground</span>
+        <PageTitle>Ground</PageTitle>
       </div>
     );
   }

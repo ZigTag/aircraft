@@ -5,6 +5,8 @@ import { PageEnum } from '../../shared/common';
 import { Selector } from '../../Components/Selector';
 import { Switch, Pages } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
+import { PageTitle } from '../../Components/PageTitle';
+import { AbstractUIView } from '../../shared/UIVIew';
 // import { Icon } from '../../Components/Icons';
 // import React from "react";
 // import {IconPlane} from "@tabler/icons";
@@ -18,9 +20,9 @@ interface AircraftItemProps extends ComponentProps {
 export class Loadsheet extends DisplayComponent<any> {
   render(): VNode {
     return (
-      <div class="h-content-section-reduced border-theme-accent relative w-full overflow-hidden rounded-lg border-2 p-6">
+      <div class="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
         <>
-          <div class="bg-theme-secondary absolute right-16 top-6 overflow-hidden rounded-md" />
+          <div class="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary" />
         </>
       </div>
     );
@@ -31,7 +33,7 @@ export class InformationEntry extends DisplayComponent<{ title: string; info: st
   render(): VNode {
     return (
       <div>
-        <div class="text-theme-highlight flex flex-row items-center space-x-4">
+        <div class="flex flex-row items-center space-x-4 text-theme-highlight">
           {this.props.children}
           <p class="whitespace-nowrap">{this.props.title}</p>
         </div>
@@ -187,7 +189,7 @@ export class Overview extends DisplayComponent<any> {
 
   render(): VNode {
     return (
-      <div class="h-content-section-reduced border-theme-accent mr-3 w-min overflow-hidden rounded-lg border-2 p-6">
+      <div class="mr-3 h-content-section-reduced w-min overflow-hidden rounded-lg border-2 border-theme-accent p-6">
         {this.airframe === 'A380_842' ? (
           <h1 class="font-bold">Airbus A380</h1>
         ) : (
@@ -196,7 +198,7 @@ export class Overview extends DisplayComponent<any> {
         <p>{this.airline}</p>
 
         <div class="mt-6 flex items-center justify-center">
-          <NoseOutline class="flip-horizontal text-theme-text -ml-96 mr-32 h-64 stroke-[1.75]" />
+          <NoseOutline class="flip-horizontal -ml-96 mr-32 h-64 stroke-[1.75] text-theme-text" />
         </div>
 
         {this.airframe === 'A380_842' ? (
@@ -209,7 +211,7 @@ export class Overview extends DisplayComponent<any> {
   }
 }
 
-export class Dispatch extends DisplayComponent<any> {
+export class Dispatch extends AbstractUIView {
   private readonly activePage = Subject.create(PageEnum.DispatchPage.OFP);
 
   private readonly tabs: [page: number, name: VNode][] = [
@@ -226,9 +228,9 @@ export class Dispatch extends DisplayComponent<any> {
 
   render(): VNode {
     return (
-      <div class="w-full">
+      <div ref={this.rootRef} class="w-full">
         <div class="relative mb-4">
-          <h1 class="font-bold">{t('Dispatch.Title')}</h1>
+          <PageTitle>{t('Dispatch.Title')}</PageTitle>
           <Selector class="absolute right-0 top-0" tabs={this.tabs} activePage={this.activePage} />
         </div>
 

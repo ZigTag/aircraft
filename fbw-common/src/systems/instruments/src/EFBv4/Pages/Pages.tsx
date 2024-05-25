@@ -49,7 +49,7 @@ export class Switch extends DisplayComponent<SwitchProps> {
 
   render(): VNode {
     return (
-      <div class={`size-full ${this.props.class}`}>
+      <div class={`h-full w-full ${this.props.class}`}>
         {this.props.pages.map(([page, component]) =>
           UIVIewUtils.isUIVIew(component.instance) ? (
             <UIVIewWrapper view={component} isVisible={this.pageVisibility(page)} />

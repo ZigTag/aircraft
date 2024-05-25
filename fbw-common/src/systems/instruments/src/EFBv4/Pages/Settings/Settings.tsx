@@ -1,10 +1,12 @@
 import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { PageTitle } from '../../Components/PageTitle';
+import { t } from '../../Components/LocalizedText';
 
 export class Settings extends DisplayComponent<any> {
   render(): VNode {
     return (
       <div>
-        <span class="text-3xl">Settings</span>
+        <PageTitle>{t('Settings.Title')}</PageTitle>
       </div>
     );
   }

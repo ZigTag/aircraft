@@ -35,8 +35,8 @@ export class Navbar extends DisplayComponent<NavbarProps> {
 
   render(): VNode {
     return (
-      <div class="flex h-full w-32 shrink-0 flex-col justify-between py-6">
-        <div class="mt-9 flex flex-col items-center gap-4">
+      <div class="flex w-32 shrink-0 flex-col justify-between self-stretch py-6">
+        <div class="mt-9 flex flex-col items-center space-y-4">
           <NavIcon page={PageEnum.MainPage.Dashboard} activePage={this.props.activePage}>
             <img class="w-[35px]" src={FbwTail} alt="FbwTail" />
           </NavIcon>
@@ -47,8 +47,9 @@ export class Navbar extends DisplayComponent<NavbarProps> {
           ))}
         </div>
 
-        <div class="flex flex-col items-center">
-          <div class="bg-theme-accent my-4 h-1.5 w-14 rounded-full" />
+        <div class="mt-auto flex flex-col items-center">
+          <div class="my-4 h-1.5 w-14 rounded-full bg-theme-accent" />
+
           <NavIcon page={PageEnum.MainPage.Settings} activePage={this.props.activePage}>
             <i class="bi-gear text-[35px] text-inherit" />
           </NavIcon>
@@ -85,7 +86,7 @@ export class NavIcon extends DisplayComponent<NavIconProps> {
         activePage={this.props.activePage}
         activeClass="bg-theme-accent text-theme-text"
         inactiveClass="text-theme-unselected"
-        class="hover:bg-theme-accent hover:text-theme-text flex items-center justify-center rounded-md p-3.5 transition duration-100"
+        class="flex items-center justify-center rounded-md p-3.5 transition duration-100 hover:bg-theme-accent hover:text-theme-text"
       >
         {this.props.children}
       </NavButton>

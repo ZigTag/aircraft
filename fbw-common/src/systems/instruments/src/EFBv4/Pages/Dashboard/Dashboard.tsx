@@ -18,6 +18,7 @@ import { t } from '../../Components/LocalizedText';
 import { WeatherReminder } from './Widgets/WeatherWidget';
 import { AbstractUIView } from '../../shared/UIVIew';
 import { PageEnum } from '../../shared/common';
+import { PageTitle } from '../../Components/PageTitle';
 
 interface ScrollableContainerProps extends ComponentProps {
   height: number;
@@ -52,9 +53,9 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
     return (
       <div class="w-1/2">
         <div class="mb-4 flex flex-row items-center justify-between">
-          <h1 class="font-bold">{t('Dashboard.YourFlight.Title')}</h1>
+          <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
         </div>
-        <div class="h-content-section-reduced border-theme-accent relative flex w-full flex-col overflow-hidden rounded-lg border-2 p-6">
+        <div class="relative flex h-content-section-reduced w-full flex-col overflow-hidden rounded-lg border-2 border-theme-accent p-6">
           <div>
             <button type="button" ref={this.languageButtonRefs[0]} class="bg-cyan px-5 py-2.5">
               Set language to English
@@ -144,7 +145,7 @@ export class RemindersWidget extends DisplayComponent<any> {
         <div class="flex flex-row items-center justify-between space-x-3">
           <h1 class="font-bold">{t('Dashboard.ImportantInformation.Title')}</h1>
         </div>
-        <div class="h-content-section-reduced border-theme-accent relative mt-4 w-full rounded-lg border-2 p-6">
+        <div class="relative mt-4 h-content-section-reduced w-full rounded-lg border-2 border-theme-accent p-6">
           <ScrollableContainer height={51}>
             <div class="flex flex-col space-y-4">
               {this.reminderKeyArr.getArray().map((key) => this.REMINDERS.get(key))}
