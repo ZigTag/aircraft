@@ -52,9 +52,8 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
   render(): VNode {
     return (
       <div class="w-1/2">
-        <div class="mb-4 flex flex-row items-center justify-between">
-          <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
-        </div>
+        <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
+
         <div class="relative flex h-content-section-reduced w-full flex-col overflow-hidden rounded-lg border-2 border-theme-accent p-6">
           <div>
             <button type="button" ref={this.languageButtonRefs[0]} class="bg-cyan px-5 py-2.5">
@@ -142,9 +141,8 @@ export class RemindersWidget extends DisplayComponent<any> {
   render(): VNode {
     return (
       <div class="w-1/2">
-        <div class="flex flex-row items-center justify-between space-x-3">
-          <h1 class="font-bold">{t('Dashboard.ImportantInformation.Title')}</h1>
-        </div>
+        <PageTitle>{t('Dashboard.ImportantInformation.Title')}</PageTitle>
+
         <div class="relative mt-4 h-content-section-reduced w-full rounded-lg border-2 border-theme-accent p-6">
           <ScrollableContainer height={51}>
             <div class="flex flex-col space-y-4">

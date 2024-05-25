@@ -20,7 +20,7 @@ interface MainPageProps extends ComponentProps {
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
-  private readonly pages: [page: number, component: DisplayComponent<any>][] = [
+  private readonly pages: Pages = [
     [PageEnum.MainPage.Dashboard, <Dashboard />],
     [PageEnum.MainPage.Dispatch, <Dispatch />],
     [PageEnum.MainPage.Ground, <Ground />],
@@ -49,7 +49,7 @@ export class Switch extends DisplayComponent<SwitchProps> {
 
   render(): VNode {
     return (
-      <div class={`h-full w-full ${this.props.class}`}>
+      <div ref={this.props.ref} class={`h-full w-full ${this.props.class}`}>
         {this.props.pages.map(([page, component]) =>
           UIVIewUtils.isUIVIew(component.instance) ? (
             <UIVIewWrapper view={component} isVisible={this.pageVisibility(page)} />

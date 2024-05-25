@@ -30,6 +30,18 @@ export namespace PageEnum {
     Error,
   }
 
+  export enum SettingsPage {
+    Index,
+    AircraftOptionsPinPrograms,
+    SimOptions,
+    Realism,
+    ThirdPartyOptions,
+    AtsuAoc,
+    Audio,
+    flyPad,
+    About,
+  }
+
   export enum BatteryLevel {
     Charging = 0,
     Warning = 8,
