@@ -245,6 +245,10 @@
     src: url("/Fonts/fbw-a32nx/NotoSansDevanagari-Bold.ttf") format("truetype");
   }
 
+  *, *::before, *::after {
+    border-width: 0 !important;
+  }
+
   html body {
     @apply font-body;
   }

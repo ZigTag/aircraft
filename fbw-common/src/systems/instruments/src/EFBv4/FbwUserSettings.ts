@@ -30,8 +30,36 @@ const fbwUserSettings = [
     defaultValue: 0 as number,
   },
   {
-    name: 'fbwTelexEnabled',
+    name: 'fbwAudioPtuInCockpit',
     defaultValue: false as boolean,
+  },
+  {
+    name: 'fbwAudioLevelExteriorMaster',
+    defaultValue: 0 as number,
+  },
+  {
+    name: 'fbwAudioLevelInteriorEngine',
+    defaultValue: 0 as number,
+  },
+  {
+    name: 'fbwAudioLevelInteriorWind',
+    defaultValue: 0 as number,
+  },
+  {
+    name: 'fbwAudioPassengerAmbienceEnabled',
+    defaultValue: true as boolean,
+  },
+  {
+    name: 'fbwAudioAnnouncementsEnabled',
+    defaultValue: true as boolean,
+  },
+  {
+    name: 'fbwAudioBoardingMusicEnabled',
+    defaultValue: true as boolean,
+  },
+  {
+    name: 'fbwTelexEnabled',
+    defaultValue: true as boolean,
   },
   {
     name: 'fbwInitBaroUnit',
@@ -125,6 +153,34 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     // TODO AudioPage
     // TODO FlyPadPage
 
+    A32NX_SOUND_PTU_AUDIBLE_COCKPIT: {
+      newSettingName: 'fbwAudioPtuInCockpit',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_SOUND_EXTERIOR_MASTER: {
+      newSettingName: 'fbwAudioLevelExteriorMaster',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_SOUND_INTERIOR_ENGINE: {
+      newSettingName: 'fbwAudioLevelInteriorEngine',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_SOUND_INTERIOR_WIND: {
+      newSettingName: 'fbwAudioLevelInteriorWind',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_SOUND_PASSENGER_AMBIENCE_ENABLED: {
+      newSettingName: 'fbwAudioPassengerAmbienceEnabled',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_SOUND_ANNOUNCEMENTS_ENABLED: {
+      newSettingName: 'fbwAudioAnnouncementsEnabled',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_SOUND_BOARDING_MUSIC_ENABLED: {
+      newSettingName: 'fbwAudioBoardingMusicEnabled',
+      valueMapper: (value) => value === '1',
+    },
     A32NX_CONFIG_TELEX_STATUS: {
       newSettingName: 'fbwTelexEnabled',
       valueMapper: (value) => value === 'ENABLED',
@@ -218,6 +274,8 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
       console.info(
         `[FbwUserSettingsSaveManager](portLegacyA32NXSettings) newSetting: ${newSetting.newSettingName}, mappedValue = ${mappedValue}`,
       );
+
+      FbwUserSettings.getManager(this.bus).getSetting(newSetting.newSettingName).set(mappedValue);
     }
   }
 }

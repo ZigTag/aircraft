@@ -19,6 +19,7 @@ import { WeatherReminder } from './Widgets/WeatherWidget';
 import { AbstractUIView } from '../../shared/UIVIew';
 import { PageEnum } from '../../shared/common';
 import { PageTitle } from '../../Components/PageTitle';
+import { PageBox } from '../../Components/PageBox';
 
 interface ScrollableContainerProps extends ComponentProps {
   height: number;
@@ -54,7 +55,7 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
       <div class="w-1/2">
         <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
 
-        <div class="relative flex h-content-section-reduced w-full flex-col overflow-hidden rounded-lg border-2 border-theme-accent p-6">
+        <PageBox>
           <div>
             <button type="button" ref={this.languageButtonRefs[0]} class="bg-cyan px-5 py-2.5">
               Set language to English
@@ -63,7 +64,7 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
               Set language to Korean
             </button>
           </div>
-        </div>
+        </PageBox>
       </div>
     );
   }
@@ -143,13 +144,13 @@ export class RemindersWidget extends DisplayComponent<any> {
       <div class="w-1/2">
         <PageTitle>{t('Dashboard.ImportantInformation.Title')}</PageTitle>
 
-        <div class="relative mt-4 h-content-section-reduced w-full rounded-lg border-2 border-theme-accent p-6">
+        <PageBox>
           <ScrollableContainer height={51}>
             <div class="flex flex-col space-y-4">
               {this.reminderKeyArr.getArray().map((key) => this.REMINDERS.get(key))}
             </div>
           </ScrollableContainer>
-        </div>
+        </PageBox>
       </div>
     );
   }

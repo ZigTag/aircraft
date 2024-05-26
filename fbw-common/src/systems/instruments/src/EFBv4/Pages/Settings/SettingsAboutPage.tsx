@@ -4,6 +4,8 @@ import { AircraftGithubVersionChecker, BuildInfo } from '@flybywiresim/fbw-sdk';
 import { EFBSimvars } from '../../EFBSimvarPublisher';
 
 import FbwTail from '../../Assets/FBW-Tail.svg';
+import { PageBox } from '../../Components/PageBox';
+import { PageTitle } from '../../Components/PageTitle';
 
 interface CommunityPanelPlayerData {
   bCanSignOut: boolean;
@@ -48,45 +50,51 @@ export class SettingsAboutPage extends AbstractUIView {
 
   render(): VNode | null {
     return (
-      <div ref={this.rootRef} class="pointer-events-none absolute inset-y-0 flex flex-col justify-center px-16">
-        <div class="flex flex-row items-center">
-          <div class="flex flex-col">
+      <div ref={this.rootRef}>
+        <PageTitle>Settings &gt; About</PageTitle>
+
+        <PageBox>
+          <div ref={this.rootRef} class="pointer-events-none inset-y-0 my-auto flex flex-col justify-center px-16">
             <div class="flex flex-row items-center">
-              <img class="w-[36px]" src={FbwTail} alt="" />
-              <h1 class="font-manrope ml-4 text-4xl font-bold">flyPadOS</h1>
-              <h1 class="font-manrope ml-2 text-4xl font-bold text-cyan">4</h1>
+              <div class="flex flex-col">
+                <div class="flex flex-row items-center">
+                  <img class="w-[36px]" src={FbwTail} alt="" />
+                  <h1 class="font-manrope ml-4 text-4xl font-bold">flyPadOS</h1>
+                  <h1 class="font-manrope ml-2 text-4xl font-bold text-cyan">4</h1>
+                </div>
+
+                <p class="mt-3 text-2xl">
+                  Made with love by contributors in Québec, Germany, the United States, Singapore, Indonesia, New
+                  Zealand, Australia, Spain, the United Kingdom, France, the Netherlands, Sweden, and Switzerland!
+                </p>
+              </div>
+            </div>
+            <div class="mt-8 flex flex-col justify-center">
+              <p>&copy; 2020-2024 FlyByWire Simulations and its contributors, all rights reserved.</p>
+              <p>Licensed under the GNU General Public License Version 3</p>
             </div>
 
-            <p class="mt-3 text-2xl">
-              Made with love by contributors in Québec, Germany, the United States, Singapore, Indonesia, New Zealand,
-              Australia, Spain, the United Kingdom, France, the Netherlands, Sweden, and Switzerland!
-            </p>
+            <div class="mt-16">
+              <h1 class="font-bold">Build Info</h1>
+              <div class="mt-4">
+                <BuildInfoEntry title="Sim Version" value={this.version} />
+                <BuildInfoEntry title="Aircraft Version" value={this.buildInfo?.map((it) => it?.version ?? '')} />
+                <BuildInfoEntry title="Livery Title" value={this.title} />
+                <BuildInfoEntry title="Built" value={this.buildInfo?.map((it) => it?.built ?? '')} />
+                <BuildInfoEntry title="Ref" value={this.buildInfo?.map((it) => it?.ref ?? '')} />
+                <BuildInfoEntry title="SHA" value={this.buildInfo?.map((it) => it?.sha ?? '')} underline={7} />
+                <BuildInfoEntry title="Event Name" value={this.buildInfo?.map((it) => it?.eventName ?? '')} />
+                <BuildInfoEntry
+                  title="Pretty Release Name"
+                  value={this.buildInfo?.map((it) => it?.prettyReleaseName ?? '')}
+                />
+                {/*{sentryEnabled === SentryConsentState.Given && (*/}
+                {/*  <BuildInfoEntry title="Sentry Session ID" value={sessionId} />*/}
+                {/*)}*/}
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="mt-8 flex flex-col justify-center">
-          <p>&copy; 2020-2024 FlyByWire Simulations and its contributors, all rights reserved.</p>
-          <p>Licensed under the GNU General Public License Version 3</p>
-        </div>
-
-        <div class="mt-16">
-          <h1 class="font-bold">Build Info</h1>
-          <div class="mt-4">
-            <BuildInfoEntry title="Sim Version" value={this.version} />
-            <BuildInfoEntry title="Aircraft Version" value={this.buildInfo?.map((it) => it?.version ?? '')} />
-            <BuildInfoEntry title="Livery Title" value={this.title} />
-            <BuildInfoEntry title="Built" value={this.buildInfo?.map((it) => it?.built ?? '')} />
-            <BuildInfoEntry title="Ref" value={this.buildInfo?.map((it) => it?.ref ?? '')} />
-            <BuildInfoEntry title="SHA" value={this.buildInfo?.map((it) => it?.sha ?? '')} underline={7} />
-            <BuildInfoEntry title="Event Name" value={this.buildInfo?.map((it) => it?.eventName ?? '')} />
-            <BuildInfoEntry
-              title="Pretty Release Name"
-              value={this.buildInfo?.map((it) => it?.prettyReleaseName ?? '')}
-            />
-            {/*{sentryEnabled === SentryConsentState.Given && (*/}
-            {/*  <BuildInfoEntry title="Sentry Session ID" value={sessionId} />*/}
-            {/*)}*/}
-          </div>
-        </div>
+        </PageBox>
       </div>
     );
   }

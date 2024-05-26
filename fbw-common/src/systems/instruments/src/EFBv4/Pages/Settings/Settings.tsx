@@ -1,4 +1,4 @@
-import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../shared/common';
@@ -7,6 +7,9 @@ import { Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
 import SettingsPage = PageEnum.SettingsPage;
+import { SettingsAudioPage } from './SettingsAudioPage';
+import { FbwUserSettings } from '../../FbwUserSettings';
+import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
 
 export class Settings extends AbstractUIView {
   private readonly activePage = Subject.create<PageEnum.SettingsPage>(PageEnum.SettingsPage.Index);
@@ -19,7 +22,7 @@ export class Settings extends AbstractUIView {
     [PageEnum.SettingsPage.Realism, <span />],
     [PageEnum.SettingsPage.ThirdPartyOptions, <span />],
     [PageEnum.SettingsPage.AtsuAoc, <span />],
-    [PageEnum.SettingsPage.Audio, <span />],
+    [PageEnum.SettingsPage.Audio, <SettingsAudioPage settings={FbwUserSettings.getManager(EFB_EVENT_BUS)} />],
     [PageEnum.SettingsPage.flyPad, <span />],
     [PageEnum.SettingsPage.About, <SettingsAboutPage />],
   ];

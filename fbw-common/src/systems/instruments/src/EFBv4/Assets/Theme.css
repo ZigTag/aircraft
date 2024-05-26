@@ -1,5 +1,5 @@
 :root,
-  :root.theme-blue{
+:root.theme-blue{
     --color-utility-red: rgb(220, 38, 38);
     --color-utility-green: rgb(132, 204, 22);
     --color-utility-orange: rgb(255, 106, 0);

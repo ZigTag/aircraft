@@ -4,8 +4,10 @@ import { EFBv4 } from './EFBv4';
 import { busContext, initializeEventBusContext } from './Contexts';
 import { EFBSimvarPublisher } from './EFBSimvarPublisher';
 
+export const EFB_EVENT_BUS = new EventBus();
+
 export class EfbV4FsInstrument implements FsInstrument {
-  private readonly bus = new EventBus();
+  private readonly bus = EFB_EVENT_BUS;
 
   private readonly backplane = new InstrumentBackplane();
 
