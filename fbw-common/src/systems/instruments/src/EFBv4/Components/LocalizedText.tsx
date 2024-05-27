@@ -2,24 +2,36 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, VNode, Fragment } from '@microsoft/msfs-sdk';
 
 import { LocalizedString } from '../shared/translation';
+import { AbstractUIView } from '../shared/UIView';
 
 export interface LocalizedTextProps {
   locKey: string;
 }
 
-export class LocalizedText extends DisplayComponent<LocalizedTextProps> {
+export class LocalizedText extends AbstractUIView<LocalizedTextProps> {
   private readonly locStringSub = LocalizedString.create(this.props.locKey);
 
-  destroy() {
-    super.destroy();
-    this.locStringSub.destroy();
+  pause() {
+    super.pause();
+    console.log(`"${this.props.locKey}" paused!`);
+  }
+
+  resume() {
+    super.resume();
+    console.log(`"${this.props.locKey}" resumed!`);
+  }
+
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(this.locStringSub);
   }
 
   render(): VNode {
-    return <>{this.locStringSub}</>;
+    return <Fragment ref={this.rootRef}>{this.locStringSub}</Fragment>;
   }
 }
 

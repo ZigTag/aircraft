@@ -6,7 +6,7 @@ import { Selector } from '../../Components/Selector';
 import { Switch, Pages } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
 import { PageTitle } from '../../Components/PageTitle';
-import { AbstractUIView } from '../../shared/UIVIew';
+import { AbstractUIView } from '../../shared/UIView';
 // import { Icon } from '../../Components/Icons';
 // import React from "react";
 // import {IconPlane} from "@tabler/icons";

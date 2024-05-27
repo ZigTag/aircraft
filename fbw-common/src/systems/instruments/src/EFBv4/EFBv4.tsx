@@ -49,11 +49,11 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
     // Load user settings
     const settingsSaveManager = new FbwUserSettingsSaveManager(this.bus);
 
-    const saveKey = `${SimVar.GetSimVarValue('ATC MODEL', 'string')}.profile.default`;
+    const saveKey = `fbw.${process.env.AIRCRAFT_PROJECT_PREFIX}.profile.default`;
 
     settingsSaveManager.load(saveKey);
-    settingsSaveManager.tryPortLegacyA32NXSettings();
     settingsSaveManager.startAutoSave(saveKey);
+    settingsSaveManager.tryPortLegacyA32NXSettings();
 
     const flypadClient = new FlypadClient(this.bus);
 

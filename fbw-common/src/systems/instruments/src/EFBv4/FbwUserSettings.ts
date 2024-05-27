@@ -6,6 +6,8 @@ import {
   UserSettingValue,
 } from '@microsoft/msfs-sdk';
 
+const CURRENT_SETTINGS_VERSION = 1;
+
 export enum InitBaroUnit {
   Auto = 'AUTO',
   InHg = 'IN HG',
@@ -235,10 +237,12 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
   }
 
   public tryPortLegacyA32NXSettings(): void {
-    const version = FbwUserSettings.getManager(this.bus).getSetting('fbwSettingsVersion').get();
+    const settingsVersion = FbwUserSettings.getManager(this.bus).getSetting('fbwSettingsVersion');
+    const version = settingsVersion.get();
 
     if (version !== 0) {
       console.log('[FbwUserSettingsSaveManager](portLegacyA32NXSettings) Version is not 0, no need to port anything');
+      return;
     }
 
     console.log(
@@ -277,5 +281,7 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
 
       FbwUserSettings.getManager(this.bus).getSetting(newSetting.newSettingName).set(mappedValue);
     }
+
+    settingsVersion.set(CURRENT_SETTINGS_VERSION);
   }
 }

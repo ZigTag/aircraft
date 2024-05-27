@@ -2,7 +2,7 @@ import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../shared/common';
-import { AbstractUIView } from '../../shared/UIVIew';
+import { AbstractUIView } from '../../shared/UIView';
 import { Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
@@ -28,6 +28,7 @@ export class Settings extends AbstractUIView {
   ];
 
   resume() {
+    super.resume();
     this.activePage.set(SettingsPage.Index);
   }
 

@@ -16,7 +16,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 import { t } from '../../Components/LocalizedText';
 import { WeatherReminder } from './Widgets/WeatherWidget';
-import { AbstractUIView } from '../../shared/UIVIew';
+import { AbstractUIView } from '../../shared/UIView';
 import { PageEnum } from '../../shared/common';
 import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
@@ -198,29 +198,6 @@ export class ScrollableContainer extends DisplayComponent<ScrollableContainerPro
 export interface DashboardProps {}
 
 export class Dashboard extends AbstractUIView<DashboardProps> {
-  private readonly funnySub = ConsumerSubject.create(null, -1);
-
-  pause() {
-    console.log('I was paused');
-    this.funnySub.pause();
-  }
-
-  resume() {
-    console.log('I was resumed');
-    this.funnySub.resume();
-  }
-
-  destroy() {
-    this.funnySub.destroy();
-  }
-
-  onAfterRender(node: VNode) {
-    super.onAfterRender(node);
-
-    this.funnySub.setConsumer(this.bus.getSubscriber<ClockEvents>().on('realTime').atFrequency(1));
-    this.funnySub.sub((value) => console.log('time:', value));
-  }
-
   render(): VNode {
     return (
       <div ref={this.rootRef} class="flex w-full space-x-8">

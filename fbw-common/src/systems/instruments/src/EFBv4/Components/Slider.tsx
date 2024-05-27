@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, Subscribable, VNode, Subject } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, Subscribable, VNode, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
 
 export interface SliderProps {
@@ -12,6 +12,8 @@ export interface SliderProps {
 }
 
 export class Slider extends DisplayComponent<SliderProps> {
+  private readonly subscriptions: Subscription[] = [];
+
   private readonly trackRef = FSComponent.createRef<HTMLSpanElement>();
 
   private readonly trackHighlightRef = FSComponent.createRef<HTMLSpanElement>();
@@ -34,10 +36,8 @@ export class Slider extends DisplayComponent<SliderProps> {
     const relativeMousePosition = event.clientX - trackRect.left;
     const clampedPosition = Math.max(0, Math.min(relativeMousePosition, trackRect.width));
 
-    this.thumbXPosition.set(clampedPosition);
-
     const valueRatio = clampedPosition / trackRect.width;
-    const scaledValue = this.props.min + valueRatio * (this.props.max - this.props.min);
+    const scaledValue = this.props.min + valueRatio * Math.abs(this.props.max - this.props.min);
 
     this.props.onChange(scaledValue);
   };
@@ -51,6 +51,17 @@ export class Slider extends DisplayComponent<SliderProps> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
+    this.subscriptions.push(
+      this.props.value.sub((value) => {
+        const trackRect = this.trackRef.instance.getBoundingClientRect();
+
+        const valueRatio = (value - this.props.min) / (this.props.max - this.props.min);
+        const pixelPosition = valueRatio * trackRect.width;
+
+        this.thumbXPosition.set(pixelPosition);
+      }, true),
+    );
+
     this.thumbRef.instance.addEventListener('mousedown', this.handleThumbClick);
     this.trackRef.instance.addEventListener('click', this.handleThumbMove);
     this.trackHighlightRef.instance.addEventListener('click', this.handleThumbMove);
@@ -58,6 +69,10 @@ export class Slider extends DisplayComponent<SliderProps> {
 
   destroy() {
     super.destroy();
+
+    for (const subscription of this.subscriptions) {
+      subscription.destroy();
+    }
 
     this.thumbRef.instance.removeEventListener('mousedown', this.handleThumbClick);
     this.trackRef.instance.removeEventListener('click', this.handleThumbMove);

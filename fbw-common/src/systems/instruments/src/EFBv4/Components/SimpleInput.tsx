@@ -1,6 +1,6 @@
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
-import { AbstractUIView } from '../shared/UIVIew';
+import { AbstractUIView } from '../shared/UIView';
 import { EFBSimvars } from '../EFBSimvarPublisher';
 import { v4 } from 'uuid';
 
@@ -151,6 +151,12 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
     }
   };
 
+  private readonly onValueExternallyChanged = (value: string) => {
+    const constrainedValue = this.getConstrainedValue(value);
+
+    this.displayValue.set(constrainedValue);
+  };
+
   private blurInputField() {
     this.inputRef.getOrDefault()?.blur();
   }
@@ -158,13 +164,25 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
+    const instrument = document.querySelector('vcockpit-panel > *') as HTMLElement;
+
     this.inputRef.instance.addEventListener('focus', this.onFocus);
     this.inputRef.instance.addEventListener('blur', this.onFocusOut);
     this.inputRef.instance.addEventListener('change', this.onChange);
-    document.addEventListener('keypress', this.onEnterPressedOnDocument);
+    instrument.addEventListener('keypress', this.onEnterPressedOnDocument);
 
-    this.isLookingAtLeftEfb.setConsumer(this.bus.getSubscriber<EFBSimvars>().on('isLookingAtLeftEfb'));
-    this.isLookingAtRightEfb.setConsumer(this.bus.getSubscriber<EFBSimvars>().on('isLookingAtRightEfb'));
+    if (this.props.value) {
+      this.subscriptions.push(
+        this.props.value.sub((value) => {
+          value !== null && this.onValueExternallyChanged(value);
+        }, true),
+      );
+    }
+
+    this.subscriptions.push(
+      this.isLookingAtLeftEfb.setConsumer(this.bus.getSubscriber<EFBSimvars>().on('isLookingAtLeftEfb')),
+      this.isLookingAtRightEfb.setConsumer(this.bus.getSubscriber<EFBSimvars>().on('isLookingAtRightEfb')),
+    );
 
     // TODO destroy this
     MappedSubject.create(
@@ -204,13 +222,12 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
   destroy() {
     super.destroy();
 
+    const instrument = document.querySelector('vcockpit-panel > *') as HTMLElement;
+
     this.inputRef.instance.removeEventListener('focus', this.onFocus);
     this.inputRef.instance.removeEventListener('blur', this.onFocusOut);
     this.inputRef.instance.removeEventListener('change', this.onChange);
-    document.removeEventListener('keypress', this.onEnterPressedOnDocument);
-
-    this.isLookingAtLeftEfb.destroy();
-    this.isLookingAtRightEfb.destroy();
+    instrument.removeEventListener('keypress', this.onEnterPressedOnDocument);
   }
 
   private readonly className = (this.props.disabled ?? Subject.create(false))?.map((disabled) => {

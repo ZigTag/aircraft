@@ -1,10 +1,10 @@
 import { FSComponent, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from '../../shared/UIVIew';
+import { AbstractUIView } from '../../shared/UIView';
 import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
 import { SliderSettingsItem, ToggleSettingsItem } from './Components/SettingItem';
-import { t } from '@localization/translation';
 import { FbwUserSettingsDefs } from '../../FbwUserSettings';
+import { t } from '../../Components/LocalizedText';
 
 export interface SettingsAudioPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
