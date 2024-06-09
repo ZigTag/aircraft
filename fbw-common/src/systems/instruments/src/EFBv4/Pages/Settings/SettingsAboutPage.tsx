@@ -82,7 +82,7 @@ export class SettingsAboutPage extends AbstractUIView {
                 <BuildInfoEntry title="Livery Title" value={this.title} />
                 <BuildInfoEntry title="Built" value={this.buildInfo?.map((it) => it?.built ?? '')} />
                 <BuildInfoEntry title="Ref" value={this.buildInfo?.map((it) => it?.ref ?? '')} />
-                <BuildInfoEntry title="SHA" value={this.buildInfo?.map((it) => it?.sha ?? '')} underline={7} />
+                <BuildInfoEntry title="SHA" value={this.buildInfo?.map((it) => it?.sha ?? '')} underline={8} />
                 <BuildInfoEntry title="Event Name" value={this.buildInfo?.map((it) => it?.eventName ?? '')} />
                 <BuildInfoEntry
                   title="Pretty Release Name"

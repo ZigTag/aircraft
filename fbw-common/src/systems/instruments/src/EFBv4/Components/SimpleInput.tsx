@@ -5,7 +5,7 @@ import { EFBSimvars } from '../EFBSimvarPublisher';
 import { v4 } from 'uuid';
 
 interface SimpleInputProps {
-  placeholder?: string;
+  placeholder?: string | Subscribable<string>;
   value?: Subscribable<string | null>;
   onChange?: (value: string) => void;
   onFocus?: (value: string) => void;
@@ -17,6 +17,7 @@ interface SimpleInputProps {
   decimalPrecision?: number;
   fontSizeClassName?: string;
   reverse?: boolean; // Flip label/input order;
+  containerClass?: string;
   class?: string;
   maxLength?: number;
   disabled?: Subscribable<boolean>;
@@ -232,7 +233,7 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
 
   private readonly className = (this.props.disabled ?? Subject.create(false))?.map((disabled) => {
     return twMerge(
-      'px-3 py-1.5 rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none',
+      'w-full px-3 py-1.5 rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none',
       this.props.fontSizeClassName ?? 'text-lg',
       this.props.class,
       disabled && 'opacity-50',
@@ -241,7 +242,7 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
 
   render(): VNode | null {
     return (
-      <div ref={this.rootRef}>
+      <div ref={this.rootRef} class={this.props.containerClass}>
         <input
           class={this.className}
           value={this.displayValue}

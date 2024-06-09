@@ -24,7 +24,12 @@ export namespace PageEnum {
     Overview,
   }
 
-  export enum WeatherWidgetPage {
+  export enum FailuresPage {
+    Comfort,
+    Compact,
+  }
+
+  export enum Optional {
     None,
     Some,
     Error,

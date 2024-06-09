@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { FlypadServer, NotificationManager } from '@flybywiresim/fbw-sdk';
+import { FailuresOrchestrator, FlypadServer, NotificationManager } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
 import { AircraftSync } from './modules/aircraft_sync/AircraftSync';
+import { A320Failure, A320FailureDefinitions } from '@failures';
 
 /**
  * This is the main class for the extras-host instrument.
@@ -45,6 +46,8 @@ class ExtrasHost extends BaseInstrument {
 
   public readonly xmlConfig: Document;
 
+  private readonly failuresOrchestrator: FailuresOrchestrator;
+
   private readonly flypadServer: FlypadServer;
 
   /**
@@ -68,7 +71,8 @@ class ExtrasHost extends BaseInstrument {
     this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
     this.versionCheck = new VersionCheck(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
     this.aircraftSync = new AircraftSync(process.env.AIRCRAFT_PROJECT_PREFIX, this.bus);
-    this.flypadServer = new FlypadServer(this.bus);
+    this.failuresOrchestrator = new FailuresOrchestrator('A32NX', A320FailureDefinitions);
+    this.flypadServer = new FlypadServer(this.bus, this.failuresOrchestrator);
 
     console.log('A32NX_EXTRASHOST: Created');
   }

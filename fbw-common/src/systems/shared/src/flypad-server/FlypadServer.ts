@@ -4,24 +4,32 @@ import { Metar as FbwApiMetar, MetarResponse as FbwApiMetarResponse } from '@fly
 import { FlypadClientEvents, FlypadServerEvents } from './FlypadEvents';
 import { MetarParserType } from '../../../instruments/src';
 import { parseMetar } from '../parseMetar';
+import { FailuresOrchestrator } from '../failures';
 
 export class FlypadServer {
   private readonly eventSub = this.bus.getSubscriber<FlypadClientEvents>();
 
   private readonly eventPub = this.bus.getPublisher<FlypadServerEvents>();
 
-  constructor(private readonly bus: EventBus) {
+  constructor(
+    private readonly bus: EventBus,
+    private readonly failureOrchestrator: FailuresOrchestrator,
+  ) {
     RegisterViewListener('JS_LISTENER_FACILITY', () => {
       this.eventPub.pub('fps_Initialized', undefined, true);
     });
 
+    // TODO Need to forward any errors thrown to the clients
     this.eventSub.on('fpc_HelloWorld').handle(() => this.handleHelloWorld());
     this.eventSub.on('fpc_GetMetar').handle((icao) => this.handleGetMetar(icao));
     this.eventSub.on('fpc_GetSimbriefOfp').handle(() => this.handleGetSimbriefOfp());
+    this.eventSub.on('fpc_ActivateFailure').handle((id) => this.handleActivateFailure(id));
+    this.eventSub.on('fpc_DeactivateFailure').handle((id) => this.handleDeactivateFailure(id));
   }
 
   private handleHelloWorld(): void {
-    this.eventPub.pub('fps_HelloWorld', 'hello I am stupid and fat', true);
+    this.sendFailureList();
+    this.sendFailuresState();
   }
 
   private async handleGetMetar(icao: string): Promise<void> {
@@ -82,5 +90,32 @@ export class FlypadServer {
     const ofp = await SimbriefClient.getOfp(pilotID);
 
     this.eventPub.pub('fps_SendSimbriefOfp', ofp, true);
+  }
+
+  private handleActivateFailure(failureID: number): void {
+    this.failureOrchestrator.activate(failureID);
+
+    this.sendFailuresState();
+  }
+
+  private handleDeactivateFailure(failureID: number): void {
+    this.failureOrchestrator.deactivate(failureID);
+
+    this.sendFailuresState();
+  }
+
+  private sendFailureList(): void {
+    this.eventPub.pub('fps_SendFailuresList', this.failureOrchestrator.getAllFailures(), true);
+  }
+
+  private sendFailuresState(): void {
+    this.eventPub.pub(
+      'fps_SendFailuresState',
+      {
+        active: Array.from(this.failureOrchestrator.getActiveFailures()),
+        changing: Array.from(this.failureOrchestrator.getChangingFailures()),
+      },
+      true,
+    );
   }
 }

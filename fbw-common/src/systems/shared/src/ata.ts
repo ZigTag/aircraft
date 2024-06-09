@@ -92,7 +92,7 @@ export const AtaChaptersTitle = {
   116: 'Flight Simulator Cuing System',
 };
 
-export const AtaChaptersDescription = Object.freeze({
+export const AtaChaptersDescription: Record<21 | 22 | 24 | 27 | 29 | 31 | 32 | 34, string> = Object.freeze({
   21: 'The air conditioning system regulates the temperature, air flow and pressure inside the aircraft. Its main function is to supply a high level of comfort to the passengers and crew and protect the aircraft systems like the avionics.',
   22: 'The Autoflight systems are responsible for a multitude of functions, including but not limited to: Flight Guidance (AP, FD, A/THR), Flight Management, Flight Augmentation (yaw damper, etc.), and Flight Envelope (Speed scale, Alpha floor, etc.).',
   24: 'All things related to the electrical system. The electrical system supplies power from the engines, APU, batteries, or emergency generator to all cockpit instruments.',

@@ -4,15 +4,14 @@
 
 import {
   ArraySubject,
-  ClockEvents,
   ComponentProps,
-  ConsumerSubject,
   DisplayComponent,
   FSComponent,
   Subject,
+  Subscribable,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { FlypadClient } from '@flybywiresim/fbw-sdk';
 
 import { t } from '../../Components/LocalizedText';
 import { WeatherReminder } from './Widgets/WeatherWidget';
@@ -20,6 +19,11 @@ import { AbstractUIView } from '../../shared/UIView';
 import { PageEnum } from '../../shared/common';
 import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
+import { Button } from '../../Components/Button';
+import { flypadClientContext } from '../../Contexts';
+import { Pages, Switch } from '../Pages';
+import { ISimbriefData, simbriefDataParser } from '../../../EFB/Apis/Simbrief';
+import React from 'react';
 
 interface ScrollableContainerProps extends ComponentProps {
   height: number;
@@ -33,22 +37,29 @@ interface ScrollableContainerProps extends ComponentProps {
 
 export interface FlightWidgetProps {}
 
-export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
-  private readonly languageButtonRefs = [
-    FSComponent.createRef<HTMLButtonElement>(),
-    FSComponent.createRef<HTMLButtonElement>(),
-  ];
+export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadClient]> {
+  public override contextType = [flypadClientContext] as const;
+
+  private readonly loadedOfp = Subject.create<ISimbriefData | null>(null);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
-
-    this.languageButtonRefs[0].instance.addEventListener('click', () => this.handleChangeLanguage('en'));
-    this.languageButtonRefs[1].instance.addEventListener('click', () => this.handleChangeLanguage('ko'));
   }
 
-  private readonly handleChangeLanguage = (langCode: string): void => {
-    NXDataStore.set('EFB_LANGUAGE', langCode);
+  private get client(): FlypadClient {
+    return this.getContext(flypadClientContext).get();
+  }
+
+  private readonly fetchSimBriefData = async () => {
+    const ofp = await this.client.getSimbriefOfp();
+
+    this.loadedOfp.set(simbriefDataParser(ofp));
   };
+
+  private readonly ofpPages: Pages = [
+    [PageEnum.Optional.None, <SimBriefOfpNotLoadedOverlay onFetchSimbriefOfp={this.fetchSimBriefData} />],
+    [PageEnum.Optional.Some, <SimBriefOfpData ofp={this.loadedOfp} onFetchSimbriefOfp={this.fetchSimBriefData} />],
+  ];
 
   render(): VNode {
     return (
@@ -56,15 +67,195 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
         <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
 
         <PageBox>
-          <div>
-            <button type="button" ref={this.languageButtonRefs[0]} class="bg-cyan px-5 py-2.5">
-              Set language to English
-            </button>
-            <button type="button" ref={this.languageButtonRefs[1]} class="bg-cyan px-5 py-2.5">
-              Set language to Korean
-            </button>
-          </div>
+          <Switch pages={this.ofpPages} activePage={this.loadedOfp.map((it) => (it !== null ? 1 : 0))} />
         </PageBox>
+
+        {/*<PageBox>*/}
+        {/*  <div>*/}
+        {/*    <button type="button" ref={this.languageButtonRefs[0]} class="bg-cyan px-5 py-2.5">*/}
+        {/*      Set language to English*/}
+        {/*    </button>*/}
+        {/*    <button type="button" ref={this.languageButtonRefs[1]} class="bg-cyan px-5 py-2.5">*/}
+        {/*      Set language to Korean*/}
+        {/*    </button>*/}
+        {/*  </div>*/}
+        {/*</PageBox>*/}
+      </div>
+    );
+  }
+}
+
+interface SimBriefOfpNotLoadedOverlayProps {
+  onFetchSimbriefOfp: () => void;
+}
+
+class SimBriefOfpNotLoadedOverlay extends DisplayComponent<SimBriefOfpNotLoadedOverlayProps> {
+  render(): VNode | null {
+    return (
+      <div class="flex h-full flex-col items-center justify-center space-y-4">
+        <h1 class="text-center" style={{ maxWidth: '18em' }}>
+          {t('Dashboard.YourFlight.SimBriefDataNotYetLoaded')}
+        </h1>
+
+        <Button onClick={this.props.onFetchSimbriefOfp} class="w-96">
+          <i class="bi-cloud-arrow-down text-[26px] text-inherit" />
+          <p class="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
+        </Button>
+      </div>
+    );
+  }
+}
+
+interface SimBriefOfpDataProps {
+  ofp: Subscribable<ISimbriefData | null>;
+  onFetchSimbriefOfp: () => void;
+}
+
+class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+    this.props.ofp.sub((it) => console.log(it));
+  }
+
+  private readonly flightPlanProgress = Subject.create(0);
+
+  private readonly schedOutParsed = this.props.ofp.map((it) => {
+    if (!it) {
+      return '----Z';
+    }
+
+    const sta = new Date(parseInt(it.times.schedIn));
+
+    return `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
+  });
+
+  private readonly schedInParsed = this.props.ofp.map((it) => {
+    if (!it) {
+      return '----Z';
+    }
+
+    const sta = new Date(parseInt(it.times.schedOut));
+
+    return `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
+  });
+
+  private readonly estimatedZfw = this.props.ofp.map((it) => {
+    if (!it) {
+      return '---';
+    }
+
+    const eZfwUnround = Number.parseFloat(it.weights.estZeroFuelWeight) / 100;
+    const eZfw = Math.round(eZfwUnround) / 10;
+
+    return eZfw.toString();
+  });
+
+  render(): VNode | null {
+    return (
+      <div class="flex h-full flex-col space-y-8">
+        <div class="flex flex-row justify-between">
+          <div>
+            <h1 class="text-4xl font-bold">{this.props.ofp.map((it) => it?.origin.icao)}</h1>
+            <p class="w-52 text-sm">{this.props.ofp.map((it) => it?.origin.name)}</p>
+          </div>
+          <div>
+            <h1 class="text-right text-4xl font-bold">{this.props.ofp.map((it) => it?.destination.icao)}</h1>
+            <p class="w-52 text-right text-sm">{this.props.ofp.map((it) => it?.destination.name)}</p>
+          </div>
+        </div>
+        <div>
+          <div class="flex w-full flex-row items-center">
+            <p
+              class={{
+                'font-body': true,
+                'text-theme-highlight': this.flightPlanProgress.map((it) => it > 1),
+                'text-theme-text': this.flightPlanProgress.map((it) => it <= 1),
+              }}
+            >
+              {this.schedOutParsed}
+            </p>
+            <div class="relative mx-6 flex h-1 w-full flex-row">
+              <div class="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
+
+              <div
+                class="relative w-full bg-theme-highlight"
+                style={{ width: this.flightPlanProgress.map((it) => `${it}%`) }}
+              >
+                <i
+                  class="bi-airplane text-[50px] text-inherit"
+                  style={{ visibility: this.flightPlanProgress.map((it) => (it ? 'visible' : 'hidden')) }}
+                />
+              </div>
+            </div>
+            <p
+              class={{
+                'text-right': true,
+                'font-body': true,
+                'text-theme-highlight': this.flightPlanProgress.map((it) => it >= 98),
+                'text-theme-text': this.flightPlanProgress.map((it) => it < 98),
+              }}
+            >
+              {this.schedInParsed}
+            </p>
+          </div>
+        </div>
+        <div>
+          <div class="mb-4 flex flex-row justify-around">
+            <InformationEntry
+              title={t('Dashboard.YourFlight.Alternate')}
+              info={this.props.ofp.map((it) => it?.alternate?.icao ?? 'NONE')}
+            />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+            <InformationEntry
+              title={t('Dashboard.YourFlight.CompanyRoute')}
+              info={this.props.ofp.map((it) => (it ? it.origin.iata + it.destination.iata : '------'))}
+            />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+            <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={this.estimatedZfw} />
+          </div>
+          <div class="my-auto h-0.5 w-full bg-theme-accent" />
+          <div class="mt-4 flex flex-row justify-around">
+            <InformationEntry
+              title={t('Dashboard.YourFlight.CostIndex')}
+              info={this.props.ofp.map((it) => it?.costIndex ?? '---')}
+            />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+            <InformationEntry
+              title={t('Dashboard.YourFlight.AverageWind')}
+              info={this.props.ofp.map((it) =>
+                it ? `${it.weather.avgWindDir}/${it.weather.avgWindSpeed}` : '---/---',
+              )}
+            />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
+            <InformationEntry
+              title={t('Dashboard.YourFlight.CruiseAlt')}
+              info={this.props.ofp.map((it) =>
+                it ? `FL${(it.cruiseAltitude / 100).toString().padStart(3, '0')}` : 'FL---',
+              )}
+            />
+          </div>
+        </div>
+        <div>
+          <h5 class="mb-2 text-2xl font-bold">{t('Dashboard.YourFlight.Route')}</h5>
+          <ScrollableContainer height={15}>
+            <p class="font-mono text-2xl">
+              <span class="text-2xl text-theme-highlight">
+                {this.props.ofp.map((it) => it?.origin.icao ?? '----')}/
+                {this.props.ofp.map((it) => it?.origin.runway ?? 'RW---')}
+              </span>{' '}
+              {this.props.ofp.map((it) => it?.route ?? '---')}{' '}
+              <span class="text-2xl text-theme-highlight">
+                {this.props.ofp.map((it) => it?.destination.icao ?? '----')}/
+                {this.props.ofp.map((it) => it?.destination.runway ?? 'RW---')}
+              </span>
+            </p>
+          </ScrollableContainer>
+        </div>
+
+        <Button onClick={this.props.onFetchSimbriefOfp} class="!mt-auto w-96 w-full">
+          <i class="bi-cloud-arrow-down text-[26px] text-inherit" />
+          <p class="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
+        </Button>
       </div>
     );
   }
@@ -195,6 +386,21 @@ export class ScrollableContainer extends DisplayComponent<ScrollableContainerPro
   }
 }
 
+export interface InformationEntryProps {
+  title: VNode;
+  info: Subscribable<string>;
+}
+
+class InformationEntry extends DisplayComponent<InformationEntryProps> {
+  render(): VNode | null {
+    return (
+      <div class="justify-content flex w-full flex-col items-center">
+        <h3 class="text-center font-light">{this.props.title}</h3>
+        <h2 class="font-bold">{this.props.info}</h2>
+      </div>
+    );
+  }
+}
 export interface DashboardProps {}
 
 export class Dashboard extends AbstractUIView<DashboardProps> {

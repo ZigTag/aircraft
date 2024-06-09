@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, MutableSubscribable, VNode } from '@microsoft/msfs-sdk';
 import { NavButton } from './Navbar';
 import { Pages } from '../Pages/Pages';
 import { twMerge } from 'tailwind-merge';
@@ -7,7 +7,7 @@ interface SelectorProps extends ComponentProps {
   class?: string;
   activeClass?: string;
   tabs: Pages;
-  activePage: Subscribable<number>;
+  activePage: MutableSubscribable<number>;
 }
 
 export class Selector extends DisplayComponent<SelectorProps> {

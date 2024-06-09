@@ -59,6 +59,8 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
 
     initializeFlypadClientContext(flypadClient);
 
+    flypadClient.initialized.on((it) => it.sendHelloWorld());
+
     FSComponent.render(
       <flypadClientContext.Provider value={new FlypadClient(this.bus)}>
         <div ref={this.renderRoot2} style={{ display: 'none' }} />

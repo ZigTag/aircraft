@@ -9,7 +9,8 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 
-import { busContext } from '../Contexts';
+import { busContext, flypadClientContext } from '../Contexts';
+import { FlypadClient } from '@shared/flypad-server';
 
 /**
  * EFB UI View
@@ -55,10 +56,10 @@ export class UIVIewUtils {
 /**
  * Abstract implementation of {@link UIVIew}
  */
-export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [EventBus]> implements UIVIew {
+export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [EventBus, FlypadClient]> implements UIVIew {
   public readonly rootRef = FSComponent.createRef<HTMLElement>();
 
-  public override contextType = [busContext] as const;
+  public override contextType = [busContext, flypadClientContext] as const;
 
   protected vnode: VNode | undefined;
 
@@ -72,7 +73,11 @@ export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [Event
    * Obtains the event bus via context
    */
   protected get bus(): EventBus {
-    return this.getContext(busContext).get();
+    return this.getContext(busContext).get() as EventBus;
+  }
+
+  protected get client(): FlypadClient {
+    return this.getContext(flypadClientContext).get() as FlypadClient;
   }
 
   onAfterRender(node: VNode) {

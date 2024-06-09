@@ -1,4 +1,12 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ComponentProps,
+  DisplayComponent,
+  FSComponent,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  VNode,
+} from '@microsoft/msfs-sdk';
 // @ts-ignore
 import FbwTail from '../Assets/FBW-Tail.svg';
 import { PageEnum } from '../shared/common';
@@ -9,7 +17,7 @@ interface NavbarProps extends ComponentProps {
 }
 
 interface NavButtonProps extends ComponentProps {
-  activePage: Subscribable<number>;
+  activePage: MutableSubscribable<number>;
   page: number;
   class?: string;
   activeClass?: string;
@@ -70,7 +78,7 @@ export class NavButton extends DisplayComponent<NavButtonProps> {
 
   render(): VNode {
     return (
-      <Button onClick={this.handlePressed}>
+      <Button unstyled class="bg-transparent" onClick={this.handlePressed}>
         <div class={this.activeClass}>{this.props.children}</div>
       </Button>
     );

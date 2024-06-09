@@ -55,7 +55,7 @@ export const getSimbriefData = async (
   return simbriefDataParser(json);
 };
 
-const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
+export const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
   const { general } = simbriefJson;
   const { origin } = simbriefJson;
   const { aircraft } = simbriefJson;

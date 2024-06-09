@@ -180,14 +180,14 @@ class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
           <p class="text-center">{t('Dashboard.ImportantInformation.Weather.AirPressure')}</p>
           <Switch
             pages={[
-              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.baroOutput}</p>],
+              [PageEnum.Optional.Some, <p class="text-center">{this.baroOutput}</p>],
               [
-                PageEnum.WeatherWidgetPage.None,
+                PageEnum.Optional.None,
                 <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
               ],
             ]}
             activePage={this.props.metar.map((value) =>
-              value && value.barometer ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
+              value && value.barometer ? PageEnum.Optional.Some : PageEnum.Optional.None,
             )}
           />
         </div>
@@ -196,15 +196,13 @@ class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
           <p class="text-center">{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
           <Switch
             pages={[
-              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.windOutput}</p>],
+              [PageEnum.Optional.Some, <p class="text-center">{this.windOutput}</p>],
               [
-                PageEnum.WeatherWidgetPage.None,
+                PageEnum.Optional.None,
                 <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
               ],
             ]}
-            activePage={this.props.metar.map((value) =>
-              value ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-            )}
+            activePage={this.props.metar.map((value) => (value ? PageEnum.Optional.Some : PageEnum.Optional.None))}
           />
         </div>
         <div class="flex flex-col items-center space-y-1">
@@ -212,15 +210,13 @@ class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
           <p class="text-center">{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
           <Switch
             pages={[
-              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.temperatureOutput}</p>],
+              [PageEnum.Optional.Some, <p class="text-center">{this.temperatureOutput}</p>],
               [
-                PageEnum.WeatherWidgetPage.None,
+                PageEnum.Optional.None,
                 <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
               ],
             ]}
-            activePage={this.props.metar.map((value) =>
-              value ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-            )}
+            activePage={this.props.metar.map((value) => (value ? PageEnum.Optional.Some : PageEnum.Optional.None))}
           />
         </div>
         <div class="flex flex-col items-center space-y-1">
@@ -228,15 +224,13 @@ class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
           <p class="text-center">{t('Dashboard.ImportantInformation.Weather.DewPoint')}</p>
           <Switch
             pages={[
-              [PageEnum.WeatherWidgetPage.Some, <p class="text-center">{this.dewpointOutput}</p>],
+              [PageEnum.Optional.Some, <p class="text-center">{this.dewpointOutput}</p>],
               [
-                PageEnum.WeatherWidgetPage.None,
+                PageEnum.Optional.None,
                 <p class="text-center">{t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}</p>,
               ],
             ]}
-            activePage={this.props.metar.map((value) =>
-              value ? PageEnum.WeatherWidgetPage.Some : PageEnum.WeatherWidgetPage.None,
-            )}
+            activePage={this.props.metar.map((value) => (value ? PageEnum.Optional.Some : PageEnum.Optional.None))}
           />
         </div>
       </div>

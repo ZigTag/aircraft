@@ -1,7 +1,8 @@
-import { EventBus, SubEvent, Wait } from '@microsoft/msfs-sdk';
+import { EventBus, SubEvent, Subject, Wait } from '@microsoft/msfs-sdk';
 
-import { FlypadClientEvents, FlypadServerEvents } from './FlypadEvents';
+import { FlypadClientEvents, FlypadFailuresUpdatePacket, FlypadServerEvents } from './FlypadEvents';
 import { MetarParserType } from '../../../instruments/src/metarTypes';
+import { Failure } from '../failures';
 
 export class FlypadClient {
   private readonly eventSub = this.bus.getSubscriber<FlypadServerEvents>();
@@ -10,8 +11,19 @@ export class FlypadClient {
 
   public readonly initialized = new SubEvent<FlypadClient, void>();
 
+  public readonly failuresList = Subject.create<readonly Readonly<Failure>[]>([]);
+
+  public readonly failuresState = Subject.create<FlypadFailuresUpdatePacket>({ active: [], changing: [] });
+
   constructor(private readonly bus: EventBus) {
-    this.eventSub.on('fps_Initialized').handle(() => this.initialized.notify(this, undefined));
+    this.eventSub.on('fps_Initialized').handle(() => this.initialized.notify(this));
+
+    this.eventSub.on('fps_SendFailuresList').handle((list) => this.failuresList.set(list));
+    this.eventSub.on('fps_SendFailuresState').handle((list) => this.failuresState.set(list));
+  }
+
+  public sendHelloWorld(): void {
+    this.sendMessage('fpc_HelloWorld', undefined);
   }
 
   public async getMetar(icao: string): Promise<MetarParserType> {
