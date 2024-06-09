@@ -17,7 +17,7 @@ export class FlypadServer {
 
     this.eventSub.on('fpc_HelloWorld').handle(() => this.handleHelloWorld());
     this.eventSub.on('fpc_GetMetar').handle((icao) => this.handleGetMetar(icao));
-    this.eventSub.on('fpc_GetSimbriefOfp').handle((icao) => this.handleGetSimbriefOfp(icao));
+    this.eventSub.on('fpc_GetSimbriefOfp').handle(() => this.handleGetSimbriefOfp());
   }
 
   private handleHelloWorld(): void {

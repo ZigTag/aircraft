@@ -6,30 +6,36 @@ import { AbstractUIView } from '../../shared/UIView';
 import { Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
-import SettingsPage = PageEnum.SettingsPage;
 import { SettingsAudioPage } from './SettingsAudioPage';
 import { FbwUserSettings } from '../../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
+import { SettingsAircraftOptionsPinProgramsPage } from './SettingsAircraftOptionsPinProgramsPage';
 
 export class Settings extends AbstractUIView {
+  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
+
   private readonly activePage = Subject.create<PageEnum.SettingsPage>(PageEnum.SettingsPage.Index);
 
   private readonly activePageSetter = this.activePage.set.bind(this.activePage);
 
   private readonly pages: Pages = [
     [PageEnum.SettingsPage.Index, <SettingsIndex onPageSelected={this.activePageSetter} />],
+    [
+      PageEnum.SettingsPage.AircraftOptionsPinPrograms,
+      <SettingsAircraftOptionsPinProgramsPage settings={this.settings} />,
+    ],
     [PageEnum.SettingsPage.SimOptions, <span />],
     [PageEnum.SettingsPage.Realism, <span />],
     [PageEnum.SettingsPage.ThirdPartyOptions, <span />],
     [PageEnum.SettingsPage.AtsuAoc, <span />],
-    [PageEnum.SettingsPage.Audio, <SettingsAudioPage settings={FbwUserSettings.getManager(EFB_EVENT_BUS)} />],
+    [PageEnum.SettingsPage.Audio, <SettingsAudioPage settings={this.settings} />],
     [PageEnum.SettingsPage.flyPad, <span />],
     [PageEnum.SettingsPage.About, <SettingsAboutPage />],
   ];
 
   resume() {
     super.resume();
-    this.activePage.set(SettingsPage.Index);
+    this.activePage.set(PageEnum.SettingsPage.Index);
   }
 
   render(): VNode {
@@ -43,7 +49,8 @@ interface SettingsIndexProps {
 
 class SettingsIndex extends AbstractUIView<SettingsIndexProps> {
   private readonly items = [
-    [PageEnum.SettingsPage.Index, t('Settings.SimOptions.Title')],
+    [PageEnum.SettingsPage.AircraftOptionsPinPrograms, t('Settings.AircraftOptionsPinPrograms.Title')],
+    [PageEnum.SettingsPage.SimOptions, t('Settings.SimOptions.Title')],
     [PageEnum.SettingsPage.Realism, t('Settings.Realism.Title')],
     [PageEnum.SettingsPage.ThirdPartyOptions, t('Settings.ThirdPartyOptions.Title')],
     [PageEnum.SettingsPage.AtsuAoc, t('Settings.AtsuAoc.Title')],

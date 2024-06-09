@@ -21,7 +21,7 @@ import { Settings } from './Settings/Settings';
 import { AbstractUIView, UIVIew, UIVIewUtils } from '../shared/UIView';
 
 // Page should be an enum
-export type Pages = [page: number, component: VNode][];
+export type Pages = readonly [page: number, component: VNode][];
 
 interface MainPageProps extends ComponentProps {
   activePage: Subject<number>;
@@ -42,7 +42,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
   ];
 
   render(): VNode {
-    return <Switch pages={this.pages} activePage={this.props.activePage} class="mt-10  pr-6 pt-4" />;
+    return <Switch pages={this.pages} activePage={this.props.activePage} class="mt-10 pr-6 pt-4" />;
   }
 }
 

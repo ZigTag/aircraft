@@ -8,10 +8,30 @@ import {
 
 const CURRENT_SETTINGS_VERSION = 1;
 
+export enum IsisBaroUnit {
+  Hpa,
+  InHgOrHpa,
+}
+
 export enum InitBaroUnit {
   Auto = 'AUTO',
   InHg = 'IN HG',
   Hpa = 'HPA',
+}
+
+export enum PaxSigns {
+  NoSmoking,
+  NoPortableDevices,
+}
+
+export enum VhfSpacing {
+  EightPointThirtyThreeKHz,
+  TwentyFiveKHz,
+}
+
+export enum LatLonExtendedFormat {
+  LLnn,
+  AxxByyy,
 }
 
 export enum FpSyncMode {
@@ -32,8 +52,40 @@ const fbwUserSettings = [
     defaultValue: 0 as number,
   },
   {
+    name: 'fbwAircraftThrustReductionHeight',
+    defaultValue: 1500 as number,
+  },
+  {
+    name: 'fbwAircraftAccelerationHeight',
+    defaultValue: 1500 as number,
+  },
+  {
+    name: 'fbwAircraftEngineOutAccelerationHeight',
+    defaultValue: 1500 as number,
+  },
+  {
+    name: 'fbwAircraftIsisBaroUnit',
+    defaultValue: IsisBaroUnit.Hpa as IsisBaroUnit,
+  },
+  {
+    name: 'fbwAircraftIsisIsMetricAltitude',
+    defaultValue: false as boolean,
+  },
+  {
     name: 'fbwAudioPtuInCockpit',
     defaultValue: false as boolean,
+  },
+  {
+    name: 'fbwAircraftPaxSigns',
+    defaultValue: PaxSigns.NoSmoking as PaxSigns,
+  },
+  {
+    name: 'fbwAircraftVhfSpacing',
+    defaultValue: VhfSpacing.EightPointThirtyThreeKHz as VhfSpacing,
+  },
+  {
+    name: 'fbwAircraftLatLonExtendedFormat',
+    defaultValue: LatLonExtendedFormat.LLnn as LatLonExtendedFormat,
   },
   {
     name: 'fbwAudioLevelExteriorMaster',
@@ -148,6 +200,38 @@ export class FbwUserSettings {
 
 export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
   private static readonly LEGACY_SETTINGS_TO_NEW_SETTINGS: Record<string, LegacySettingMapping> = {
+    A32NX_CONFIG_THR_RED_ALT: {
+      newSettingName: 'fbwAircraftThrustReductionHeight',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_CONFIG_ACCEL_ALT: {
+      newSettingName: 'fbwAircraftAccelerationHeight',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_CONFIG_ENG_OUT_ACCEL_ALT: {
+      newSettingName: 'fbwAircraftEngineOutAccelerationHeight',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_ISIS_BARO_UNIT_INHG: {
+      newSettingName: 'fbwAircraftIsisBaroUnit',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_ISIS_METRIC_ALTITUDE: {
+      newSettingName: 'fbwAircraftIsisBaroUnit',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_CONFIG_USING_PORTABLE_DEVICES: {
+      newSettingName: 'fbwAircraftPaxSigns',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_RMP_VHF_SPACING_25KHZ: {
+      newSettingName: 'fbwAircraftVhfSpacing',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_LATLON_EXT_FMT: {
+      newSettingName: 'fbwAircraftLatLonExtendedFormat',
+      valueMapper: (value) => parseInt(value),
+    },
     // TODO AircraftOptionsPinProgramsPage
     // TODO RealismPage
     // TODO ThirdPartyOptionsPage

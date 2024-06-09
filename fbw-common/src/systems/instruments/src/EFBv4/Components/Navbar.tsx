@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 // @ts-ignore
 import FbwTail from '../Assets/FBW-Tail.svg';
 import { PageEnum } from '../shared/common';
@@ -9,7 +9,7 @@ interface NavbarProps extends ComponentProps {
 }
 
 interface NavButtonProps extends ComponentProps {
-  activePage: Subject<number>;
+  activePage: Subscribable<number>;
   page: number;
   class?: string;
   activeClass?: string;
