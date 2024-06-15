@@ -1,4 +1,4 @@
-import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {FSComponent, NodeReference, Subject, UserSettingManager, VNode} from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../shared/common';
@@ -7,9 +7,15 @@ import { Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
 import { SettingsAudioPage } from './SettingsAudioPage';
-import { FbwUserSettings } from '../../FbwUserSettings';
+import {FbwUserSettings, FbwUserSettingsDefs} from '../../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
 import { SettingsAircraftOptionsPinProgramsPage } from './SettingsAircraftOptionsPinProgramsPage';
+import { PageBox } from '../../Components/PageBox';
+import { SettingsSimOptionsPage } from './SettingsSimOptionsPage';
+import { SettingsRealismPage } from './SettingsRealismPage';
+import { SettingsThirdPartyOptionsPage } from './SettingsThirdPartyOptionsPage';
+import { SettingsAtsuAocPage } from './SettingsAtsuAocPage';
+import { SettingsFlyPadPage } from './SettingsFlyPadPage';
 
 export class Settings extends AbstractUIView {
   private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
@@ -22,15 +28,18 @@ export class Settings extends AbstractUIView {
     [PageEnum.SettingsPage.Index, <SettingsIndex onPageSelected={this.activePageSetter} />],
     [
       PageEnum.SettingsPage.AircraftOptionsPinPrograms,
-      <SettingsAircraftOptionsPinProgramsPage settings={this.settings} />,
+      <SettingsAircraftOptionsPinProgramsPage
+        settings={this.settings}
+        return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+      />,
     ],
-    [PageEnum.SettingsPage.SimOptions, <span />],
-    [PageEnum.SettingsPage.Realism, <span />],
-    [PageEnum.SettingsPage.ThirdPartyOptions, <span />],
-    [PageEnum.SettingsPage.AtsuAoc, <span />],
-    [PageEnum.SettingsPage.Audio, <SettingsAudioPage settings={this.settings} />],
-    [PageEnum.SettingsPage.flyPad, <span />],
-    [PageEnum.SettingsPage.About, <SettingsAboutPage />],
+    [PageEnum.SettingsPage.SimOptions, <SettingsSimOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
+    [PageEnum.SettingsPage.Realism, <SettingsRealismPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
+    [PageEnum.SettingsPage.ThirdPartyOptions, <SettingsThirdPartyOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
+    [PageEnum.SettingsPage.AtsuAoc, <SettingsAtsuAocPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
+    [PageEnum.SettingsPage.Audio, <SettingsAudioPage settings={this.settings} return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}/>],
+    [PageEnum.SettingsPage.flyPad, <SettingsFlyPadPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
+    [PageEnum.SettingsPage.About, <SettingsAboutPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
   ];
 
   resume() {
@@ -75,6 +84,29 @@ class SettingsIndex extends AbstractUIView<SettingsIndexProps> {
             </Button>
           ))}
         </div>
+      </div>
+    );
+  }
+}
+
+export interface SettingsPageProps {
+  return_home: () => any;
+  title: VNode;
+  ref: NodeReference<HTMLElement>;
+}
+
+export class SettingsPage extends AbstractUIView<SettingsPageProps> {
+  render(): VNode | null {
+    return (
+      <div ref={this.props.ref}>
+        <Button onClick={this.props.return_home} class="bg-inherit hover:text-theme-highlight" unstyled>
+          <PageTitle>
+            {t('Settings.Title')}
+            {' &gt; '}
+            {this.props.title}
+          </PageTitle>
+        </Button>
+        <PageBox>{this.props.children}</PageBox>
       </div>
     );
   }

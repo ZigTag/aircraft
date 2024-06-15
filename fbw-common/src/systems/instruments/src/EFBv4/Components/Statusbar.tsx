@@ -245,8 +245,8 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
           <p>{this.timeDisplayed}</p>
         </div>
 
-        <div class="flex items-center gap-4">
-          <QuickControls />
+        <div class="flex items-center space-x-4">
+          <QuickControls class="" />
           <i class={this.wifiClass} />
           <Battery batteryLevel={this.props.batteryLevel} isCharging={this.props.isCharging} />
         </div>
