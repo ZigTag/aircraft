@@ -376,7 +376,6 @@ export class ScrollableContainer extends DisplayComponent<ScrollableContainerPro
     super.onAfterRender(node);
 
     this.container.instance.addEventListener('mousedown', (event) => {
-      debugger;
       this.position.set({ top: this.container.instance.scrollTop, y: event.clientY });
 
       document.addEventListener('mousemove', this.mouseMoveHandler);
