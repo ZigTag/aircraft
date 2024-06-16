@@ -92,7 +92,7 @@ export class Loadsheet extends DisplayComponent<LoadsheetProps> {
   }
 }
 
-export class InformationEntry extends DisplayComponent<{ title: string; info: string }> {
+export class InformationEntry extends DisplayComponent<{ title: VNode; info: string }> {
   render(): VNode {
     return (
       <div>
