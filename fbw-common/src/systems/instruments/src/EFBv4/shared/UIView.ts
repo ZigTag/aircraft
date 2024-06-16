@@ -110,7 +110,7 @@ export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [Event
     this.isPaused.set(false);
 
     for (const subscription of this.subscriptions) {
-      subscription.resume();
+      subscription.resume(true);
     }
 
     if (this.vnode) {
