@@ -14,18 +14,16 @@ import { busContext } from '../../../Contexts';
 import { t } from '../../../Components/LocalizedText';
 import { Selector } from '../../../Components/Selector';
 
-export interface SettingsItemProps<T extends UserSettingValue> extends ComponentProps {
-  setting: UserSetting<T>;
-
+export interface SettingsItemProps extends ComponentProps {
   settingName: string | VNode;
 
   unrealistic?: boolean;
 }
 
-export class SettingsItem extends DisplayComponent<SettingsItemProps<any>> {
+export class SettingsItem extends DisplayComponent<SettingsItemProps> {
   render(): VNode | null {
     return (
-      <div class="flex w-full items-center border-b-2 border-b-theme-body py-4">
+      <div class="flex w-full items-center border-b-2 border-b-theme-accent py-4">
         {this.props.settingName}
 
         {(this.props.unrealistic ?? false) && (
@@ -38,7 +36,11 @@ export class SettingsItem extends DisplayComponent<SettingsItemProps<any>> {
   }
 }
 
-export interface SliderSettingsItemProps extends SettingsItemProps<number> {
+export interface ValueSettingsItemProps<T extends UserSettingValue> extends SettingsItemProps {
+  setting: UserSetting<T>;
+}
+
+export interface SliderSettingsItemProps extends ValueSettingsItemProps<number> {
   sliderMin: number;
 
   sliderMax: number;
@@ -89,7 +91,7 @@ export class SliderSettingsItem extends DisplayComponent<SliderSettingsItemProps
   }
 }
 
-export class ToggleSettingsItem extends DisplayComponent<SettingsItemProps<boolean>> {
+export class ToggleSettingsItem extends DisplayComponent<ValueSettingsItemProps<boolean>> {
   render(): VNode | null {
     return (
       <SettingsItem {...this.props}>
@@ -98,7 +100,7 @@ export class ToggleSettingsItem extends DisplayComponent<SettingsItemProps<boole
     );
   }
 }
-export interface InputSettingsItemProps<T extends string | number> extends SettingsItemProps<T> {
+export interface InputSettingsItemProps<T extends string | number> extends ValueSettingsItemProps<T> {
   placeholder?: string;
   min?: number;
   max?: number;
@@ -145,7 +147,7 @@ export class InputSettingsItem<T extends string | number = string> extends Displ
   }
 }
 
-export interface ChoiceSettingsItemProps<T extends number> extends SettingsItemProps<T> {
+export interface ChoiceSettingsItemProps<T extends number> extends ValueSettingsItemProps<T> {
   choices: Record<T, VNode>;
 }
 

@@ -1,13 +1,13 @@
-import { FSComponent, NodeReference, Subject, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, NodeReference, Subject, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../shared/common';
 import { AbstractUIView } from '../../shared/UIView';
-import { Pages, Switch } from '../Pages';
+import { NavigraphAuthState, Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
 import { SettingsAudioPage } from './SettingsAudioPage';
-import { FbwUserSettings, FbwUserSettingsDefs } from '../../FbwUserSettings';
+import { FbwUserSettings } from '../../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
 import { SettingsAircraftOptionsPinProgramsPage } from './SettingsAircraftOptionsPinProgramsPage';
 import { PageBox } from '../../Components/PageBox';
@@ -17,7 +17,11 @@ import { SettingsThirdPartyOptionsPage } from './SettingsThirdPartyOptionsPage';
 import { SettingsAtsuAocPage } from './SettingsAtsuAocPage';
 import { SettingsFlyPadPage } from './SettingsFlyPadPage';
 
-export class Settings extends AbstractUIView {
+export interface SettingsProps {
+  navigraphAuthState: NavigraphAuthState;
+}
+
+export class Settings extends AbstractUIView<SettingsProps> {
   private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
 
   private readonly activePage = Subject.create<PageEnum.SettingsPage>(PageEnum.SettingsPage.Index);
@@ -43,7 +47,11 @@ export class Settings extends AbstractUIView {
     ],
     [
       PageEnum.SettingsPage.ThirdPartyOptions,
-      <SettingsThirdPartyOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsThirdPartyOptionsPage
+        settings={this.settings}
+        navigraphAuthState={this.props.navigraphAuthState}
+        return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+      />,
     ],
     [
       PageEnum.SettingsPage.AtsuAoc,
@@ -100,7 +108,7 @@ class SettingsIndex extends AbstractUIView<SettingsIndexProps> {
         <div class="space-y-6">
           {this.items.map(([page, title]) => (
             <Button
-              class="page flex justify-between rounded-md border-2 border-transparent bg-theme-accent p-6 transition duration-100 hover:border-theme-highlight"
+              class="page flex w-full justify-between rounded-md border-2 border-transparent bg-theme-accent p-6 transition duration-100 hover:border-theme-highlight"
               onClick={() => this.props.onPageSelected(page)}
             >
               <p class="text-2xl">{title}</p>
@@ -130,7 +138,9 @@ export class SettingsPage extends AbstractUIView<SettingsPageProps> {
             {this.props.title}
           </PageTitle>
         </Button>
-        <PageBox>{this.props.children}</PageBox>
+        <PageBox>
+          <div class="-mt-6 h-full">{this.props.children}</div>
+        </PageBox>
       </div>
     );
   }

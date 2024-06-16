@@ -84,6 +84,11 @@ export namespace PageEnum {
     About,
   }
 
+  export enum ThirdPartySettingsPage {
+    Index,
+    NavigraphLogin,
+  }
+
   export enum BatteryLevel {
     Charging = 0,
     Warning = 8,

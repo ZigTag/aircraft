@@ -88,6 +88,10 @@ const fbwUserSettings = [
     defaultValue: LatLonExtendedFormat.LLnn as LatLonExtendedFormat,
   },
   {
+    name: 'fbwAutomaticallyImportSimbriefData',
+    defaultValue: false as boolean,
+  },
+  {
     name: 'fbwAudioLevelExteriorMaster',
     defaultValue: 0 as number,
   },
@@ -231,6 +235,10 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     A32NX_LATLON_EXT_FMT: {
       newSettingName: 'fbwAircraftLatLonExtendedFormat',
       valueMapper: (value) => parseInt(value),
+    },
+    A32NX_CONFIG_AUTO_SIMBRIEF_IMPORT: {
+      newSettingName: 'fbwAutomaticallyImportSimbriefData',
+      valueMapper: (value) => value === 'ENABLED',
     },
     // TODO AircraftOptionsPinProgramsPage
     // TODO RealismPage

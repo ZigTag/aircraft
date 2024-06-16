@@ -51,6 +51,7 @@ module.exports = {
   ],
   settings: {
     tailwindcss: {
+      callees: ['twMerge', 'twJoin'],
       groupByResponsive: true,
       config: path.join(__dirname, 'fbw-common/src/systems/instruments/src/EFBv4/tailwind.config.js'),
     },
