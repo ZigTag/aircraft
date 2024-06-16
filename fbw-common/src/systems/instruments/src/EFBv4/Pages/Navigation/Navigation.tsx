@@ -87,7 +87,7 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
     }
 
     return twMerge(`w-full shrink uppercase`, rounding);
-  }, this.props.simbriefState.simbriefDataLoaded);
+  }, this.props.simbriefState.simbriefOfpLoaded);
 
   render(): VNode | null {
     return (
@@ -108,7 +108,7 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
                   />
 
                   <SwitchOn
-                    condition={this.props.simbriefState.simbriefDataLoaded}
+                    condition={this.props.simbriefState.simbriefOfpLoaded}
                     on={
                       <Selector
                         innerClass="rounded-l-none"

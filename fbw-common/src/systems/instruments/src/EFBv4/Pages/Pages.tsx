@@ -36,9 +36,11 @@ export class SimbriefState {
   constructor(private readonly client: FlypadClient) {}
   private readonly _ofp = Subject.create<ISimbriefData | null>(null);
 
+  public readonly ofpScroll = Subject.create(0);
+
   public readonly ofp: Subscribable<ISimbriefData | null> = this._ofp;
 
-  public readonly simbriefDataLoaded = this.ofp.map((value) => !!value);
+  public readonly simbriefOfpLoaded = this.ofp.map((value) => !!value);
 
   public importOfp(username: string) {
     this.client.getSimbriefOfp().then((r) => this._ofp.set(simbriefDataParser(r)));
@@ -53,7 +55,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
 
   private readonly pages: Pages = [
     [PageEnum.MainPage.Dashboard, <Dashboard simbriefState={this.simbriefState} />],
-    [PageEnum.MainPage.Dispatch, <Dispatch />],
+    [PageEnum.MainPage.Dispatch, <Dispatch simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Ground, <Ground />],
     [PageEnum.MainPage.Performance, <Performance />],
     [PageEnum.MainPage.Navigation, <Navigation simbriefState={this.simbriefState} />],

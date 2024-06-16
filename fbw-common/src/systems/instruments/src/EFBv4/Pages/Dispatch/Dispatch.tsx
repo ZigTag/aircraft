@@ -1,12 +1,14 @@
-import { DisplayComponent, FSComponent, Subject, VNode, ComponentProps } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, VNode, ComponentProps, MappedSubject } from '@microsoft/msfs-sdk';
 import { Units } from '@flybywiresim/fbw-sdk';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../shared/common';
 import { Selector } from '../../Components/Selector';
-import { Switch, Pages } from '../Pages';
+import { Switch, Pages, SwitchIf, SimbriefState } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
 import { PageTitle } from '../../Components/PageTitle';
 import { AbstractUIView } from '../../shared/UIView';
+import { ScrollableContainer } from '../Dashboard/Dashboard';
+import { Button } from '../../Components/Button';
 // import { Icon } from '../../Components/Icons';
 // import React from "react";
 // import {IconPlane} from "@tabler/icons";
@@ -17,13 +19,74 @@ interface AircraftItemProps extends ComponentProps {
   actualGrossWeight: Subject<number>;
 }
 
-export class Loadsheet extends DisplayComponent<any> {
+interface LoadsheetProps {
+  simbriefState: SimbriefState;
+}
+
+export class Loadsheet extends DisplayComponent<LoadsheetProps> {
+  private readonly ofpRef = FSComponent.createRef<HTMLDivElement>();
+
+  private readonly fontSize = Subject.create('14');
+
+  private readonly loadsheetStyle = this.fontSize.map((fontSize) => `font-[${fontSize}px] leading-[${fontSize}px]`);
+
+  private handleFontDecrease = () => {};
+  private handleFontIncrease = () => {};
+
   render(): VNode {
     return (
       <div class="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
-        <>
-          <div class="absolute right-16 top-6 overflow-hidden rounded-md bg-theme-secondary" />
-        </>
+        <SwitchIf
+          condition={this.props.simbriefState.simbriefOfpLoaded}
+          on={
+            <>
+              <div class="absolute right-16 top-6 flex overflow-hidden rounded-md bg-theme-secondary">
+                <Button onClick={this.handleFontDecrease} class="px-3 py-2 transition duration-100">
+                  <i class="bi-zoom-out text-[30px]" />
+                </Button>
+                <Button onClick={this.handleFontIncrease} class="ml-2 px-3 py-2 transition duration-100">
+                  <i class="bi-zoom-in text-[30px]" />
+                </Button>
+                {/*<TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
+                  <button
+                    type="button"
+                    onClick={handleFontDecrease}
+                    className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                  >
+                    <ZoomOut size={30} />
+                  </button>
+                </TooltipWrapper>
+
+                <TooltipWrapper text={t('Dispatch.Ofp.TT.IncreaseFontSize')}>
+                  <button
+                    type="button"
+                    onClick={handleFontIncrease}
+                    className="px-3 py-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                  >
+                    <ZoomIn size={30} />
+                  </button>
+                </TooltipWrapper>*/}
+              </div>
+              <ScrollableContainer
+                height={51}
+                onScrollStop={(scroll) => this.props.simbriefState.ofpScroll.set(scroll)}
+                initialScroll={this.props.simbriefState.ofpScroll.get()}
+              >
+                <div
+                  ref={this.ofpRef}
+                  class="image-theme"
+                  style={this.loadsheetStyle}
+                  dangerouslySetInnerHTML={{ __html: this.props.simbriefState.ofp.map((value) => value?.text) }}
+                />
+              </ScrollableContainer>
+            </>
+          }
+          off={
+            <div class="flex h-full flex-col items-center justify-center space-y-8">
+              <h1 class="max-w-4xl text-center">{t('Dispatch.Ofp.YouHaveNotYetImportedAnySimBriefData')}</h1>
+            </div>
+          }
+        />
       </div>
     );
   }
@@ -211,7 +274,11 @@ export class Overview extends DisplayComponent<any> {
   }
 }
 
-export class Dispatch extends AbstractUIView {
+interface DispatchProps {
+  simbriefState: SimbriefState;
+}
+
+export class Dispatch extends AbstractUIView<DispatchProps> {
   private readonly activePage = Subject.create(PageEnum.DispatchPage.OFP);
 
   private readonly tabs: [page: number, name: VNode][] = [
@@ -222,7 +289,7 @@ export class Dispatch extends AbstractUIView {
   ];
 
   private readonly pages: Pages = [
-    [PageEnum.DispatchPage.OFP, <Loadsheet />],
+    [PageEnum.DispatchPage.OFP, <Loadsheet simbriefState={this.props.simbriefState} />],
     [PageEnum.DispatchPage.Overview, <Overview />],
   ];
 
