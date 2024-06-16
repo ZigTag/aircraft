@@ -11,13 +11,13 @@
     --color-utility-grey: rgb(208, 208, 208);
     --color-utility-darkgry: rgb(105, 105, 105);
 
-    --color-highlight : #00c9e4;
-    --color-body: #0E131B;
-    --color-secondary: #1d2129;
-    --color-text: #FFFFFF;
-    --color-unselected: #C9C9C9;
-    --color-accent: #2b313b;
-    --color-statusbar: #141e29;
+    --color-highlight: 0, 201, 228;
+    --color-body: 14, 19, 27;
+    --color-secondary: 29, 33, 41;
+    --color-text: 255, 255, 255;
+    --color-unselected: 201, 201, 201;
+    --color-accent: 43, 49, 59;
+    --color-statusbar: 20, 30, 41;
 }
 
 :root.theme-dark {

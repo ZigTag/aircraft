@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@akamfoad/qrcode':
+    specifier: ^0.3.2
+    version: 0.3.2
   '@flybywiresim/api-client':
     specifier: ^0.16.2
     version: 0.16.2
@@ -83,9 +86,6 @@ dependencies:
   network:
     specifier: ^0.6.1
     version: 0.6.1
-  qrcode.react:
-    specifier: ^1.0.1
-    version: 1.0.1(react@17.0.2)
   rc-slider:
     specifier: ^9.7.5
     version: 9.7.5(react-dom@17.0.2)(react@17.0.2)
@@ -335,6 +335,18 @@ packages:
     resolution: {integrity: sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /@akamfoad/qr@0.4.0:
+    resolution: {integrity: sha512-kkuVMHLZIXdJbno48tcZIIFHwmc8QPbq0872sPxPMXQxpOBN007viBesAoME3es5yQg9KPXMPROYGe+piqeTTA==}
+    engines: {node: '>=16'}
+    dev: false
+
+  /@akamfoad/qrcode@0.3.2:
+    resolution: {integrity: sha512-UfJ4AiRJxW1c5paimpNJsn+8a6HwlwdsKuEOuTeQfOKaAK55c0ALzlarnMu22TB1JZEJ+7z+1hS4bziqZDUx7g==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@akamfoad/qr': 0.4.0
+    dev: false
 
   /@alloc/quick-lru@5.2.0:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -7906,21 +7918,6 @@ packages:
   /pure-rand@6.0.4:
     resolution: {integrity: sha512-LA0Y9kxMYv47GIPJy6MI84fqTd2HmYZI83W/kM/SkKfDlajnZYfmXFTxkbY+xSBPkLJxltMa9hIkmdc29eguMA==}
     dev: true
-
-  /qr.js@0.0.0:
-    resolution: {integrity: sha512-c4iYnWb+k2E+vYpRimHqSu575b1/wKl4XFeJGpFmrJQz5I88v9aY2czh7s0w36srfCM1sXgC/xpoJz5dJfq+OQ==}
-    dev: false
-
-  /qrcode.react@1.0.1(react@17.0.2):
-    resolution: {integrity: sha512-8d3Tackk8IRLXTo67Y+c1rpaiXjoz/Dd2HpcMdW//62/x8J1Nbho14Kh8x974t9prsLHN6XqVgcnRiBGFptQmg==}
-    peerDependencies:
-      react: ^15.5.3 || ^16.0.0 || ^17.0.0
-    dependencies:
-      loose-envify: 1.4.0
-      prop-types: 15.8.1
-      qr.js: 0.0.0
-      react: 17.0.2
-    dev: false
 
   /querystringify@2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}

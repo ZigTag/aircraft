@@ -23,6 +23,8 @@ import { AbstractUIView, UIVIew, UIVIewUtils } from '../shared/UIView';
 import { twMerge } from 'tailwind-merge';
 import { ISimbriefData, simbriefDataParser } from '../../EFB/Apis/Simbrief';
 import { FlypadClient } from '@shared/flypad-server/FlypadClient';
+import { DeviceFlowParams, User } from 'navigraph/auth';
+import { navigraphAuth } from '../../navigraph';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -49,9 +51,37 @@ export class SimbriefState {
 
 export class NavigationState {}
 
+export class NavigraphAuthState {
+  private readonly _initialized = Subject.create(false);
+
+  public readonly initialized: Subscribable<boolean> = this._initialized;
+
+  private readonly _user = Subject.create<User | null>(null);
+
+  public readonly user: Subscribable<User | null> = this._user;
+
+  constructor() {
+    navigraphAuth.onAuthStateChanged((user) => {
+      this._initialized.set(true);
+      this._user.set(user);
+    });
+  }
+
+  public async login(deviceFlowParamsCallback: (params: DeviceFlowParams) => void): Promise<User> {
+    return navigraphAuth.signInWithDeviceFlow(deviceFlowParamsCallback);
+  }
+
+  public async logout(): Promise<void> {
+    return navigraphAuth.signOut();
+  }
+}
+
 export class MainPage extends DisplayComponent<MainPageProps> {
   private navigationState = new NavigationState();
+
   private simbriefState = new SimbriefState(this.props.flypadClient);
+
+  private readonly navigraphAuthState = new NavigraphAuthState();
 
   private readonly pages: Pages = [
     [PageEnum.MainPage.Dashboard, <Dashboard simbriefState={this.simbriefState} />],
@@ -63,7 +93,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
     [PageEnum.MainPage.Failures, <Failures />],
     [PageEnum.MainPage.Checklists, <Checklists />],
     [PageEnum.MainPage.Presets, <Presets />],
-    [PageEnum.MainPage.Settings, <Settings />],
+    [PageEnum.MainPage.Settings, <Settings navigraphAuthState={this.navigraphAuthState} />],
   ];
 
   render(): VNode {
