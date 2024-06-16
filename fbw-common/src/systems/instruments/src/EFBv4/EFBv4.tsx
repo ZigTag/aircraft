@@ -62,7 +62,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
     flypadClient.initialized.on((it) => it.sendHelloWorld());
 
     FSComponent.render(
-      <flypadClientContext.Provider value={new FlypadClient(this.bus)}>
+      <flypadClientContext.Provider value={flypadClient}>
         <div ref={this.renderRoot2} style={{ display: 'none' }} />
       </flypadClientContext.Provider>,
       this.renderRoot.instance,
@@ -72,7 +72,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
       <>
         <Statusbar batteryLevel={this.batteryLevel} isCharging={this.isCharging} />
         <Navbar activePage={this.currentPage} />
-        <MainPage activePage={this.currentPage} />
+        <MainPage activePage={this.currentPage} flypadClient={flypadClient} />
       </>,
       this.renderRoot2.instance,
       RenderPosition.After,

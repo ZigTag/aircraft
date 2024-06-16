@@ -21,21 +21,42 @@ import { Presets } from './Presets/Presets';
 import { Settings } from './Settings/Settings';
 import { AbstractUIView, UIVIew, UIVIewUtils } from '../shared/UIView';
 import { twMerge } from 'tailwind-merge';
+import { ISimbriefData, simbriefDataParser } from '../../EFB/Apis/Simbrief';
+import { FlypadClient } from '@shared/flypad-server/FlypadClient';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
 
 interface MainPageProps extends ComponentProps {
   activePage: Subject<number>;
+  flypadClient: FlypadClient;
 }
 
+export class SimbriefState {
+  constructor(private readonly client: FlypadClient) {}
+  private readonly _ofp = Subject.create<ISimbriefData | null>(null);
+
+  public readonly ofp: Subscribable<ISimbriefData | null> = this._ofp;
+
+  public readonly simbriefDataLoaded = this.ofp.map((value) => !!value);
+
+  public importOfp(username: string) {
+    this.client.getSimbriefOfp().then((r) => this._ofp.set(simbriefDataParser(r)));
+  }
+}
+
+export class NavigraphState {}
+
 export class MainPage extends DisplayComponent<MainPageProps> {
+  private navigraphState = new NavigraphState();
+  private simbriefState = new SimbriefState(this.props.flypadClient);
+
   private readonly pages: Pages = [
-    [PageEnum.MainPage.Dashboard, <Dashboard />],
+    [PageEnum.MainPage.Dashboard, <Dashboard simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Dispatch, <Dispatch />],
     [PageEnum.MainPage.Ground, <Ground />],
     [PageEnum.MainPage.Performance, <Performance />],
-    [PageEnum.MainPage.Navigation, <Navigation />],
+    [PageEnum.MainPage.Navigation, <Navigation simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.ATC, <ATC />],
     [PageEnum.MainPage.Failures, <Failures />],
     [PageEnum.MainPage.Checklists, <Checklists />],

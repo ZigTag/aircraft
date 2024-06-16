@@ -2,14 +2,18 @@ import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@m
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { Selector } from '../../Components/Selector';
-import { Pages, Switch, SwitchOn } from '../Pages';
+import { Pages, SimbriefState, Switch, SwitchOn } from '../Pages';
 import { PageEnum } from '../../shared/common';
 import { NavigraphClient } from '@shared/navigraph';
 import { SimpleInput } from '../../Components/SimpleInput';
 import { ScrollableContainer } from '../Dashboard/Dashboard';
 import { twMerge } from 'tailwind-merge';
 
-export class Navigation extends DisplayComponent<any> {
+export interface NavigationProps {
+  simbriefState: SimbriefState;
+}
+
+export class Navigation extends DisplayComponent<NavigationProps> {
   private readonly activePage = Subject.create(PageEnum.NavigationPage.Navigraph);
 
   private readonly tabs: Pages = [
@@ -29,7 +33,7 @@ export class Navigation extends DisplayComponent<any> {
           class="mt-4"
           activePage={this.activePage}
           pages={[
-            [PageEnum.NavigationPage.Navigraph, <NavigraphPage />],
+            [PageEnum.NavigationPage.Navigraph, <NavigraphPage simbriefState={this.props.simbriefState} />],
             [PageEnum.NavigationPage.LocalFiles, <span />],
             [PageEnum.NavigationPage.PinnedCharts, <span />],
           ]}
@@ -39,11 +43,15 @@ export class Navigation extends DisplayComponent<any> {
   }
 }
 
-export class NavigraphPage extends DisplayComponent<any> {
+export interface NavigraphPageProps {
+  simbriefState: SimbriefState;
+}
+
+export class NavigraphPage extends DisplayComponent<NavigraphPageProps> {
   render(): VNode | null {
     return (
       <NavigraphAuthWrapper>
-        <NavigraphUI />
+        <NavigraphUI simbriefState={this.props.simbriefState} />
       </NavigraphAuthWrapper>
     );
   }
@@ -61,10 +69,13 @@ export class NavigraphAuthWrapper extends DisplayComponent<any> {
   }
 }
 
-export class NavigraphUI extends DisplayComponent<any> {
+export interface NavigraphUIProps {
+  simbriefState: SimbriefState;
+}
+
+export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
   private readonly isFullscreen = Subject.create(false);
   private readonly selectedAirport = Subject.create('');
-  private readonly simbriefDataLoaded = Subject.create(false);
 
   private handleIcaoChange = () => {};
 
@@ -75,7 +86,7 @@ export class NavigraphUI extends DisplayComponent<any> {
     }
 
     return twMerge(`w-full shrink uppercase`, rounding);
-  }, this.simbriefDataLoaded);
+  }, this.props.simbriefState.simbriefDataLoaded);
 
   render(): VNode | null {
     return (
@@ -96,7 +107,7 @@ export class NavigraphUI extends DisplayComponent<any> {
                   />
 
                   <SwitchOn
-                    condition={this.simbriefDataLoaded}
+                    condition={this.props.simbriefState.simbriefDataLoaded}
                     on={
                       <Selector
                         innerClass="rounded-l-none"

@@ -21,9 +21,8 @@ import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
 import { Button } from '../../Components/Button';
 import { flypadClientContext } from '../../Contexts';
-import { Pages, Switch } from '../Pages';
-import { ISimbriefData, simbriefDataParser } from '../../../EFB/Apis/Simbrief';
-import React from 'react';
+import { Pages, SimbriefState, Switch } from '../Pages';
+import { ISimbriefData } from '../../../EFB/Apis/Simbrief';
 
 interface ScrollableContainerProps extends ComponentProps {
   height: number;
@@ -35,12 +34,12 @@ interface ScrollableContainerProps extends ComponentProps {
   nonRigid?: boolean;
 }
 
-export interface FlightWidgetProps {}
+export interface FlightWidgetProps {
+  simbriefState: SimbriefState;
+}
 
 export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadClient]> {
   public override contextType = [flypadClientContext] as const;
-
-  private readonly loadedOfp = Subject.create<ISimbriefData | null>(null);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -50,15 +49,14 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadCli
     return this.getContext(flypadClientContext).get();
   }
 
-  private readonly fetchSimBriefData = async () => {
-    const ofp = await this.client.getSimbriefOfp();
-
-    this.loadedOfp.set(simbriefDataParser(ofp));
-  };
+  private readonly fetchSimBriefData = () => this.props.simbriefState.importOfp('');
 
   private readonly ofpPages: Pages = [
     [PageEnum.Optional.None, <SimBriefOfpNotLoadedOverlay onFetchSimbriefOfp={this.fetchSimBriefData} />],
-    [PageEnum.Optional.Some, <SimBriefOfpData ofp={this.loadedOfp} onFetchSimbriefOfp={this.fetchSimBriefData} />],
+    [
+      PageEnum.Optional.Some,
+      <SimBriefOfpData ofp={this.props.simbriefState.ofp} onFetchSimbriefOfp={this.fetchSimBriefData} />,
+    ],
   ];
 
   render(): VNode {
@@ -67,7 +65,7 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadCli
         <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
 
         <PageBox>
-          <Switch pages={this.ofpPages} activePage={this.loadedOfp.map((it) => (it !== null ? 1 : 0))} />
+          <Switch pages={this.ofpPages} activePage={this.props.simbriefState.ofp.map((it) => (it !== null ? 1 : 0))} />
         </PageBox>
 
         {/*<PageBox>*/}
@@ -401,13 +399,15 @@ class InformationEntry extends DisplayComponent<InformationEntryProps> {
     );
   }
 }
-export interface DashboardProps {}
+export interface DashboardProps {
+  simbriefState: SimbriefState;
+}
 
 export class Dashboard extends AbstractUIView<DashboardProps> {
   render(): VNode {
     return (
       <div ref={this.rootRef} class="flex w-full space-x-8">
-        <FlightWidget />
+        <FlightWidget simbriefState={this.props.simbriefState} />
         <RemindersWidget />
       </div>
     );
