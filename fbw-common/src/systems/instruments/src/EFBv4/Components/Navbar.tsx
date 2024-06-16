@@ -56,7 +56,7 @@ export class Navbar extends DisplayComponent<NavbarProps> {
         </div>
 
         <div class="mt-auto flex flex-col items-center">
-          <div class="bg-theme-accent my-4 h-1.5 w-14 rounded-full" />
+          <div class="my-4 h-1.5 w-14 rounded-full bg-theme-accent" />
 
           <NavIcon page={PageEnum.MainPage.Settings} activePage={this.props.activePage}>
             <i class="bi-gear text-[35px] text-inherit" />
@@ -94,7 +94,7 @@ export class NavIcon extends DisplayComponent<NavIconProps> {
         activePage={this.props.activePage}
         activeClass="bg-theme-accent text-theme-text"
         inactiveClass="text-theme-unselected"
-        class="hover:bg-theme-accent hover:text-theme-text flex items-center justify-center rounded-md p-3.5 transition duration-100"
+        class="flex items-center justify-center rounded-md p-3.5 transition duration-100 hover:bg-theme-accent hover:text-theme-text"
       >
         {this.props.children}
       </NavButton>

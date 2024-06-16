@@ -81,7 +81,7 @@ export class BatteryIcon extends DisplayComponent<BatteryStatusIconProps> {
       <Switch
         pages={[
           [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-[35px] !text-green-700" />],
-          [PageEnum.BatteryLevel.Warning, <i class="bi-battery !text-utility-red text-[35px]" />],
+          [PageEnum.BatteryLevel.Warning, <i class="bi-battery text-[35px] !text-utility-red" />],
           [PageEnum.BatteryLevel.Low, <i class="bi-battery text-[35px] !text-white" />],
           [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery text-[35px] !text-white" />],
           [PageEnum.BatteryLevel.Medium, <i class="bi-battery-half text-[35px] !text-white" />],
@@ -236,7 +236,7 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
 
   render(): VNode {
     return (
-      <div class="bg-theme-statusbar text-theme-text fixed z-30 flex h-10 w-full items-center justify-between px-6 text-lg font-medium leading-none">
+      <div class="fixed z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text">
         <p>
           {this.dayName} {this.monthName} {this.dayOfMonth.map((value) => value.toFixed())}
         </p>

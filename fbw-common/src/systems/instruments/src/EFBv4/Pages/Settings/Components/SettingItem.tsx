@@ -25,11 +25,11 @@ export interface SettingsItemProps<T extends UserSettingValue> extends Component
 export class SettingsItem extends DisplayComponent<SettingsItemProps<any>> {
   render(): VNode | null {
     return (
-      <div class="border-b-theme-body flex w-full items-center border-b-2 py-4">
+      <div class="flex w-full items-center border-b-2 border-b-theme-body py-4">
         {this.props.settingName}
 
         {(this.props.unrealistic ?? false) && (
-          <span class="text-theme-highlight ml-2">({t('Settings.Unrealistic')})</span>
+          <span class="ml-2 text-theme-highlight">({t('Settings.Unrealistic')})</span>
         )}
 
         <div class="ml-auto flex h-full items-center space-x-4">{this.props.children}</div>

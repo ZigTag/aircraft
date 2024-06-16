@@ -175,10 +175,10 @@ class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
               {this.schedOutParsed}
             </p>
             <div class="relative mx-6 flex h-1 w-full flex-row">
-              <div class="border-theme-text absolute inset-x-0 border-b-4 border-dashed" />
+              <div class="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
 
               <div
-                class="bg-theme-highlight relative w-full"
+                class="relative w-full bg-theme-highlight"
                 style={{ width: this.flightPlanProgress.map((it) => `${it}%`) }}
               >
                 <i
@@ -205,28 +205,28 @@ class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
               title={t('Dashboard.YourFlight.Alternate')}
               info={this.props.ofp.map((it) => it?.alternate?.icao ?? 'NONE')}
             />
-            <div class="bg-theme-accent mx-4 my-auto h-8 w-1" />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
             <InformationEntry
               title={t('Dashboard.YourFlight.CompanyRoute')}
               info={this.props.ofp.map((it) => (it ? it.origin.iata + it.destination.iata : '------'))}
             />
-            <div class="bg-theme-accent mx-4 my-auto h-8 w-1" />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
             <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={this.estimatedZfw} />
           </div>
-          <div class="bg-theme-accent my-auto h-0.5 w-full" />
+          <div class="my-auto h-0.5 w-full bg-theme-accent" />
           <div class="mt-4 flex flex-row justify-around">
             <InformationEntry
               title={t('Dashboard.YourFlight.CostIndex')}
               info={this.props.ofp.map((it) => it?.costIndex ?? '---')}
             />
-            <div class="bg-theme-accent mx-4 my-auto h-8 w-1" />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
             <InformationEntry
               title={t('Dashboard.YourFlight.AverageWind')}
               info={this.props.ofp.map((it) =>
                 it ? `${it.weather.avgWindDir}/${it.weather.avgWindSpeed}` : '---/---',
               )}
             />
-            <div class="bg-theme-accent mx-4 my-auto h-8 w-1" />
+            <div class="mx-4 my-auto h-8 w-1 bg-theme-accent" />
             <InformationEntry
               title={t('Dashboard.YourFlight.CruiseAlt')}
               info={this.props.ofp.map((it) =>
@@ -239,12 +239,12 @@ class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
           <h5 class="mb-2 text-2xl font-bold">{t('Dashboard.YourFlight.Route')}</h5>
           <ScrollableContainer height={15}>
             <p class="font-mono text-2xl">
-              <span class="text-theme-highlight text-2xl">
+              <span class="text-2xl text-theme-highlight">
                 {this.props.ofp.map((it) => it?.origin.icao ?? '----')}/
                 {this.props.ofp.map((it) => it?.origin.runway ?? 'RW---')}
               </span>{' '}
               {this.props.ofp.map((it) => it?.route ?? '---')}{' '}
-              <span class="text-theme-highlight text-2xl">
+              <span class="text-2xl text-theme-highlight">
                 {this.props.ofp.map((it) => it?.destination.icao ?? '----')}/
                 {this.props.ofp.map((it) => it?.destination.runway ?? 'RW---')}
               </span>

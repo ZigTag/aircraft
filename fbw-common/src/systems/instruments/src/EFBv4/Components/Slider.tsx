@@ -91,11 +91,11 @@ export class Slider extends DisplayComponent<SliderProps> {
   render(): VNode | null {
     return (
       <span class="flex h-3 w-60 flex-col justify-center">
-        <span ref={this.trackRef} class="bg-theme-accent h-2.5 w-full rounded-[6px]"></span>
+        <span ref={this.trackRef} class="h-2.5 w-full rounded-[6px] bg-theme-accent"></span>
 
         <span
           ref={this.trackHighlightRef}
-          class="bg-theme-highlight pointer-events-none absolute h-2.5 rounded-[6px]"
+          class="pointer-events-none absolute h-2.5 rounded-[6px] bg-theme-highlight"
           style={{ width: this.thumbXPosition.map((it) => `${it}px`) }}
         ></span>
 
