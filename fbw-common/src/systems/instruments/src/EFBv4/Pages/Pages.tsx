@@ -45,10 +45,10 @@ export class SimbriefState {
   }
 }
 
-export class NavigraphState {}
+export class NavigationState {}
 
 export class MainPage extends DisplayComponent<MainPageProps> {
-  private navigraphState = new NavigraphState();
+  private navigationState = new NavigationState();
   private simbriefState = new SimbriefState(this.props.flypadClient);
 
   private readonly pages: Pages = [

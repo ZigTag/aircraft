@@ -41,6 +41,14 @@ export namespace PageEnum {
     Alternate,
   }
 
+  export enum ChartCategory {
+    Star,
+    App,
+    Sid,
+    Taxi,
+    Ref,
+  }
+
   export enum FailuresPage {
     Comfort,
     Compact,

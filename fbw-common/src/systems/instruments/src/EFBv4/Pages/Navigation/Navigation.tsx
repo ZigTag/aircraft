@@ -76,6 +76,7 @@ export interface NavigraphUIProps {
 export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
   private readonly isFullscreen = Subject.create(false);
   private readonly selectedAirport = Subject.create('');
+  private readonly selectedCategory = Subject.create(PageEnum.ChartCategory.Star);
 
   private handleIcaoChange = () => {};
 
@@ -133,27 +134,24 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
                 </div>
 
                 <div class="flex h-11 w-full flex-row items-center">
-                  {/*<ArrowReturnRight size={30} />*/}
+                  <i class="bi-arrow-return-right text-[26px] text-inherit" />
                   <div class="block w-full overflow-hidden whitespace-nowrap px-4" style={{ textOverflow: 'ellipsis' }}>
                     {/*getStatusBarText()*/}
                   </div>
                 </div>
 
                 <div class="mt-6">
-                  {/*<SelectGroup>
-                  {organizedCharts.map((organizedChart, index) => (
-                    <SelectItem
-                      selected={index === selectedTabIndex}
-                      onSelect={() =>
-                        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, selectedTabIndex: index }))
-                      }
-                      key={organizedChart.name}
-                      className="flex w-full justify-center"
-                    >
-                      {organizedChart.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>*/}
+                  <Selector
+                    activeClass="bg-theme-highlight text-theme-body"
+                    tabs={[
+                      [PageEnum.ChartCategory.Star, <p class="text-inherit">STAR</p>],
+                      [PageEnum.ChartCategory.App, <p class="text-inherit">APP</p>],
+                      [PageEnum.ChartCategory.Taxi, <p class="text-inherit">TAXI</p>],
+                      [PageEnum.ChartCategory.Sid, <p class="text-inherit">SID</p>],
+                      [PageEnum.ChartCategory.Ref, <p class="text-inherit">REF</p>],
+                    ]}
+                    activePage={this.selectedCategory}
+                  />
                   <ScrollableContainer class="mt-5" height={42.75}>
                     {/*<NavigraphChartSelector selectedTab={organizedCharts[selectedTabIndex]} loading={loading} />*/}
                   </ScrollableContainer>
