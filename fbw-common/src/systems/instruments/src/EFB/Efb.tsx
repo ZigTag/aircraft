@@ -507,14 +507,12 @@ export const EfbInstrument: React.FC<EfbInstrumentProps> = ({ failures, aircraft
   const [err, setErr] = useState(false);
 
   return (
-    <FailuresOrchestratorProvider failures={failures}>
-      <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
-        <Router>
-          <ModalProvider>
-            <Efb aircraftChecklistsProp={aircraftChecklists} />
-          </ModalProvider>
-        </Router>
-      </ErrorBoundary>
-    </FailuresOrchestratorProvider>
+    <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => setErr(false)} resetKeys={[err]}>
+      <Router>
+        <ModalProvider>
+          <Efb aircraftChecklistsProp={aircraftChecklists} />
+        </ModalProvider>
+      </Router>
+    </ErrorBoundary>
   );
 };

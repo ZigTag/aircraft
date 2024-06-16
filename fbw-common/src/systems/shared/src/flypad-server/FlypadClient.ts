@@ -1,8 +1,9 @@
 import { EventBus, SubEvent, Subject, Wait } from '@microsoft/msfs-sdk';
 
-import { FlypadClientEvents, FlypadFailuresUpdatePacket, FlypadServerEvents } from './FlypadEvents';
+import { FlypadClientEvents, FlypadServerEvents } from './FlypadEvents';
 import { MetarParserType } from '../../../instruments/src/metarTypes';
 import { Failure } from '../failures';
+import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
 
 export class FlypadClient {
   private readonly eventSub = this.bus.getSubscriber<FlypadServerEvents>();
@@ -13,7 +14,7 @@ export class FlypadClient {
 
   public readonly failuresList = Subject.create<readonly Readonly<Failure>[]>([]);
 
-  public readonly failuresState = Subject.create<FlypadFailuresUpdatePacket>({ active: [], changing: [] });
+  public readonly failuresState = Subject.create<FailuresOrchestratorState>({ active: [], changing: [] });
 
   constructor(private readonly bus: EventBus) {
     this.eventSub.on('fps_Initialized').handle(() => this.initialized.notify(this));
@@ -40,6 +41,14 @@ export class FlypadClient {
     this.sendMessage('fpc_GetSimbriefOfp', undefined);
 
     return this.waitForMessage('fps_SendSimbriefOfp');
+  }
+
+  public activateFailure(failure: Failure): void {
+    this.sendMessage('fpc_ActivateFailure', failure.identifier);
+  }
+
+  public deactivateFailure(failure: Failure): void {
+    this.sendMessage('fpc_DeactivateFailure', failure.identifier);
   }
 
   private sendMessage<k extends keyof FlypadClientEvents & string>(key: k, value: FlypadClientEvents[k]): void {

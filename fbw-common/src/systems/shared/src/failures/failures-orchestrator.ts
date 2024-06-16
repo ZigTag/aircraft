@@ -5,6 +5,7 @@
 import { AtaChapterNumber } from '../ata';
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
+import { SubEvent } from '@microsoft/msfs-sdk';
 
 export interface Failure {
   ata: AtaChapterNumber;
@@ -13,6 +14,12 @@ export interface Failure {
 }
 
 export type FailureDefinition = [AtaChapterNumber, number, string];
+
+export interface FailuresOrchestratorState {
+  changing: number[];
+
+  active: number[];
+}
 
 /**
  * Orchestrates the activation and deactivation of failures.
@@ -29,6 +36,8 @@ export class FailuresOrchestrator {
   private activateFailureQueue: QueuedSimVarWriter;
 
   private deactivateFailureQueue: QueuedSimVarWriter;
+
+  public stateEvent = new SubEvent<FailuresOrchestrator, FailuresOrchestratorState>();
 
   constructor(simVarPrefix: string, failures: FailureDefinition[]) {
     this.activateFailureQueue = new QueuedSimVarWriter(
@@ -59,6 +68,7 @@ export class FailuresOrchestrator {
     await this.activateFailureQueue.write(identifier);
     this.changingFailures.delete(identifier);
     this.activeFailures.add(identifier);
+    this.notifyState();
   }
 
   /**
@@ -69,6 +79,14 @@ export class FailuresOrchestrator {
     await this.deactivateFailureQueue.write(identifier);
     this.changingFailures.delete(identifier);
     this.activeFailures.delete(identifier);
+    this.notifyState();
+  }
+
+  private notifyState(): void {
+    this.stateEvent.notify(this, {
+      active: Array.from(this.activeFailures),
+      changing: Array.from(this.changingFailures),
+    });
   }
 
   /**

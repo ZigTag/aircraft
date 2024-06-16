@@ -33,6 +33,7 @@ export namespace PageEnum {
   export enum FailuresPage {
     Comfort,
     Compact,
+    Ata,
   }
 
   export enum Optional {

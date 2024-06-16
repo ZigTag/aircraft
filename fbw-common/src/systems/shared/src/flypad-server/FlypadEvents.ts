@@ -2,6 +2,7 @@ import { SimbriefClient } from '@microsoft/msfs-sdk';
 
 import { MetarParserType } from '../../../instruments/src/metarTypes';
 import { Failure } from '../failures';
+import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
 
 type UnwrapPromise<T> = T extends PromiseLike<infer V> ? V : T;
 
@@ -34,10 +35,5 @@ export interface FlypadServerEvents {
 
   fps_SendFailuresList: readonly Readonly<Failure>[];
 
-  fps_SendFailuresState: FlypadFailuresUpdatePacket;
-}
-
-export interface FlypadFailuresUpdatePacket {
-  active: number[];
-  changing: number[];
+  fps_SendFailuresState: FailuresOrchestratorState;
 }

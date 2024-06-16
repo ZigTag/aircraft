@@ -5,6 +5,7 @@ import { FlypadClientEvents, FlypadServerEvents } from './FlypadEvents';
 import { MetarParserType } from '../../../instruments/src';
 import { parseMetar } from '../parseMetar';
 import { FailuresOrchestrator } from '../failures';
+import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
 
 export class FlypadServer {
   private readonly eventSub = this.bus.getSubscriber<FlypadClientEvents>();
@@ -25,11 +26,12 @@ export class FlypadServer {
     this.eventSub.on('fpc_GetSimbriefOfp').handle(() => this.handleGetSimbriefOfp());
     this.eventSub.on('fpc_ActivateFailure').handle((id) => this.handleActivateFailure(id));
     this.eventSub.on('fpc_DeactivateFailure').handle((id) => this.handleDeactivateFailure(id));
+
+    this.failureOrchestrator.stateEvent.on((_sender, state) => this.sendFailuresState(state));
   }
 
   private handleHelloWorld(): void {
     this.sendFailureList();
-    this.sendFailuresState();
   }
 
   private async handleGetMetar(icao: string): Promise<void> {
@@ -94,28 +96,17 @@ export class FlypadServer {
 
   private handleActivateFailure(failureID: number): void {
     this.failureOrchestrator.activate(failureID);
-
-    this.sendFailuresState();
   }
 
   private handleDeactivateFailure(failureID: number): void {
     this.failureOrchestrator.deactivate(failureID);
-
-    this.sendFailuresState();
   }
 
   private sendFailureList(): void {
     this.eventPub.pub('fps_SendFailuresList', this.failureOrchestrator.getAllFailures(), true);
   }
 
-  private sendFailuresState(): void {
-    this.eventPub.pub(
-      'fps_SendFailuresState',
-      {
-        active: Array.from(this.failureOrchestrator.getActiveFailures()),
-        changing: Array.from(this.failureOrchestrator.getChangingFailures()),
-      },
-      true,
-    );
+  private sendFailuresState(state: FailuresOrchestratorState): void {
+    this.eventPub.pub('fps_SendFailuresState', state, true);
   }
 }

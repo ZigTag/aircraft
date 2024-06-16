@@ -123,6 +123,7 @@ class ExtrasHost extends BaseInstrument {
     this.versionCheck.update();
     this.keyInterceptor.update();
     this.aircraftSync.update();
+    this.failuresOrchestrator.update();
   }
 }
 
