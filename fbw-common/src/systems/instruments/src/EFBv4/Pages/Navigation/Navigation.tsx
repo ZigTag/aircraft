@@ -1,13 +1,13 @@
-import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
-import { PageBox } from '../../Components/PageBox';
 import { t } from '../../Components/LocalizedText';
 import { Selector } from '../../Components/Selector';
-import { Pages, Switch, SwitchIf } from '../Pages';
+import { Pages, Switch, SwitchOn } from '../Pages';
 import { PageEnum } from '../../shared/common';
 import { NavigraphClient } from '@shared/navigraph';
 import { SimpleInput } from '../../Components/SimpleInput';
 import { ScrollableContainer } from '../Dashboard/Dashboard';
+import { twMerge } from 'tailwind-merge';
 
 export class Navigation extends DisplayComponent<any> {
   private readonly activePage = Subject.create(PageEnum.NavigationPage.Navigraph);
@@ -23,7 +23,7 @@ export class Navigation extends DisplayComponent<any> {
       <div>
         <div class="flex justify-between">
           <PageTitle>{t('NavigationAndCharts.Title')}</PageTitle>
-          <Selector tabs={this.tabs} activePage={Subject.create(0)} />
+          <Selector tabs={this.tabs} activePage={this.activePage} />
         </div>
         <Switch
           class="mt-4"
@@ -68,50 +68,57 @@ export class NavigraphUI extends DisplayComponent<any> {
 
   private handleIcaoChange = () => {};
 
+  private readonly class = MappedSubject.create(([simbriefDataLoaded]) => {
+    let rounding = '';
+    if (simbriefDataLoaded) {
+      rounding = 'rounded-r-none';
+    }
+
+    return twMerge(`w-full shrink uppercase`, rounding);
+  }, this.simbriefDataLoaded);
+
   render(): VNode | null {
     return (
       <div>
         <>
-          <SwitchIf
-            condition={this.isFullscreen}
+          <SwitchOn
+            condition={this.isFullscreen.map((value) => !value)}
             on={
               <div class="shrink-0" style={{ width: '450px' }}>
                 <div class="flex flex-row items-center justify-center">
                   <SimpleInput
+                    containerClass="w-full"
                     placeholder="ICAO"
                     value={this.selectedAirport}
                     maxLength={4}
-                    class={`w-full shrink uppercase ${this.simbriefDataLoaded && 'rounded-r-none'}`}
+                    class={this.class}
                     onChange={this.handleIcaoChange}
                   />
 
-                  {/*isSimbriefDataLoaded() && (
-                  <SelectGroup className="flex-shrink-0 rounded-l-none">
-                    <SelectItem
-                      className="uppercase"
-                      selected={searchQuery === departingAirport}
-                      onSelect={() => handleIcaoChange(departingAirport)}
-                    >
-                      {t('NavigationAndCharts.From')}
-                    </SelectItem>
-                    <SelectItem
-                      className="uppercase"
-                      selected={searchQuery === arrivingAirport}
-                      onSelect={() => handleIcaoChange(arrivingAirport)}
-                    >
-                      {t('NavigationAndCharts.To')}
-                    </SelectItem>
-                    {!!altIcao && (
-                      <SelectItem
-                        className="uppercase"
-                        selected={searchQuery === altIcao}
-                        onSelect={() => handleIcaoChange(altIcao)}
-                      >
-                        {t('NavigationAndCharts.Altn')}
-                      </SelectItem>
-                    )}
-                  </SelectGroup>
-                )*/}
+                  <SwitchOn
+                    condition={this.simbriefDataLoaded}
+                    on={
+                      <Selector
+                        innerClass="rounded-l-none"
+                        activeClass="bg-theme-highlight text-theme-body"
+                        tabs={[
+                          [
+                            PageEnum.SimbriefAirport.From,
+                            <p class="uppercase text-inherit">{t('NavigationAndCharts.From')}</p>,
+                          ],
+                          [
+                            PageEnum.SimbriefAirport.To,
+                            <p class="uppercase text-inherit">{t('NavigationAndCharts.To')}</p>,
+                          ],
+                          [
+                            PageEnum.SimbriefAirport.Alternate,
+                            <p class="uppercase text-inherit">{t('NavigationAndCharts.Altn')}</p>,
+                          ],
+                        ]}
+                        activePage={Subject.create(0)}
+                      />
+                    }
+                  />
                 </div>
 
                 <div class="flex h-11 w-full flex-row items-center">
@@ -142,10 +149,22 @@ export class NavigraphUI extends DisplayComponent<any> {
                 </div>
               </div>
             }
-            off={<></>}
           />
         </>
       </div>
+    );
+  }
+}
+
+export class ChartViewer extends DisplayComponent<any> {
+  render(): VNode | null {
+    return (
+      <>
+        {/*<div
+        className={`relative ${!this.isFullScreen && 'ml-6 rounded-l-none'}`}
+        style={{ width: `${this.isFullScreen ? '1278px' : '804px'}` }}
+      ></div>*/}
+      </>
     );
   }
 }

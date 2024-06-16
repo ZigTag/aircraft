@@ -5,6 +5,7 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableUtils,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { PageEnum } from '../shared/common';
@@ -19,6 +20,7 @@ import { Checklists } from './Checklists/Checklists';
 import { Presets } from './Presets/Presets';
 import { Settings } from './Settings/Settings';
 import { AbstractUIView, UIVIew, UIVIewUtils } from '../shared/UIView';
+import { twMerge } from 'tailwind-merge';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -49,7 +51,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
 interface SwitchProps extends ComponentProps {
   activePage: Subscribable<number>;
   pages: Pages;
-  class?: string;
+  class?: string | Subscribable<string>;
 }
 
 export class Switch extends AbstractUIView<SwitchProps> {
@@ -125,9 +127,16 @@ export class Switch extends AbstractUIView<SwitchProps> {
     return subject;
   };
 
+  private readonly class = MappedSubject.create(
+    ([propClass]) => {
+      return twMerge('h-full w-full', propClass);
+    },
+    SubscribableUtils.toSubscribable(this.props.class, true),
+  );
+
   render(): VNode {
     return (
-      <div ref={this.props.ref} class={`h-full w-full ${this.props.class}`}>
+      <div ref={this.props.ref ?? this.rootRef} class={this.class}>
         {this.props.pages.map(([page, component]) =>
           UIVIewUtils.isUIVIew(component.instance) ? (
             <UIVIewWrapper index={page} view={component} isVisible={this.pageVisibility(page)} />
@@ -234,18 +243,50 @@ class UIVIewWrapper extends AbstractUIView<UIVIewWrapperProps> implements Switch
 }
 
 export interface SwitchIfProps {
+  class?: string;
   condition: Subscribable<boolean>;
   on: VNode;
   off: VNode;
 }
 
-export class SwitchIf extends DisplayComponent<SwitchIfProps> {
+export class SwitchIf extends AbstractUIView<SwitchIfProps> {
   render(): VNode | null {
     return (
       <Switch
+        class={this.props.class}
         activePage={this.props.condition.map((value) => (value ? PageEnum.SwitchIf.True : PageEnum.SwitchIf.False))}
         pages={[
           [PageEnum.SwitchIf.False, this.props.off],
+          [PageEnum.SwitchIf.True, this.props.on],
+        ]}
+      />
+    );
+  }
+}
+
+export interface SwitchOnProps {
+  class?: string;
+  condition: Subscribable<boolean>;
+  on: VNode;
+}
+
+export class SwitchOn extends AbstractUIView<SwitchOnProps> {
+  private readonly class = MappedSubject.create(([condition]) => {
+    let classReturn = '';
+    if (!condition) {
+      classReturn = 'hidden';
+    }
+
+    return twMerge(classReturn, this.props.class ?? '');
+  }, this.props.condition);
+
+  render(): VNode | null {
+    return (
+      <Switch
+        class={this.class}
+        activePage={this.props.condition.map((value) => (value ? PageEnum.SwitchIf.True : PageEnum.SwitchIf.False))}
+        pages={[
+          [PageEnum.SwitchIf.False, <></>],
           [PageEnum.SwitchIf.True, this.props.on],
         ]}
       />

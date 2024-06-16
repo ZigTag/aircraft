@@ -1,4 +1,12 @@
-import { ConsumerSubject, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ConsumerSubject,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Subscribable,
+  SubscribableUtils,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
 import { AbstractUIView } from '../shared/UIView';
 import { EFBSimvars } from '../EFBSimvarPublisher';
@@ -18,7 +26,7 @@ interface SimpleInputProps {
   fontSizeClassName?: string;
   reverse?: boolean; // Flip label/input order;
   containerClass?: string;
-  class?: string;
+  class?: string | Subscribable<string>;
   maxLength?: number;
   disabled?: Subscribable<boolean>;
 }
@@ -231,18 +239,22 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
     instrument.removeEventListener('keypress', this.onEnterPressedOnDocument);
   }
 
-  private readonly className = (this.props.disabled ?? Subject.create(false))?.map((disabled) => {
-    return twMerge(
-      'w-full px-3 py-1.5 rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none',
-      this.props.fontSizeClassName ?? 'text-lg',
-      this.props.class,
-      disabled && 'opacity-50',
-    );
-  });
+  private readonly className = MappedSubject.create(
+    ([disabled, prop_class]) => {
+      return twMerge(
+        'w-full px-3 py-1.5 rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none',
+        this.props.fontSizeClassName ?? 'text-lg',
+        prop_class,
+        disabled && 'opacity-50',
+      );
+    },
+    this.props.disabled ?? Subject.create(false),
+    SubscribableUtils.toSubscribable(this.props.class ?? '', true),
+  );
 
   render(): VNode | null {
     return (
-      <div ref={this.rootRef} class={this.props.containerClass}>
+      <div ref={this.rootRef} class={this.props.containerClass ?? ''}>
         <input
           class={this.className}
           value={this.displayValue}

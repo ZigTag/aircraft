@@ -35,6 +35,12 @@ export namespace PageEnum {
     PinnedCharts,
   }
 
+  export enum SimbriefAirport {
+    From,
+    To,
+    Alternate,
+  }
+
   export enum FailuresPage {
     Comfort,
     Compact,

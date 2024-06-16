@@ -8,13 +8,19 @@ interface SelectorProps extends ComponentProps {
   activeClass?: string;
   tabs: Pages;
   activePage: MutableSubscribable<number>;
+  innerClass?: string;
 }
 
 export class Selector extends DisplayComponent<SelectorProps> {
   render(): VNode {
     return (
       <div class={twMerge('flex justify-between', this.props.class)}>
-        <div class="flex divide-x divide-theme-accent overflow-hidden rounded-md border border-theme-accent">
+        <div
+          class={twMerge(
+            'flex divide-x divide-theme-accent overflow-hidden rounded-md border border-theme-accent',
+            this.props.innerClass,
+          )}
+        >
           {this.props.tabs.map(([page, contents]) => (
             <NavButton
               inactiveClass="flex items-center bg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
