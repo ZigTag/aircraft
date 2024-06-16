@@ -232,3 +232,23 @@ class UIVIewWrapper extends AbstractUIView<UIVIewWrapperProps> implements Switch
     return this.props.view;
   }
 }
+
+export interface SwitchIfProps {
+  condition: Subscribable<boolean>;
+  on: VNode;
+  off: VNode;
+}
+
+export class SwitchIf extends DisplayComponent<SwitchIfProps> {
+  render(): VNode | null {
+    return (
+      <Switch
+        activePage={this.props.condition.map((value) => (value ? PageEnum.SwitchIf.True : PageEnum.SwitchIf.False))}
+        pages={[
+          [PageEnum.SwitchIf.False, this.props.off],
+          [PageEnum.SwitchIf.True, this.props.on],
+        ]}
+      />
+    );
+  }
+}

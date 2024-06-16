@@ -1,4 +1,9 @@
 export namespace PageEnum {
+  export enum SwitchIf {
+    False,
+    True,
+  }
+
   export enum MainPage {
     Dashboard,
     Dispatch,
