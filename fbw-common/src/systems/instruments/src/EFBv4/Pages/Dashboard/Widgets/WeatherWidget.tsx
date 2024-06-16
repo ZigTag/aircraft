@@ -69,7 +69,7 @@ export class WeatherReminder extends DisplayComponent<any> {
       <RemindersSection>
         <div class="space-y-6">
           <WeatherWidget name="origin" />
-          <div class="h-1 w-full rounded-full bg-theme-accent" />
+          <div class="bg-theme-accent h-1 w-full rounded-full" />
           <WeatherWidget name="destination" />
         </div>
       </RemindersSection>

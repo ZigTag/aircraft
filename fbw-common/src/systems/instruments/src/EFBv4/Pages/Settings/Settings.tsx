@@ -1,4 +1,4 @@
-import {FSComponent, NodeReference, Subject, UserSettingManager, VNode} from '@microsoft/msfs-sdk';
+import { FSComponent, NodeReference, Subject, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../shared/common';
@@ -7,7 +7,7 @@ import { Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
 import { SettingsAudioPage } from './SettingsAudioPage';
-import {FbwUserSettings, FbwUserSettingsDefs} from '../../FbwUserSettings';
+import { FbwUserSettings, FbwUserSettingsDefs } from '../../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
 import { SettingsAircraftOptionsPinProgramsPage } from './SettingsAircraftOptionsPinProgramsPage';
 import { PageBox } from '../../Components/PageBox';
@@ -33,13 +33,37 @@ export class Settings extends AbstractUIView {
         return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],
-    [PageEnum.SettingsPage.SimOptions, <SettingsSimOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
-    [PageEnum.SettingsPage.Realism, <SettingsRealismPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
-    [PageEnum.SettingsPage.ThirdPartyOptions, <SettingsThirdPartyOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
-    [PageEnum.SettingsPage.AtsuAoc, <SettingsAtsuAocPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
-    [PageEnum.SettingsPage.Audio, <SettingsAudioPage settings={this.settings} return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}/>],
-    [PageEnum.SettingsPage.flyPad, <SettingsFlyPadPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
-    [PageEnum.SettingsPage.About, <SettingsAboutPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />],
+    [
+      PageEnum.SettingsPage.SimOptions,
+      <SettingsSimOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+    ],
+    [
+      PageEnum.SettingsPage.Realism,
+      <SettingsRealismPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+    ],
+    [
+      PageEnum.SettingsPage.ThirdPartyOptions,
+      <SettingsThirdPartyOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+    ],
+    [
+      PageEnum.SettingsPage.AtsuAoc,
+      <SettingsAtsuAocPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+    ],
+    [
+      PageEnum.SettingsPage.Audio,
+      <SettingsAudioPage
+        settings={this.settings}
+        return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+      />,
+    ],
+    [
+      PageEnum.SettingsPage.flyPad,
+      <SettingsFlyPadPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+    ],
+    [
+      PageEnum.SettingsPage.About,
+      <SettingsAboutPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+    ],
   ];
 
   resume() {
@@ -76,7 +100,7 @@ class SettingsIndex extends AbstractUIView<SettingsIndexProps> {
         <div class="space-y-6">
           {this.items.map(([page, title]) => (
             <Button
-              class="page flex justify-between rounded-md border-2 border-transparent bg-theme-accent p-6 transition duration-100 hover:border-theme-highlight"
+              class="page bg-theme-accent hover:border-theme-highlight flex justify-between rounded-md border-2 border-transparent p-6 transition duration-100"
               onClick={() => this.props.onPageSelected(page)}
             >
               <p class="text-2xl">{title}</p>
@@ -99,7 +123,7 @@ export class SettingsPage extends AbstractUIView<SettingsPageProps> {
   render(): VNode | null {
     return (
       <div ref={this.props.ref}>
-        <Button onClick={this.props.return_home} class="bg-inherit hover:text-theme-highlight" unstyled>
+        <Button onClick={this.props.return_home} class="hover:text-theme-highlight bg-inherit" unstyled>
           <PageTitle>
             {t('Settings.Title')}
             {' &gt; '}

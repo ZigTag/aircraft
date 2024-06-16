@@ -24,6 +24,12 @@ export namespace PageEnum {
     Overview,
   }
 
+  export enum NavigationPage {
+    Navigraph,
+    LocalFiles,
+    PinnedCharts,
+  }
+
   export enum FailuresPage {
     Comfort,
     Compact,

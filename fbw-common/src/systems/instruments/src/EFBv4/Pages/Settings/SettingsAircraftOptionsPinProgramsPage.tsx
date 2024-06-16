@@ -18,7 +18,7 @@ export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<Setti
         title={t('Settings.AircraftOptionsPinPrograms.Title')}
         ref={this.rootRef}
       >
-        <div class="-mt-6 h-full divide-y-2 divide-theme-accent">
+        <div class="divide-theme-accent -mt-6 h-full divide-y-2">
           <InputSettingsItem<number>
             setting={this.props.settings.getSetting('fbwAircraftThrustReductionHeight')}
             settingName={t('Settings.AircraftOptionsPinPrograms.ThrustReductionHeight')}

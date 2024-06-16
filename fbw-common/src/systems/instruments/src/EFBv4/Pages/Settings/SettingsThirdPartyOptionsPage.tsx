@@ -10,7 +10,11 @@ export interface SettingsThirdPartyOptionsPageProps {
 export class SettingsThirdPartyOptionsPage extends AbstractUIView<SettingsThirdPartyOptionsPageProps> {
   render(): VNode | null {
     return (
-      <SettingsPage title={t('Settings.ThirdPartyOptions.Title')} return_home={this.props.return_home} ref={this.rootRef}>
+      <SettingsPage
+        title={t('Settings.ThirdPartyOptions.Title')}
+        return_home={this.props.return_home}
+        ref={this.rootRef}
+      >
         <span />
       </SettingsPage>
     );

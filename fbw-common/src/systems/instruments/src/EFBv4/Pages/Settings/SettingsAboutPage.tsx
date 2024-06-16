@@ -61,7 +61,7 @@ export class SettingsAboutPage extends AbstractUIView<SettingsAboutPageProps> {
               <div class="flex flex-row items-center">
                 <img class="w-[36px]" src={FbwTail} alt="" />
                 <h1 class="font-manrope ml-4 text-4xl font-bold">flyPadOS</h1>
-                <h1 class="font-manrope ml-2 text-4xl font-bold text-cyan">4</h1>
+                <h1 class="font-manrope text-cyan ml-2 text-4xl font-bold">4</h1>
               </div>
 
               <p class="mt-3 text-2xl">

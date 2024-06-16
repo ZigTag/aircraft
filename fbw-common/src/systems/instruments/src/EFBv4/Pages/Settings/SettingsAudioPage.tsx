@@ -14,7 +14,7 @@ export class SettingsAudioPage extends AbstractUIView<SettingsAudioPageProps> {
   render(): VNode | null {
     return (
       <SettingsPage title={t('Settings.Audio.Title')} return_home={this.props.return_home} ref={this.rootRef}>
-        <div class="-mt-6 h-full divide-y-2 divide-theme-accent">
+        <div class="divide-theme-accent -mt-6 h-full divide-y-2">
           <SliderSettingsItem
             setting={this.props.settings.getSetting('fbwAudioLevelExteriorMaster')}
             settingName={t('Settings.Audio.ExteriorMasterVolume')}

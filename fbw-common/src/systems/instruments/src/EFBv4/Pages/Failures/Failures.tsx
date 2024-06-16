@@ -108,11 +108,11 @@ interface AtaChapterCardprops {
 class AtaChapterCard extends DisplayComponent<AtaChapterCardprops> {
   render(): VNode | null {
     return (
-      <div class="flex h-36 flex-row items-stretch space-x-4 rounded-md border-2 border-transparent bg-transparent p-2 transition duration-100 hover:border-theme-highlight">
-        <div class="flex h-full w-1/5 items-center justify-center rounded-md bg-theme-accent font-title text-5xl font-bold">
+      <div class="hover:border-theme-highlight flex h-36 flex-row items-stretch space-x-4 rounded-md border-2 border-transparent bg-transparent p-2 transition duration-100">
+        <div class="bg-theme-accent font-title flex h-full w-1/5 items-center justify-center rounded-md text-5xl font-bold">
           {`ATA ${this.props.ataNumber}`}
 
-          <div class="relative -right-7 bottom-16 inline-block size-0 fill-current text-utility-red">
+          <div class="text-utility-red relative -right-7 bottom-16 inline-block size-0 fill-current">
             <svg
               style={{
                 width: '30px',
