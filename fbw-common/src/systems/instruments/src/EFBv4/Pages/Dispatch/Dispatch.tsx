@@ -26,12 +26,36 @@ interface LoadsheetProps {
 export class Loadsheet extends DisplayComponent<LoadsheetProps> {
   private readonly ofpRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly fontSize = Subject.create('14');
+  private readonly fontSize = Subject.create(14);
+  private readonly imageSize = Subject.create(60);
 
-  private readonly loadsheetStyle = this.fontSize.map((fontSize) => `font-[${fontSize}px] leading-[${fontSize}px]`);
+  constructor(props: LoadsheetProps) {
+    super(props);
+    props.simbriefState.ofp.sub((ofp) => (this.ofpRef.instance.innerHTML = ofp?.text ?? ''));
+    this.imageSize.sub((val) => {
+      const img = this.ofpRef.instance.getElementsByTagName('img');
 
-  private handleFontDecrease = () => {};
-  private handleFontIncrease = () => {};
+      if (img) {
+        for (let i = 0; i < img.length; i++) {
+          img[i].style.width = `${val}%`;
+        }
+      }
+    });
+  }
+
+  private handleFontDecrease = () => {
+    if (this.fontSize.get() < 26) {
+      this.fontSize.set(this.fontSize.get() + 2);
+      this.imageSize.set(this.imageSize.get() + 5);
+    }
+  };
+
+  private handleFontIncrease = () => {
+    if (this.fontSize.get() > 14) {
+      this.fontSize.set(this.fontSize.get() - 2);
+      this.imageSize.set(this.imageSize.get() - 5);
+    }
+  };
 
   render(): VNode {
     return (
@@ -41,10 +65,10 @@ export class Loadsheet extends DisplayComponent<LoadsheetProps> {
           on={
             <>
               <div class="absolute right-16 top-6 flex overflow-hidden rounded-md bg-theme-secondary">
-                <Button onClick={this.handleFontDecrease} class="px-3 py-2 transition duration-100">
+                <Button onClick={this.handleFontIncrease} class="px-3 py-2 transition duration-100">
                   <i class="bi-zoom-out text-[30px]" />
                 </Button>
-                <Button onClick={this.handleFontIncrease} class="ml-2 px-3 py-2 transition duration-100">
+                <Button onClick={this.handleFontDecrease} class="ml-2 px-3 py-2 transition duration-100">
                   <i class="bi-zoom-in text-[30px]" />
                 </Button>
                 {/*<TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
@@ -75,8 +99,10 @@ export class Loadsheet extends DisplayComponent<LoadsheetProps> {
                 <div
                   ref={this.ofpRef}
                   class="image-theme"
-                  style={this.loadsheetStyle}
-                  dangerouslySetInnerHTML={{ __html: this.props.simbriefState.ofp.map((value) => value?.text) }}
+                  style={{
+                    'font-size': this.fontSize.map((val) => `${val}px`),
+                    'line-height': this.fontSize.map((val) => `${val}px`),
+                  }}
                 />
               </ScrollableContainer>
             </>
