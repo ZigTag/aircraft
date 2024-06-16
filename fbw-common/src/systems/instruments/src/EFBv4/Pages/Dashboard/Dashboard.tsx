@@ -361,8 +361,27 @@ export class ScrollableContainer extends DisplayComponent<ScrollableContainerPro
     return `${this.props.innerClass ? this.props.innerClass : ''} ${contentPadding}`;
   });
 
+  private mouseMoveHandler = (event: MouseEvent) => {
+    const dy = event.clientY - this.position.get().y;
+
+    this.container.instance.scrollTop = this.position.get().top - dy;
+  };
+
+  private mouseUpHandler = () => {
+    document.removeEventListener('mousemove', this.mouseMoveHandler);
+    document.removeEventListener('mouseup', this.mouseUpHandler);
+  };
+
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
+
+    this.container.instance.addEventListener('mousedown', (event) => {
+      debugger;
+      this.position.set({ top: this.container.instance.scrollTop, y: event.clientY });
+
+      document.addEventListener('mousemove', this.mouseMoveHandler);
+      document.addEventListener('mouseup', this.mouseUpHandler);
+    });
 
     // this.container.instance.addEventListener('mousedown', () => {
     //     this.container.instance.offsetTop = this.position.
