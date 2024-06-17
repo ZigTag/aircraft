@@ -44,7 +44,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
   }
 
   onAfterRender(_node: VNode): void {
-    SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 0.99);
+    SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 100);
 
     // Load user settings
     const settingsSaveManager = new FbwUserSettingsSaveManager(this.bus);

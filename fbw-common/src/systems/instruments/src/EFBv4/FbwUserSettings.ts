@@ -46,6 +46,23 @@ export enum SimBridgeMode {
   PermOff = 'PERM OFF',
 }
 
+export enum FlypadTimeDisplay {
+  Utc,
+  Local,
+  Both,
+}
+
+export enum FlypadTimeFormat {
+  Twelve,
+  TwentyFour,
+}
+
+export enum FlypadTheme {
+  Blue,
+  Dark,
+  Light,
+}
+
 const fbwUserSettings = [
   {
     name: 'fbwSettingsVersion',
@@ -180,6 +197,10 @@ const fbwUserSettings = [
     defaultValue: 'english' as string,
   },
   {
+    name: 'fbwEfbAutoOsk',
+    defaultValue: false as boolean,
+  },
+  {
     name: 'fbwEfbRemindersOrder',
     defaultValue: ['Weather', 'Pinned Charts', 'Maintenance', 'Checklists'].toString(),
   },
@@ -190,6 +211,30 @@ const fbwUserSettings = [
   {
     name: 'fbwEfbAutoBrightness',
     defaultValue: false as boolean,
+  },
+  {
+    name: 'fbwEfbEnableBattery',
+    defaultValue: true as boolean,
+  },
+  {
+    name: 'fbwEfbFlightProgressbar',
+    defaultValue: true as boolean,
+  },
+  {
+    name: 'fbwEfbColoredMetar',
+    defaultValue: true as boolean,
+  },
+  {
+    name: 'fbwEfbTimeDisplay',
+    defaultValue: FlypadTimeDisplay.Utc as FlypadTimeDisplay,
+  },
+  {
+    name: 'fbwEfbTimeFormat',
+    defaultValue: FlypadTimeFormat.TwentyFour as FlypadTimeFormat,
+  },
+  {
+    name: 'fbwEfbTheme',
+    defaultValue: FlypadTheme.Blue as FlypadTheme,
   },
 ] as const;
 
@@ -330,6 +375,10 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     },
     A32NX_EFB_LANGUAGE: { newSettingName: 'fbwEfbLanguage' },
     A32NX_EFB_KEYBOARD_LAYOUT_IDENT: { newSettingName: 'fbwEfbOskLanguage' },
+    A32NX_EFB_AUTO_OSK: {
+      newSettingName: 'fbwEfbAutoOsk',
+      valueMapper: (value) => value === '1',
+    },
     A32NX_REMINDER_WIDGET_ORDERED_KEYS: { newSettingName: 'fbwEfbRemindersOrder' },
     A32NX_EFB_BRIGHTNESS: {
       newSettingName: 'fbwEfbBrightness',
@@ -338,6 +387,52 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     A32NX_EFB_USING_AUTOBRIGHTNESS: {
       newSettingName: 'fbwEfbAutoBrightness',
       valueMapper: (value) => value === '1',
+    },
+    A32NX_EFB_BATTERY_LIFE_ENABLED: {
+      newSettingName: 'fbwEfbEnableBattery',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_EFB_SHOW_STATUSBAR_FLIGHTPROGRESS: {
+      newSettingName: 'fbwEfbFlightProgressbar',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_EFB_USING_COLOREDMETAR: {
+      newSettingName: 'fbwEfbColoredMetar',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_EFB_TIME_DISPLAYED: {
+      newSettingName: 'fbwEfbTimeDisplay',
+      valueMapper: (value) => {
+        if (value === 'utc') {
+          return FlypadTimeDisplay.Utc;
+        } else if (value === 'local') {
+          return FlypadTimeDisplay.Local;
+        } else {
+          return FlypadTimeDisplay.Both;
+        }
+      },
+    },
+    A32NX_EFB_TIME_FORMAT: {
+      newSettingName: 'fbwEfbTimeFormat',
+      valueMapper: (value) => {
+        if (value === '12') {
+          return FlypadTimeFormat.Twelve;
+        } else {
+          return FlypadTimeFormat.TwentyFour;
+        }
+      },
+    },
+    A32NX_EFB_UI_THEME: {
+      newSettingName: 'fbwEfbTheme',
+      valueMapper: (value) => {
+        if (value === 'blue') {
+          return FlypadTheme.Blue;
+        } else if (value === 'dark') {
+          return FlypadTheme.Dark;
+        } else {
+          return FlypadTheme.Light;
+        }
+      },
     },
   };
 
