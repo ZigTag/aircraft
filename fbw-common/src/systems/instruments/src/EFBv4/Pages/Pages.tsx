@@ -130,7 +130,11 @@ export class MainPage extends DisplayComponent<MainPageProps> {
   ];
 
   render(): VNode {
-    return <Switch pages={this.pages} activePage={this.props.activePage} class="mt-10 pr-6 pt-4" />;
+    return (
+      <div class="mt-10 grow pr-6 pt-4">
+        <Switch pages={this.pages} activePage={this.props.activePage} />
+      </div>
+    );
   }
 }
 
@@ -155,6 +159,14 @@ export class Switch extends AbstractUIView<SwitchProps> {
         });
       }, true),
     );
+  }
+
+  hide() {
+    this.forEachSwitchChild((switchChild) => switchChild.hide());
+  }
+
+  show() {
+    this.forEachSwitchChild((switchChild) => switchChild.show());
   }
 
   resume() {
@@ -183,7 +195,7 @@ export class Switch extends AbstractUIView<SwitchProps> {
     }
 
     FSComponent.visitNodes(this.vnode, (child) => {
-      if (child === this.vnode || child.instance instanceof HTMLElement) {
+      if (child === this.vnode || child.instance instanceof HTMLElement || child.instance === null) {
         return false;
       }
 
@@ -215,24 +227,22 @@ export class Switch extends AbstractUIView<SwitchProps> {
 
   private readonly class = MappedSubject.create(
     ([propClass]) => {
-      return twMerge('h-full w-full', propClass);
+      return twMerge('', propClass);
     },
     SubscribableUtils.toSubscribable(this.props.class, true),
   );
 
   render(): VNode {
     return (
-      <div ref={this.props.ref ?? this.rootRef} class={this.class}>
+      <>
         {this.props.pages.map(([page, component]) =>
           UIVIewUtils.isUIVIew(component.instance) ? (
             <UIVIewWrapper index={page} view={component} isVisible={this.pageVisibility(page)} />
           ) : (
-            <PageWrapper index={page} isVisible={this.pageVisibility(page)}>
-              {component}
-            </PageWrapper>
+            <PageWrapper index={page} isVisible={this.pageVisibility(page)} node={component} />
           ),
         )}
-      </div>
+      </>
     );
   }
 }
@@ -249,36 +259,41 @@ interface PageWrapperProps extends ComponentProps {
   index: number;
 
   isVisible: Subscribable<Boolean>;
+
+  node: VNode;
 }
 
 export class PageWrapper extends DisplayComponent<PageWrapperProps> implements SwitchChild {
-  private readonly rootRef = FSComponent.createRef<HTMLDivElement>();
-
   get index() {
     return this.props.index;
   }
 
+  private getVNodeDomNode(vnode: VNode): HTMLElement | SVGElement | null {
+    if (vnode.instance instanceof HTMLElement || vnode.instance instanceof SVGElement) {
+      return vnode.instance;
+    }
+
+    if (vnode.root && (vnode.root instanceof HTMLElement || vnode.root instanceof SVGElement)) {
+      return vnode.root;
+    }
+
+    if (vnode.children && vnode.children.length > 0) {
+      return this.getVNodeDomNode(vnode.children[0]);
+    }
+
+    return null;
+  }
+
   show() {
-    this.rootRef.instance.classList.toggle('view-hidden', false);
+    this.getVNodeDomNode(this.props.node)?.classList.toggle('view-hidden', false);
   }
 
   hide() {
-    this.rootRef.instance.classList.toggle('view-hidden', true);
+    this.getVNodeDomNode(this.props.node)?.classList.toggle('view-hidden', true);
   }
 
   render(): VNode {
-    return (
-      <div
-        ref={this.rootRef}
-        class="view-hidden"
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
-      >
-        {this.props.children}
-      </div>
-    );
+    return this.props.node;
   }
 }
 
@@ -300,12 +315,12 @@ class UIVIewWrapper extends AbstractUIView<UIVIewWrapperProps> implements Switch
   }
 
   show() {
-    this.view.rootRef.instance.classList.toggle('view-hidden', false);
+    this.view.show();
     this.view.resume();
   }
 
   hide() {
-    this.view.rootRef.instance.classList.toggle('view-hidden', true);
+    this.view.hide();
     this.view.pause();
   }
 

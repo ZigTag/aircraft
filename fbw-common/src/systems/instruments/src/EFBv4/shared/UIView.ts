@@ -2,7 +2,6 @@ import {
   DisplayComponent,
   EventBus,
   FSComponent,
-  NodeReference,
   Subject,
   Subscribable,
   Subscription,
@@ -16,14 +15,15 @@ import { FlypadClient } from '@shared/flypad-server';
  * EFB UI View
  */
 export interface UIVIew {
-  /** The root ref to the main element of the view */
-  readonly rootRef: NodeReference<HTMLElement>;
-
   /** Whether the object is a UIVIew */
   readonly isUIVIew: true;
 
   /** Whether the UIView is paused */
   readonly isPaused: Subscribable<boolean>;
+
+  hide(): void;
+
+  show(): void;
 
   /** Callback fired when the view is paused */
   pause(): void;
@@ -53,9 +53,6 @@ export class UIVIewUtils {
   }
 }
 
-/**
- * Abstract implementation of {@link UIVIew}
- */
 export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [EventBus, FlypadClient]> implements UIVIew {
   public readonly rootRef = FSComponent.createRef<HTMLElement>();
 
@@ -84,6 +81,22 @@ export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [Event
     super.onAfterRender(node);
 
     this.vnode = node;
+  }
+
+  hide() {
+    if (UIVIewUtils.isUIVIew(this.rootRef.instance)) {
+      this.rootRef.instance.hide();
+    } else {
+      this.rootRef.instance.classList.toggle('view-hidden', true);
+    }
+  }
+
+  show() {
+    if (UIVIewUtils.isUIVIew(this.rootRef.instance)) {
+      this.rootRef.instance.show();
+    } else {
+      this.rootRef.instance.classList.toggle('view-hidden', false);
+    }
   }
 
   pause(childFilter?: (child: UIVIew) => boolean): void {
