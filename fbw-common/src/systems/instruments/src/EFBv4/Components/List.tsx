@@ -1,7 +1,6 @@
 import {
   AbstractSubscribableArray,
   ArraySubject,
-  DisplayComponent,
   FSComponent,
   RenderPosition,
   Subscribable,
@@ -16,7 +15,7 @@ export interface ListProps<T> {
 
   render: (item: T, index: number) => VNode;
 
-  class: string;
+  class?: string;
 }
 
 export class List<T> extends AbstractUIView<ListProps<T>> {
@@ -56,7 +55,7 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
             const children = Array.from(this.rootRef.instance.children);
 
             for (let i = 0; i < children.length; i++) {
-              this.removeItem(i);
+              this.removeItem(0);
             }
           }
         }

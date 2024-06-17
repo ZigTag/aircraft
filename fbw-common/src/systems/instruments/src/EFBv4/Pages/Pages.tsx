@@ -24,7 +24,8 @@ import { twMerge } from 'tailwind-merge';
 import { ISimbriefData, simbriefDataParser } from '../../EFB/Apis/Simbrief';
 import { FlypadClient } from '@shared/flypad-server/FlypadClient';
 import { DeviceFlowParams, User } from 'navigraph/auth';
-import { navigraphAuth } from '../../navigraph';
+import { navigraphAuth, navigraphCharts } from '../../navigraph';
+import { Chart } from 'navigraph/charts';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -49,7 +50,32 @@ export class SimbriefState {
   }
 }
 
-export class NavigationState {}
+export class NavigationState {
+  private readonly _selectedChart = Subject.create<Chart | null>(null);
+
+  public readonly selectedChart: Subscribable<Chart | null> = this._selectedChart;
+  public setSelectedChart(chart: Chart): void {
+    this._selectedChart.set(chart);
+  }
+
+  public readonly selectedChartImage = Subject.create<Blob | null>(null);
+
+  constructor() {
+    this.selectedChart.sub(async (chart) => {
+      if (!chart) {
+        return;
+      }
+
+      const blob = await navigraphCharts.getChartImage({ chart: chart, theme: 'dark' });
+
+      if (!blob) {
+        return;
+      }
+
+      this.selectedChartImage.set(blob);
+    });
+  }
+}
 
 export class NavigraphAuthState {
   private readonly _initialized = Subject.create(false);
@@ -88,7 +114,14 @@ export class MainPage extends DisplayComponent<MainPageProps> {
     [PageEnum.MainPage.Dispatch, <Dispatch simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Ground, <Ground />],
     [PageEnum.MainPage.Performance, <Performance />],
-    [PageEnum.MainPage.Navigation, <Navigation simbriefState={this.simbriefState} />],
+    [
+      PageEnum.MainPage.Navigation,
+      <Navigation
+        simbriefState={this.simbriefState}
+        navigationState={this.navigationState}
+        navigraphState={this.navigraphAuthState}
+      />,
+    ],
     [PageEnum.MainPage.ATC, <ATC />],
     [PageEnum.MainPage.Failures, <Failures />],
     [PageEnum.MainPage.Checklists, <Checklists />],
