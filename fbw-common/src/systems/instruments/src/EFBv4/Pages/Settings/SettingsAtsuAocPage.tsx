@@ -4,13 +4,13 @@ import { SettingsPage } from './Settings';
 import { t } from '../../Components/LocalizedText';
 
 export interface SettingsAtsuAocPageProps {
-  return_home: () => any;
+  returnHome: () => any;
 }
 
 export class SettingsAtsuAocPage extends AbstractUIView<SettingsAtsuAocPageProps> {
   render(): VNode | null {
     return (
-      <SettingsPage title={t('Settings.AtsuAoc.Title')} return_home={this.props.return_home} ref={this.rootRef}>
+      <SettingsPage title={t('Settings.AtsuAoc.Title')} returnHome={this.props.returnHome} ref={this.rootRef}>
         <span />
       </SettingsPage>
     );

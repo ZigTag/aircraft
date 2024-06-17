@@ -25,7 +25,7 @@ export class Selector extends DisplayComponent<SelectorProps> {
             <NavButton
               inactiveClass="flex items-center bg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
               activeClass={twMerge(
-                'flex items-center px-6 py-2 bg-theme-accent bg-opacity-100',
+                'flex items-center bg-theme-accent bg-opacity-100 px-6 py-2',
                 this.props.activeClass,
               )}
               page={page}

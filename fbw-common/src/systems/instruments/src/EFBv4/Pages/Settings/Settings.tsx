@@ -34,43 +34,46 @@ export class Settings extends AbstractUIView<SettingsProps> {
       PageEnum.SettingsPage.AircraftOptionsPinPrograms,
       <SettingsAircraftOptionsPinProgramsPage
         settings={this.settings}
-        return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],
     [
       PageEnum.SettingsPage.SimOptions,
-      <SettingsSimOptionsPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsSimOptionsPage returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
     ],
     [
       PageEnum.SettingsPage.Realism,
-      <SettingsRealismPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsRealismPage returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
     ],
     [
       PageEnum.SettingsPage.ThirdPartyOptions,
       <SettingsThirdPartyOptionsPage
         settings={this.settings}
         navigraphAuthState={this.props.navigraphAuthState}
-        return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],
     [
       PageEnum.SettingsPage.AtsuAoc,
-      <SettingsAtsuAocPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsAtsuAocPage returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
     ],
     [
       PageEnum.SettingsPage.Audio,
       <SettingsAudioPage
         settings={this.settings}
-        return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],
     [
       PageEnum.SettingsPage.flyPad,
-      <SettingsFlyPadPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsFlyPadPage
+        settings={this.settings}
+        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+      />,
     ],
     [
       PageEnum.SettingsPage.About,
-      <SettingsAboutPage return_home={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsAboutPage returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
     ],
   ];
 
@@ -122,7 +125,7 @@ class SettingsIndex extends AbstractUIView<SettingsIndexProps> {
 }
 
 export interface SettingsPageProps {
-  return_home: () => any;
+  returnHome: () => any;
   title: VNode;
   ref: NodeReference<HTMLElement>;
 }
@@ -131,7 +134,7 @@ export class SettingsPage extends AbstractUIView<SettingsPageProps> {
   render(): VNode | null {
     return (
       <div ref={this.props.ref}>
-        <Button onClick={this.props.return_home} class="bg-inherit hover:text-theme-highlight" unstyled>
+        <Button onClick={this.props.returnHome} class="bg-inherit hover:text-theme-highlight" unstyled>
           <PageTitle>
             {t('Settings.Title')}
             {' &gt; '}

@@ -19,7 +19,7 @@ export interface SettingsThirdPartyOptionsPageProps {
 
   navigraphAuthState: NavigraphAuthState;
 
-  return_home: () => any;
+  returnHome: () => any;
 }
 
 export class SettingsThirdPartyOptionsPage extends AbstractUIView<SettingsThirdPartyOptionsPageProps> {
@@ -35,11 +35,7 @@ export class SettingsThirdPartyOptionsPage extends AbstractUIView<SettingsThirdP
 
   render(): VNode | null {
     return (
-      <SettingsPage
-        title={t('Settings.ThirdPartyOptions.Title')}
-        return_home={this.props.return_home}
-        ref={this.rootRef}
-      >
+      <SettingsPage title={t('Settings.ThirdPartyOptions.Title')} returnHome={this.props.returnHome} ref={this.rootRef}>
         <Switch pages={this.pages} activePage={Subject.create(PageEnum.ThirdPartySettingsPage.Index)} />
       </SettingsPage>
     );

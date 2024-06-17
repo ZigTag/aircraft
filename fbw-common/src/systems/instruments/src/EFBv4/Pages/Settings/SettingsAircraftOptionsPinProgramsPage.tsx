@@ -7,14 +7,14 @@ import { SettingsPage } from './Settings';
 
 export interface SettingsAircraftOptionsPinProgramsPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
-  return_home: () => any;
+  returnHome: () => any;
 }
 
 export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<SettingsAircraftOptionsPinProgramsPageProps> {
   render(): VNode | null {
     return (
       <SettingsPage
-        return_home={this.props.return_home}
+        returnHome={this.props.returnHome}
         title={t('Settings.AircraftOptionsPinPrograms.Title')}
         ref={this.rootRef}
       >

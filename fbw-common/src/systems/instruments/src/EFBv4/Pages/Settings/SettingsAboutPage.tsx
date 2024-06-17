@@ -20,7 +20,7 @@ interface CommunityPanelPlayerData {
 }
 
 export interface SettingsAboutPageProps {
-  return_home: () => any;
+  returnHome: () => any;
 }
 
 export class SettingsAboutPage extends AbstractUIView<SettingsAboutPageProps> {
@@ -54,7 +54,7 @@ export class SettingsAboutPage extends AbstractUIView<SettingsAboutPageProps> {
 
   render(): VNode | null {
     return (
-      <SettingsPage title={t('Settings.About.Title')} return_home={this.props.return_home} ref={this.rootRef}>
+      <SettingsPage title={t('Settings.About.Title')} returnHome={this.props.returnHome} ref={this.rootRef}>
         <div ref={this.rootRef} class="pointer-events-none inset-y-0 my-auto flex flex-col justify-center px-16">
           <div class="flex flex-row items-center">
             <div class="flex flex-col">
