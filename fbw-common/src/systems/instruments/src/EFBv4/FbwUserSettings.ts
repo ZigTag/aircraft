@@ -179,6 +179,14 @@ const fbwUserSettings = [
     name: 'fbwEfbRemindersOrder',
     defaultValue: ['Weather', 'Pinned Charts', 'Maintenance', 'Checklists'].toString(),
   },
+  {
+    name: 'fbwEfbBrightness',
+    defaultValue: 0 as number,
+  },
+  {
+    name: 'fbwEfbAutoBrightness',
+    defaultValue: false as boolean,
+  },
 ] as const;
 
 export type FbwUserSettingsDefs = {
@@ -318,6 +326,14 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     },
     A32NX_EFB_LANGUAGE: { newSettingName: 'fbwEfbLanguage' },
     A32NX_REMINDER_WIDGET_ORDERED_KEYS: { newSettingName: 'fbwEfbRemindersOrder' },
+    A32NX_EFB_BRIGHTNESS: {
+      newSettingName: 'fbwEfbBrightness',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_EFB_USING_AUTOBRIGHTNESS: {
+      newSettingName: 'fbwEfbAutoBrightness',
+      valueMapper: (value) => value === '1',
+    },
   };
 
   constructor(private bus: EventBus) {

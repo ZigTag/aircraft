@@ -23,6 +23,7 @@ import { Button } from '../../Components/Button';
 import { flypadClientContext } from '../../Contexts';
 import { Pages, SimbriefState, Switch } from '../Pages';
 import { ISimbriefData } from '../../../EFB/Apis/Simbrief';
+import { twMerge } from 'tailwind-merge';
 
 interface ScrollableContainerProps extends ComponentProps {
   height: number;
@@ -32,6 +33,7 @@ interface ScrollableContainerProps extends ComponentProps {
   onScroll?: (scrollTop: number) => void;
   onScrollStop?: (scrollTop: number) => void;
   nonRigid?: boolean;
+  nonRigidWidth?: boolean;
 }
 
 export interface FlightWidgetProps {
@@ -381,17 +383,17 @@ export class ScrollableContainer extends DisplayComponent<ScrollableContainerPro
       document.addEventListener('mousemove', this.mouseMoveHandler);
       document.addEventListener('mouseup', this.mouseUpHandler);
     });
-
-    // this.container.instance.addEventListener('mousedown', () => {
-    //     this.container.instance.offsetTop = this.position.
-    // })
   }
 
   render(): VNode {
     return (
       <div
         ref={this.container}
-        class={`scrollbar w-full overflow-y-auto ${this.props.class}`}
+        class={twMerge(
+          `scrollbar w-full`,
+          this.props.class,
+          !this.props.nonRigidWidth ? 'overflow-y-auto' : 'overflow-y-visible',
+        )}
         style={this.props.nonRigid ? { maxHeight: `${this.props.height}rem` } : { height: `${this.props.height}rem` }}
       >
         <div class={this.innerClass} ref={this.content}>

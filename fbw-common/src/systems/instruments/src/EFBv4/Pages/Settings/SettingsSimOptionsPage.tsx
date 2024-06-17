@@ -4,13 +4,13 @@ import { SettingsPage } from './Settings';
 import { t } from '../../Components/LocalizedText';
 
 export interface SettingsSimOptionsPageProps {
-  return_home: () => any;
+  returnHome: () => any;
 }
 
 export class SettingsSimOptionsPage extends AbstractUIView<SettingsSimOptionsPageProps> {
   render(): VNode | null {
     return (
-      <SettingsPage title={t('Settings.SimOptions.Title')} return_home={this.props.return_home} ref={this.rootRef}>
+      <SettingsPage title={t('Settings.SimOptions.Title')} returnHome={this.props.returnHome} ref={this.rootRef}>
         <span />
       </SettingsPage>
     );

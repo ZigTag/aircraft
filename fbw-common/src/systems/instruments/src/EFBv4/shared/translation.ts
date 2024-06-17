@@ -43,6 +43,8 @@ import vi from '@localization/data/vi.json';
 import zhHansCN from '@localization/data/zh-Hans-CN.json';
 import zhHantHK from '@localization/data/zh-Hant-HK.json';
 import zhHantTW from '@localization/data/zh-Hant-TW.json';
+import { FbwUserSettings } from '../FbwUserSettings';
+import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 console.log('Initializing Translation');
 
@@ -217,20 +219,20 @@ export class LocalizedString implements MutableSubscribable<string>, Subscriptio
 
   private readonly locKey = Subject.create(this.locKeyProp);
 
-  private readonly value = Subject.create(defaultLanguage.get(this.locKey.get()));
+  private readonly value = Subject.create(defaultLanguage.get(this.locKey.get())!);
 
-  private readonly nxDataStoreSubscriptionCancelFn: () => void;
+  private readonly languageSettingSubscription: Subscription;
 
   private readonly updateCallback: MappedSubject<any, any>;
 
   private constructor(private readonly locKeyProp: string) {
-    this.nxDataStoreSubscriptionCancelFn = NXDataStore.subscribe('EFB_LANGUAGE', (_, value) => {
-      this.efbLanguage.set(value);
-    });
+    this.languageSettingSubscription = FbwUserSettings.getManager(EFB_EVENT_BUS)
+      .getSetting('fbwEfbLanguage')
+      .pipe(this.efbLanguage);
 
     this.updateCallback = MappedSubject.create(
       ([efbLanguage, locKey]) => {
-        this.value.set(allLanguagesMap.get(efbLanguage).get(locKey));
+        this.value.set(allLanguagesMap.get(efbLanguage)!.get(locKey)!);
       },
       this.efbLanguage,
       this.locKey,
@@ -288,11 +290,11 @@ export class LocalizedString implements MutableSubscribable<string>, Subscriptio
 
   destroy() {
     this.isAlive = false;
-    this.nxDataStoreSubscriptionCancelFn();
+    this.languageSettingSubscription.destroy();
     this.updateCallback.destroy();
   }
 
-  readonly isMutableSubscribable: true;
+  readonly isMutableSubscribable = true;
 
   set(value: string): void {
     this.locKey.set(value);

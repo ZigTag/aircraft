@@ -7,13 +7,13 @@ import { SettingsPage } from './Settings';
 
 export interface SettingsAudioPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
-  return_home: () => any;
+  returnHome: () => any;
 }
 
 export class SettingsAudioPage extends AbstractUIView<SettingsAudioPageProps> {
   render(): VNode | null {
     return (
-      <SettingsPage title={t('Settings.Audio.Title')} return_home={this.props.return_home} ref={this.rootRef}>
+      <SettingsPage title={t('Settings.Audio.Title')} returnHome={this.props.returnHome} ref={this.rootRef}>
         <SliderSettingsItem
           setting={this.props.settings.getSetting('fbwAudioLevelExteriorMaster')}
           settingName={t('Settings.Audio.ExteriorMasterVolume')}

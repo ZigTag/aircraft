@@ -6,6 +6,8 @@ import {
   UserSetting,
   EventBus,
   UserSettingValue,
+  Subject,
+  Subscribable,
 } from '@microsoft/msfs-sdk';
 import { Slider } from '../../../Components/Slider';
 import { Toggle } from '../../../Components/Toggle';
@@ -13,6 +15,10 @@ import { SimpleInput } from '../../../Components/SimpleInput';
 import { busContext } from '../../../Contexts';
 import { t } from '../../../Components/LocalizedText';
 import { Selector } from '../../../Components/Selector';
+import { ScrollableContainer } from '../../Dashboard/Dashboard';
+import { twMerge } from 'tailwind-merge';
+import { Pages, SwitchOn } from '../../Pages';
+import { Button } from '../../../Components/Button';
 
 export interface SettingsItemProps extends ComponentProps {
   settingName: string | VNode;
@@ -160,6 +166,86 @@ export class ChoiceSettingsItem<T extends number> extends DisplayComponent<Choic
           tabs={Object.entries(this.props.choices).map(([k, v]) => [parseInt(k), v as VNode])}
           activePage={this.props.setting}
         />
+      </SettingsItem>
+    );
+  }
+}
+
+export interface SelectSettingsItemProps<T extends string> extends ValueSettingsItemProps<T> {
+  choices: [page: T, component: VNode][];
+  dropdownOnTop: boolean;
+  forceShowAll: boolean;
+  activeSettingName: string | VNode | Subscribable<string>;
+  height?: number;
+  width?: number;
+}
+
+export class SelectSettingsItem<T extends string> extends DisplayComponent<SelectSettingsItemProps<T>> {
+  private readonly showDropdown = Subject.create(false);
+
+  private dropdownClass = this.showDropdown.map((showDropdown) =>
+    twMerge(
+      `relative cursor-pointer rounded-md border-2 border-theme-accent bg-inherit`,
+      showDropdown &&
+        (this.props.dropdownOnTop ? 'rounded-t-none border-t-theme-body' : 'rounded-b-none border-b-theme-body'),
+    ),
+  );
+
+  private chevronClass = this.showDropdown.map((showDropdown) =>
+    twMerge(`bi-chevron-down inset-y-0 right-3 h-full duration-100`, showDropdown && '-rotate-180'),
+  );
+
+  private handleDropdown = () => {
+    this.showDropdown.set(!this.showDropdown.get());
+  };
+
+  private handleChoiceClicked = (key: T) => {
+    this.props.setting.set(key);
+    this.showDropdown.set(!this.showDropdown.get());
+  };
+
+  render(): VNode | null {
+    return (
+      <SettingsItem {...this.props}>
+        <div class={this.dropdownClass} style={{ width: `${this.props.width ?? 300}px` }}>
+          <Button
+            class="relative flex w-full justify-between bg-inherit px-3 py-1.5"
+            onClick={this.handleDropdown}
+            unstyled
+          >
+            <p class="text-left">{this.props.activeSettingName}</p>
+            <i class={this.chevronClass} size={20} />
+          </Button>
+          <SwitchOn
+            condition={this.showDropdown}
+            on={
+              <div
+                class={twMerge(
+                  `absolute -inset-x-0.5 z-10 flex border-2 border-theme-accent bg-theme-body pb-2 pr-2`,
+                  this.props.dropdownOnTop
+                    ? 'top-0 -translate-y-full flex-col-reverse rounded-t-md border-b-0'
+                    : 'bottom-0 translate-y-full flex-col rounded-b-md border-t-0',
+                )}
+              >
+                <ScrollableContainer height={this.props.height || 32} class="relative" nonRigidWidth>
+                  {this.props.choices.map(
+                    ([option, displayVal]) =>
+                      (this.props.setting.get() !== option || this.props.forceShowAll) && (
+                        <Button
+                          key={option}
+                          class="flex w-full bg-inherit px-3 py-1.5 text-left transition duration-300 hover:bg-theme-highlight/5 hover:text-theme-body"
+                          onClick={() => this.handleChoiceClicked(option)}
+                          unstyled
+                        >
+                          {displayVal}
+                        </Button>
+                      ),
+                  )}
+                </ScrollableContainer>
+              </div>
+            }
+          />
+        </div>
       </SettingsItem>
     );
   }
