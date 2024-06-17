@@ -19,7 +19,7 @@ export class Toggle extends DisplayComponent<ToggleProps> {
 
   private readonly thumbClassName = this.props.value?.map((value) => {
     return twMerge(
-      'mx-1.5 size-6 -translate-x-[1px] rounded-full bg-theme-unselected transition duration-200',
+      'mx-1.5 size-6 translate-x-[-1px] rounded-full bg-theme-unselected transition duration-200',
       value && 'translate-x-5 !bg-theme-highlight',
     );
   });
