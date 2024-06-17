@@ -78,7 +78,7 @@ export class Failures extends AbstractUIView {
     return (
       <div ref={this.rootRef} class="flex flex-col">
         <div class="flex justify-between">
-          <PageTitle>Failures</PageTitle>
+          <PageTitle>{t('Failures.Title')}</PageTitle>
 
           <div class="flex h-10 flex-row items-center space-x-2 rounded-md bg-yellow-400 px-4 py-1">
             <i class="bi-info-circle-fill text-black" />

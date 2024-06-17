@@ -5,6 +5,7 @@ import { t } from '../../Components/LocalizedText';
 import { SelectSettingsItem } from './Components/SettingItem';
 import { languageOptions } from '../../shared/translation';
 import { FbwUserSettingsDefs } from '../../FbwUserSettings';
+import { keyboardLayoutOptions } from '../../Components/KeyboardWrapper';
 
 export interface SettingsFlyPadPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
@@ -13,6 +14,7 @@ export interface SettingsFlyPadPageProps {
 
 export class SettingsFlyPadPage extends AbstractUIView<SettingsFlyPadPageProps> {
   private readonly languageSetting = this.props.settings.getSetting('fbwEfbLanguage');
+  private readonly oskLanguageSetting = this.props.settings.getSetting('fbwEfbOskLanguage');
 
   render(): VNode | null {
     return (
@@ -25,6 +27,17 @@ export class SettingsFlyPadPage extends AbstractUIView<SettingsFlyPadPageProps> 
           settingName={t('Settings.flyPad.Language')}
           activeSettingName={this.languageSetting.map(
             (language) => languageOptions.find((it) => it.langCode === language)!.alias,
+          )}
+        />
+
+        <SelectSettingsItem
+          choices={keyboardLayoutOptions.map((option) => [option.name, <p>{option.alias}</p>])}
+          dropdownOnTop={false}
+          forceShowAll={true}
+          setting={this.oskLanguageSetting}
+          settingName={t('Settings.flyPad.Language')}
+          activeSettingName={this.oskLanguageSetting.map(
+            (language) => keyboardLayoutOptions.find((it) => it.name === language)!.alias,
           )}
         />
       </SettingsPage>

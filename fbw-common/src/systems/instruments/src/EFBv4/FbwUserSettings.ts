@@ -176,6 +176,10 @@ const fbwUserSettings = [
     defaultValue: 'en' as string,
   },
   {
+    name: 'fbwEfbOskLanguage',
+    defaultValue: 'english' as string,
+  },
+  {
     name: 'fbwEfbRemindersOrder',
     defaultValue: ['Weather', 'Pinned Charts', 'Maintenance', 'Checklists'].toString(),
   },
@@ -325,6 +329,7 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
       valueMapper: (value) => value === '1',
     },
     A32NX_EFB_LANGUAGE: { newSettingName: 'fbwEfbLanguage' },
+    A32NX_EFB_KEYBOARD_LAYOUT_IDENT: { newSettingName: 'fbwEfbOskLanguage' },
     A32NX_REMINDER_WIDGET_ORDERED_KEYS: { newSettingName: 'fbwEfbRemindersOrder' },
     A32NX_EFB_BRIGHTNESS: {
       newSettingName: 'fbwEfbBrightness',
