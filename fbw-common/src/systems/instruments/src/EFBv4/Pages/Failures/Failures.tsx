@@ -293,7 +293,7 @@ class FailureCard extends DisplayComponent<FailureCardProps> {
         color = isActive ? 'border-utility-red' : 'border-utility-green';
       }
 
-      return twMerge(`bg-theme-accent flex rounded-md border-t-4 px-2 pb-2 pt-3 text-left`, color, this.props.class);
+      return twMerge(`flex rounded-md border-t-4 bg-theme-accent px-2 pb-2 pt-3 text-left`, color, this.props.class);
     },
     this.props.isActive,
     this.props.isChanging,

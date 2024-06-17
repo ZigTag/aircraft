@@ -264,7 +264,7 @@ export const ChartViewer = () => {
             {pagesViewable > 1 && (
               <div className="absolute left-6 top-6 z-40 flex flex-row items-center overflow-hidden rounded-md">
                 <div
-                  className={`bg-theme-secondary/40 flex h-14 cursor-pointer flex-row items-center justify-center transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${currentPage === 1 && 'pointer-events-none opacity-50'}`}
+                  className={`flex h-14 cursor-pointer flex-row items-center justify-center bg-theme-secondary/40 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${currentPage === 1 && 'pointer-events-none opacity-50'}`}
                   onClick={() => dispatch(editTabProperty({ tab: currentTab, currentPage: currentPage - 1 }))}
                 >
                   <Dash size={40} />
@@ -286,7 +286,7 @@ export const ChartViewer = () => {
                 />
                 <div className="flex h-14 shrink-0 items-center bg-theme-secondary px-2">{`of ${pagesViewable}`}</div>
                 <div
-                  className={`bg-theme-secondary/40 flex h-14 cursor-pointer flex-row items-center justify-center transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${currentPage === pagesViewable && 'pointer-events-none opacity-50'}`}
+                  className={`flex h-14 cursor-pointer flex-row items-center justify-center bg-theme-secondary/40 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${currentPage === pagesViewable && 'pointer-events-none opacity-50'}`}
                   onClick={() => dispatch(editTabProperty({ tab: currentTab, currentPage: currentPage + 1 }))}
                 >
                   <Plus size={40} />
