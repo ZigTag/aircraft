@@ -236,7 +236,7 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
 
   render(): VNode {
     return (
-      <div class="fixed z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text">
+      <div class="z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text">
         <p>
           {this.dayName} {this.monthName} {this.dayOfMonth.map((value) => value.toFixed())}
         </p>

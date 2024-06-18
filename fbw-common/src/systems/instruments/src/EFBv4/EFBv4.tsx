@@ -63,7 +63,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
 
     FSComponent.render(
       <flypadClientContext.Provider value={flypadClient}>
-        <div ref={this.renderRoot2} style={{ display: 'none' }} />
+        <div ref={this.renderRoot2} class="flex w-full flex-col items-stretch" />
       </flypadClientContext.Provider>,
       this.renderRoot.instance,
     );
@@ -71,11 +71,13 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
     FSComponent.render(
       <>
         <Statusbar batteryLevel={this.batteryLevel} isCharging={this.isCharging} />
-        <Navbar activePage={this.currentPage} />
-        <MainPage activePage={this.currentPage} flypadClient={flypadClient} />
+        <div class="flex grow items-stretch">
+          <Navbar activePage={this.currentPage} />
+          <MainPage activePage={this.currentPage} flypadClient={flypadClient} />
+        </div>
       </>,
       this.renderRoot2.instance,
-      RenderPosition.After,
+      RenderPosition.In,
     );
   }
 

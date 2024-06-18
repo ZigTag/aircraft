@@ -44,7 +44,7 @@ export class Navbar extends DisplayComponent<NavbarProps> {
   render(): VNode {
     return (
       <div class="flex w-32 shrink-0 flex-col justify-between self-stretch py-6">
-        <div class="mt-9 flex flex-col items-center space-y-4">
+        <div class="mAX-H-F flex flex-col items-center space-y-4">
           <NavIcon page={PageEnum.MainPage.Dashboard} activePage={this.props.activePage}>
             <img class="w-[35px]" src={FbwTail} alt="FbwTail" />
           </NavIcon>

@@ -131,7 +131,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
 
   render(): VNode {
     return (
-      <div class="mt-10 grow pr-6 pt-4">
+      <div class="h-full grow pr-6 pt-4">
         <Switch pages={this.pages} activePage={this.props.activePage} />
       </div>
     );

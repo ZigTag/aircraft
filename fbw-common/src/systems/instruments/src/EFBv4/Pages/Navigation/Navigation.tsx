@@ -11,6 +11,7 @@ import { twMerge } from 'tailwind-merge';
 import { List } from '../../Components/List';
 import { Chart, ChartCategory } from 'navigraph/charts';
 import { navigraphCharts } from '../../../navigraph';
+import { ChartViewer } from './Components/ChartViewer';
 
 export interface NavigationProps {
   simbriefState: SimbriefState;
@@ -31,13 +32,12 @@ export class Navigation extends DisplayComponent<NavigationProps> {
 
   render(): VNode {
     return (
-      <div>
+      <div class="h-full">
         <div class="flex justify-between">
           <PageTitle>{t('NavigationAndCharts.Title')}</PageTitle>
           <Selector tabs={this.tabs} activePage={this.activePage} />
         </div>
         <Switch
-          class="mt-4"
           activePage={this.activePage}
           pages={[
             [
@@ -117,7 +117,7 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
 
   render(): VNode | null {
     return (
-      <div class="flex">
+      <div class="flex h-full">
         <SwitchOn
           condition={this.isFullscreen.map((value) => !value)}
           on={
@@ -189,9 +189,7 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
           }
         />
 
-        <img
-          src={this.props.navigationState.selectedChartImage.map((it) => (it ? URL.createObjectURL(it) : undefined))}
-        />
+        <ChartViewer shownChart={this.props.navigationState.selectedChart} />
       </div>
     );
   }
@@ -346,19 +344,6 @@ class ChartCard extends DisplayComponent<ChartCardProps> {
           </span>
         </div>
       </div>
-    );
-  }
-}
-
-export class ChartViewer extends DisplayComponent<any> {
-  render(): VNode | null {
-    return (
-      <>
-        {/*<div
-        class={`relative ${!this.isFullScreen && 'ml-6 rounded-l-none'}`}
-        style={{ width: `${this.isFullScreen ? '1278px' : '804px'}` }}
-      ></div>*/}
-      </>
     );
   }
 }
