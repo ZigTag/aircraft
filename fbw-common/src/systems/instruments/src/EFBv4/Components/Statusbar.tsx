@@ -14,6 +14,8 @@ import { PageEnum } from '../shared/common';
 import { Switch } from '../Pages/Pages';
 import { busContext } from '../Contexts';
 import { EFBSimvars } from '../EFBSimvarPublisher';
+import { FbwUserSettings, FlypadTimeDisplay, FlypadTimeFormat } from '../FbwUserSettings';
+import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 const BATTERY_LEVEL_WARNING = 8;
 const BATTERY_LEVEL_0 = 13;
@@ -120,6 +122,8 @@ interface StatusbarProps extends ComponentProps {
 }
 
 export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
+  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
+
   public override contextType = [busContext] as const;
 
   private readonly currentUTC = ConsumerSubject.create(null, 0);
@@ -136,9 +140,9 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
 
   private readonly monthName: LocalizedString = LocalizedString.create('StatusBar.Jan');
 
-  private readonly timezones: Subject<string> = Subject.create('utc');
+  private readonly timezones = this.settings.getSetting('fbwEfbTimeDisplay');
 
-  private readonly timeFormat: Subject<string> = Subject.create('24');
+  private readonly timeFormat = this.settings.getSetting('fbwEfbTimeFormat');
 
   private readonly timeDisplayed = MappedSubject.create(
     ([currentUTC, currentLocalTime, timezones, timeFormat]) => {
@@ -149,7 +153,7 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
           .toString()
           .padStart(2, '0')}Z`;
       const getLocalFormattedTime = (seconds: number) => {
-        if (timeFormat === '24') {
+        if (timeFormat === FlypadTimeFormat.TwentyFour) {
           return `${Math.floor(seconds / 3600)
             .toString()
             .padStart(2, '0')}:${Math.floor((seconds % 3600) / 60)
@@ -165,10 +169,10 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
       const currentUTCString = getZuluFormattedTime(currentUTC);
       const currentLocalTimeString = getLocalFormattedTime(currentLocalTime);
 
-      if (timezones === 'utc') {
+      if (timezones === FlypadTimeDisplay.Utc) {
         return currentUTCString;
       }
-      if (timezones === 'local') {
+      if (timezones === FlypadTimeDisplay.Local) {
         return currentLocalTimeString;
       }
       return `${currentUTCString} / ${currentLocalTimeString}`;
@@ -241,7 +245,7 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
           {this.dayName} {this.monthName} {this.dayOfMonth.map((value) => value.toFixed())}
         </p>
 
-        <div class="absolute inset-x-0 mx-auto flex w-min flex-row items-center justify-center space-x-4">
+        <div class="absolute inset-x-0 mx-auto flex w-max flex-row items-center justify-center space-x-4">
           <p>{this.timeDisplayed}</p>
         </div>
 

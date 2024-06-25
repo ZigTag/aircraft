@@ -4,7 +4,7 @@ import { t } from '../../Components/LocalizedText';
 import { Selector } from '../../Components/Selector';
 import { NavigationState, NavigraphAuthState, Pages, SimbriefState, Switch, SwitchIf, SwitchOn } from '../Pages';
 import { PageEnum } from '../../shared/common';
-import { NavigraphClient } from '@shared/navigraph';
+import { NavigraphKeys } from '@shared/navigraph';
 import { SimpleInput } from '../../Components/SimpleInput';
 import { ScrollableContainer } from '../Dashboard/Dashboard';
 import { twMerge } from 'tailwind-merge';
@@ -81,7 +81,7 @@ export class NavigraphPage extends DisplayComponent<NavigraphPageProps> {
 
 export class NavigraphAuthWrapper extends DisplayComponent<any> {
   render(): VNode | null {
-    return NavigraphClient.hasSufficientEnv ? (
+    return NavigraphKeys.hasSufficientEnv ? (
       <>{this.props.children}</>
     ) : (
       <div class="mr-4 flex h-content-section-reduced w-full items-center justify-center overflow-x-hidden">

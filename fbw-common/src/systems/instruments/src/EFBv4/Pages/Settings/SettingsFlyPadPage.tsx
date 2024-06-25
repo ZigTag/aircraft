@@ -2,10 +2,23 @@ import { AbstractUIView } from '../../shared/UIView';
 import { FSComponent, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { SettingsPage } from './Settings';
 import { t } from '../../Components/LocalizedText';
-import { SelectSettingsItem, SliderSettingsItem, ToggleSettingsItem } from './Components/SettingItem';
+import {
+  ChoiceSettingsItem,
+  SelectSettingsItem,
+  SettingsItem,
+  SliderSettingsItem,
+  ToggleSettingsItem,
+} from './Components/SettingItem';
 import { languageOptions } from '../../shared/translation';
-import { FbwUserSettingsDefs } from '../../FbwUserSettings';
+import {
+  FbwUserSettingsDefs,
+  FlypadTheme,
+  FlypadTimeDisplay,
+  FlypadTimeFormat,
+  IsisBaroUnit,
+} from '../../FbwUserSettings';
 import { keyboardLayoutOptions } from '../../Components/KeyboardWrapper';
+import { Selector } from '../../Components/Selector';
 
 export interface SettingsFlyPadPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
@@ -13,6 +26,27 @@ export interface SettingsFlyPadPageProps {
 }
 
 export class SettingsFlyPadPage extends AbstractUIView<SettingsFlyPadPageProps> {
+  private _themeHandler = this.props.settings
+    .getSetting('fbwEfbTheme')
+    .map((theme) => {
+      switch (theme) {
+        case FlypadTheme.Light:
+          return 'light';
+        case FlypadTheme.Dark:
+          return 'dark';
+        default:
+          return 'blue';
+      }
+    })
+    .sub((theme) => {
+      document.documentElement.classList.forEach((className) => {
+        if (className.includes('theme-')) {
+          document.documentElement.classList.remove(className);
+        }
+      });
+      document.documentElement.classList.add(`theme-${theme}`);
+    });
+
   private readonly languageSetting = this.props.settings.getSetting('fbwEfbLanguage');
   private readonly oskLanguageSetting = this.props.settings.getSetting('fbwEfbOskLanguage');
 
@@ -58,6 +92,62 @@ export class SettingsFlyPadPage extends AbstractUIView<SettingsFlyPadPageProps> 
           valueMax={100}
           setting={this.props.settings.getSetting('fbwEfbBrightness')}
           settingName={t('Settings.flyPad.Brightness')}
+        />
+
+        <ToggleSettingsItem
+          setting={this.props.settings.getSetting('fbwEfbEnableBattery')}
+          settingName={t('Settings.flyPad.BatteryLifeEnabled')}
+        />
+
+        <ToggleSettingsItem
+          setting={this.props.settings.getSetting('fbwEfbFlightProgressbar')}
+          settingName={t('Settings.flyPad.ShowStatusBarFlightProgressIndicator')}
+        />
+
+        <ToggleSettingsItem
+          setting={this.props.settings.getSetting('fbwEfbColoredMetar')}
+          settingName={t('Settings.flyPad.ShowColoredRawMetar')}
+        />
+
+        {/** This is for the grouped time settings, not used enough to make a separate element **/}
+        <SettingsItem
+          settingName={
+            <div class="flex flex-col">
+              {t('Settings.flyPad.TimeDisplayed')}
+              <span class="ml-8 mt-6">{t('Settings.flyPad.LocalTimeFormat')}</span>
+            </div>
+          }
+        >
+          <div class="flex flex-col justify-end space-y-2">
+            <Selector
+              activeClass="bg-theme-highlight text-theme-body"
+              tabs={Object.entries({
+                [FlypadTimeDisplay.Utc]: <>UTC</>,
+                [FlypadTimeDisplay.Local]: <>Local</>,
+                [FlypadTimeDisplay.Both]: <>Both</>,
+              }).map(([k, v]) => [parseInt(k), v as VNode])}
+              activePage={this.props.settings.getSetting('fbwEfbTimeDisplay')}
+            />
+            <Selector
+              class="ml-auto"
+              activeClass="bg-theme-highlight text-theme-body"
+              tabs={Object.entries({
+                [FlypadTimeFormat.Twelve]: <>12h</>,
+                [FlypadTimeFormat.TwentyFour]: <>24h</>,
+              }).map(([k, v]) => [parseInt(k), v as VNode])}
+              activePage={this.props.settings.getSetting('fbwEfbTimeFormat')}
+            />
+          </div>
+        </SettingsItem>
+
+        <ChoiceSettingsItem
+          setting={this.props.settings.getSetting('fbwEfbTheme')}
+          settingName={t('Settings.flyPad.Theme')}
+          choices={{
+            [FlypadTheme.Blue]: <>Blue</>,
+            [FlypadTheme.Dark]: <>Dark</>,
+            [FlypadTheme.Light]: <>Light</>,
+          }}
         />
       </SettingsPage>
     );

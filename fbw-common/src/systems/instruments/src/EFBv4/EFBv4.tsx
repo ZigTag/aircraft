@@ -22,7 +22,8 @@ import './Assets/Theme.css';
 import './Assets/Slider.scss';
 import './Assets/bi-icons.css';
 
-import { FbwUserSettingsSaveManager } from './FbwUserSettings';
+import { FbwUserSettings, FbwUserSettingsSaveManager, FlypadTheme } from './FbwUserSettings';
+import { EFB_EVENT_BUS } from './EfbV4FsInstrument';
 
 interface EfbProps extends ComponentProps {}
 
@@ -44,8 +45,6 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
   }
 
   onAfterRender(_node: VNode): void {
-    SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 100);
-
     // Load user settings
     const settingsSaveManager = new FbwUserSettingsSaveManager(this.bus);
 
@@ -60,6 +59,21 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
     initializeFlypadClientContext(flypadClient);
 
     flypadClient.initialized.on((it) => it.sendHelloWorld());
+
+    const theme = FbwUserSettings.getManager(EFB_EVENT_BUS)
+      .getSetting('fbwEfbTheme')
+      .map((theme) => {
+        switch (theme) {
+          case FlypadTheme.Light:
+            return 'light';
+          case FlypadTheme.Dark:
+            return 'dark';
+          default:
+            return 'blue';
+        }
+      });
+
+    document.documentElement.classList.add(`theme-${theme.get()}`, 'animationsEnabled');
 
     FSComponent.render(
       <flypadClientContext.Provider value={flypadClient}>
@@ -84,7 +98,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
   render(): VNode {
     return (
       <div class="h-screen w-screen bg-theme-body">
-        <div ref={this.renderRoot} class="flex h-full w-full flex-row" />
+        <div ref={this.renderRoot} class="flex size-full flex-row" />
       </div>
     );
   }

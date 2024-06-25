@@ -26,6 +26,8 @@ import { FlypadClient } from '@shared/flypad-server/FlypadClient';
 import { DeviceFlowParams, User } from 'navigraph/auth';
 import { navigraphAuth, navigraphCharts } from '../../navigraph';
 import { Chart } from 'navigraph/charts';
+import { FbwUserSettings } from '../FbwUserSettings';
+import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -103,6 +105,12 @@ export class NavigraphAuthState {
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
+  private _brightness = FbwUserSettings.getManager(EFB_EVENT_BUS)
+    .getSetting('fbwEfbBrightness')
+    .sub((val) => {
+      SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', val);
+    });
+
   private navigationState = new NavigationState();
 
   private simbriefState = new SimbriefState(this.props.flypadClient);
