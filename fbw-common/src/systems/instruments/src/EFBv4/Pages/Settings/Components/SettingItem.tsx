@@ -17,7 +17,7 @@ import { t } from '../../../Components/LocalizedText';
 import { Selector } from '../../../Components/Selector';
 import { ScrollableContainer } from '../../Dashboard/Dashboard';
 import { twMerge } from 'tailwind-merge';
-import { Pages, SwitchOn } from '../../Pages';
+import { SwitchOn } from '../../Pages';
 import { Button } from '../../../Components/Button';
 
 export interface SettingsItemProps extends ComponentProps {

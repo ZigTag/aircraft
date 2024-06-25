@@ -21,9 +21,13 @@ import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
 import { Button } from '../../Components/Button';
 import { flypadClientContext } from '../../Contexts';
-import { Pages, SimbriefState, Switch } from '../Pages';
+import { NavigraphAuthState, Pages, SimbriefState, Switch, SwitchIf, SwitchOn } from '../Pages';
 import { ISimbriefData } from '../../../EFB/Apis/Simbrief';
 import { twMerge } from 'tailwind-merge';
+import { FbwUserSettings } from '../../FbwUserSettings';
+import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
+import { RemindersSection } from './Widgets/ReminderSection';
+import React from 'react';
 
 interface ScrollableContainerProps extends ComponentProps {
   height: number;
@@ -38,9 +42,12 @@ interface ScrollableContainerProps extends ComponentProps {
 
 export interface FlightWidgetProps {
   simbriefState: SimbriefState;
+  navigraphAuthState: NavigraphAuthState;
 }
 
 export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadClient]> {
+  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
+
   public override contextType = [flypadClientContext] as const;
 
   onAfterRender(node: VNode) {
@@ -51,7 +58,10 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadCli
     return this.getContext(flypadClientContext).get();
   }
 
-  private readonly fetchSimBriefData = () => this.props.simbriefState.importOfp('');
+  private readonly fetchSimBriefData = () =>
+    this.props.simbriefState.importOfp(
+      this.props.navigraphAuthState.user.map((it) => it?.preferred_username ?? '').get(),
+    );
 
   private readonly ofpPages: Pages = [
     [PageEnum.Optional.None, <SimBriefOfpNotLoadedOverlay onFetchSimbriefOfp={this.fetchSimBriefData} />],
@@ -64,22 +74,23 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadCli
   render(): VNode {
     return (
       <div class="w-1/2">
-        <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
+        <div class="flex flex-row justify-between">
+          <PageTitle>{t('Dashboard.YourFlight.Title')}</PageTitle>
+          <SwitchIf
+            condition={this.props.simbriefState.simbriefOfpLoaded}
+            on={
+              <h1>
+                {this.props.simbriefState.ofp.map((ofp) => ofp?.airline ?? '')}
+                {this.props.simbriefState.ofp.map((ofp) => ofp?.flightNumber ?? '')} | A320-251N
+              </h1>
+            }
+            off={<h1>A320-251N</h1>}
+          />
+        </div>
 
         <PageBox>
           <Switch pages={this.ofpPages} activePage={this.props.simbriefState.ofp.map((it) => (it !== null ? 1 : 0))} />
         </PageBox>
-
-        {/*<PageBox>*/}
-        {/*  <div>*/}
-        {/*    <button type="button" ref={this.languageButtonRefs[0]} class="bg-cyan px-5 py-2.5">*/}
-        {/*      Set language to English*/}
-        {/*    </button>*/}
-        {/*    <button type="button" ref={this.languageButtonRefs[1]} class="bg-cyan px-5 py-2.5">*/}
-        {/*      Set language to Korean*/}
-        {/*    </button>*/}
-        {/*  </div>*/}
-        {/*</PageBox>*/}
       </div>
     );
   }
@@ -262,20 +273,54 @@ class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
 }
 
 export class PinnedChartsReminder extends DisplayComponent<any> {
+  // Placeholder
+  private readonly isPinnedCharts = Subject.create(false);
+
   render(): VNode {
-    return <></>;
+    return (
+      <RemindersSection title={t('Dashboard.ImportantInformation.PinnedCharts.Title')}>
+        <div class="grid grid-cols-2"></div>
+        <SwitchOn
+          condition={this.isPinnedCharts.map((val) => !val)}
+          on={
+            <h1 class="m-auto my-4 w-full text-center font-bold opacity-60">
+              {t('Dashboard.ImportantInformation.PinnedCharts.NoPinnedCharts')}
+            </h1>
+          }
+        />
+      </RemindersSection>
+    );
   }
 }
 
 export class MaintenanceReminder extends DisplayComponent<any> {
+  private readonly isFailure = Subject.create(false);
+
   render(): VNode {
-    return <></>;
+    return (
+      <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')}>
+        <div class="space-y-6"></div>
+        <SwitchOn
+          condition={this.isFailure.map((val) => !val)}
+          on={
+            <h1 class="m-auto my-4 w-full text-center font-bold opacity-60">
+              {t('Dashboard.ImportantInformation.Maintenance.NoActiveFailures')}
+            </h1>
+          }
+        />
+      </RemindersSection>
+    );
   }
 }
 
 export class ChecklistsReminder extends DisplayComponent<any> {
   render(): VNode {
-    return <></>;
+    return (
+      <RemindersSection title={t('Dashboard.ImportantInformation.Checklists.Title')}>
+        <div class="space-y-6"></div>
+        <h1 class="m-auto my-4 w-full text-center font-bold opacity-60">No Pinned Checklists</h1>
+      </RemindersSection>
+    );
   }
 }
 
@@ -288,10 +333,14 @@ const _TRANSLATIONS: [PageEnum.ReminderWidgets, string][] = [
   [PageEnum.ReminderWidgets.Checklists, 'Dashboard.ImportantInformation.Checklists.Title'],
 ];
 
-export class RemindersWidget extends DisplayComponent<any> {
+interface RemindersWidgetProps {
+  simbriefState: SimbriefState;
+}
+
+export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
   // Has to be in here idk why
   private readonly REMINDERS = new Map<PageEnum.ReminderWidgets, VNode>([
-    [PageEnum.ReminderWidgets.Weather, <WeatherReminder />],
+    [PageEnum.ReminderWidgets.Weather, <WeatherReminder simbriefState={this.props.simbriefState} />],
     [PageEnum.ReminderWidgets.PinnedCharts, <PinnedChartsReminder />],
     [PageEnum.ReminderWidgets.Maintenance, <MaintenanceReminder />],
     [PageEnum.ReminderWidgets.Checklists, <ChecklistsReminder />],
@@ -421,14 +470,15 @@ class InformationEntry extends DisplayComponent<InformationEntryProps> {
 }
 export interface DashboardProps {
   simbriefState: SimbriefState;
+  navigraphAuthState: NavigraphAuthState;
 }
 
 export class Dashboard extends AbstractUIView<DashboardProps> {
   render(): VNode {
     return (
       <div ref={this.rootRef} class="flex w-full space-x-8">
-        <FlightWidget simbriefState={this.props.simbriefState} />
-        <RemindersWidget />
+        <FlightWidget simbriefState={this.props.simbriefState} navigraphAuthState={this.props.navigraphAuthState} />
+        <RemindersWidget simbriefState={this.props.simbriefState} />
       </div>
     );
   }

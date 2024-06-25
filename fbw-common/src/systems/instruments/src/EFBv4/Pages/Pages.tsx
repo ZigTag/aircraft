@@ -48,7 +48,7 @@ export class SimbriefState {
   public readonly simbriefOfpLoaded = this.ofp.map((value) => !!value);
 
   public importOfp(username: string) {
-    this.client.getSimbriefOfp().then((r) => this._ofp.set(simbriefDataParser(r)));
+    this.client.getSimbriefOfp(username).then((r) => this._ofp.set(simbriefDataParser(r)));
   }
 }
 
@@ -118,7 +118,10 @@ export class MainPage extends DisplayComponent<MainPageProps> {
   private readonly navigraphAuthState = new NavigraphAuthState();
 
   private readonly pages: Pages = [
-    [PageEnum.MainPage.Dashboard, <Dashboard simbriefState={this.simbriefState} />],
+    [
+      PageEnum.MainPage.Dashboard,
+      <Dashboard simbriefState={this.simbriefState} navigraphAuthState={this.navigraphAuthState} />,
+    ],
     [PageEnum.MainPage.Dispatch, <Dispatch simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Ground, <Ground />],
     [PageEnum.MainPage.Performance, <Performance />],

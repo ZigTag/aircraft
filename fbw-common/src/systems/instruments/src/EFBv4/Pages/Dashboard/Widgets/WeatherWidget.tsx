@@ -9,7 +9,7 @@ import {
 } from '@microsoft/msfs-sdk';
 import { FlypadClient, MetarParserType } from '@flybywiresim/fbw-sdk';
 import { PageEnum } from '../../../shared/common';
-import { Pages, Switch } from '../../Pages';
+import { Pages, SimbriefState, Switch } from '../../Pages';
 import { flypadClientContext } from '../../../Contexts';
 import { ColoredMetar } from './ColoredMetar';
 import { t } from '../../../Components/LocalizedText';
@@ -63,14 +63,18 @@ const emptyMetar = {
   flight_category: '',
 };
 
-export class WeatherReminder extends DisplayComponent<any> {
+interface WeatherReminderProps {
+  simbriefState: SimbriefState;
+}
+
+export class WeatherReminder extends DisplayComponent<WeatherReminderProps> {
   render(): VNode {
     return (
-      <RemindersSection>
+      <RemindersSection title={t('Dashboard.ImportantInformation.Weather.Title')}>
         <div class="space-y-6">
-          <WeatherWidget name="origin" />
+          <WeatherWidget name="origin" simbriefState={this.props.simbriefState} />
           <div class="h-1 w-full rounded-full bg-theme-accent" />
-          <WeatherWidget name="destination" />
+          <WeatherWidget name="destination" simbriefState={this.props.simbriefState} />
         </div>
       </RemindersSection>
     );
@@ -79,6 +83,7 @@ export class WeatherReminder extends DisplayComponent<any> {
 
 interface WeatherWidgetProps extends ComponentProps {
   name: string;
+  simbriefState: SimbriefState;
 }
 
 export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadClient]> {
@@ -88,22 +93,43 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
 
   private readonly metar = Subject.create<MetarParserType>(emptyMetar);
 
+  private readonly icaoSuggestion = Subject.create('ICAO');
+
   private get client(): FlypadClient {
     return this.getContext(flypadClientContext).get();
   }
 
-  private async showMetarForIcao(icao: string): Promise<void> {
-    const metar = await this.client.getMetar(icao);
+  private _setMetarFromSimbrief = this.props.simbriefState.ofp.map((ofp) => {
+    if (this.props.simbriefState.simbriefOfpLoaded.get()) {
+      if (this.props.name === 'origin') {
+        this.showMetarForIcao(ofp?.origin.icao ?? '', true);
+      } else if (this.props.name === 'destination') {
+        this.showMetarForIcao(ofp?.destination.icao ?? '', true);
+      }
+    }
+  });
+
+  private async showMetarForIcao(icao: string, isSimbrief?: boolean): Promise<void> {
+    let metar = await this.client.getMetar(icao);
+
+    // Debounce for async metar return
+    if (metar.icao !== icao) {
+      metar = await this.client.getMetar(icao);
+    }
 
     this.metar.set(metar);
+
+    if (isSimbrief) {
+      this.icaoSuggestion.set(icao);
+    }
   }
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    this.client.initialized.on(() => {
-      this.showMetarForIcao('CYKF');
-    });
+    // this.client.initialized.on(() => {
+    //   this.showMetarForIcao('CYKF');
+    // });
   }
 
   render(): VNode {
@@ -112,6 +138,7 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
         <WeatherWidgetData
           metar={this.metar}
           metarError={this.metarError}
+          icaoSuggestion={this.icaoSuggestion}
           onIcaoEntered={(icao) => this.showMetarForIcao(icao)}
         />
       </div>
@@ -243,6 +270,8 @@ interface WeatherWidgetDataProps {
 
   metarError: Subscribable<string>;
 
+  icaoSuggestion: Subscribable<string>;
+
   onIcaoEntered: (icao: string) => void;
 }
 
@@ -264,7 +293,7 @@ export class WeatherWidgetData extends DisplayComponent<WeatherWidgetDataProps> 
         <div class="flex flex-row items-center justify-between">
           <SimpleInput
             class="w-32 text-center !text-2xl font-medium uppercase"
-            placeholder="ICAO" // TODO support simbriefIcao from v3
+            placeholder={this.props.icaoSuggestion} // TODO support simbriefIcao from v3
             value={this.icao}
             onChange={this.props.onIcaoEntered}
             maxLength={4}

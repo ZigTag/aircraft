@@ -14,7 +14,7 @@ export interface FlypadClientEvents {
 
   fpc_GetMetar: string;
 
-  fpc_GetSimbriefOfp: void;
+  fpc_GetSimbriefOfp: string;
 
   fpc_ActivateFailure: number;
 

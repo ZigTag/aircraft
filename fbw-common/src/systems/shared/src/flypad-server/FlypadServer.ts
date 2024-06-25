@@ -23,7 +23,7 @@ export class FlypadServer {
     // TODO Need to forward any errors thrown to the clients
     this.eventSub.on('fpc_HelloWorld').handle(() => this.handleHelloWorld());
     this.eventSub.on('fpc_GetMetar').handle((icao) => this.handleGetMetar(icao));
-    this.eventSub.on('fpc_GetSimbriefOfp').handle(() => this.handleGetSimbriefOfp());
+    this.eventSub.on('fpc_GetSimbriefOfp').handle((username) => this.handleGetSimbriefOfp(username));
     this.eventSub.on('fpc_ActivateFailure').handle((id) => this.handleActivateFailure(id));
     this.eventSub.on('fpc_DeactivateFailure').handle((id) => this.handleDeactivateFailure(id));
 
@@ -87,8 +87,8 @@ export class FlypadServer {
     this.eventPub.pub('fps_SendMetar', metar, true);
   }
 
-  private async handleGetSimbriefOfp(): Promise<void> {
-    const pilotID = await SimbriefClient.getSimbriefUserIDFromUsername('benjozork');
+  private async handleGetSimbriefOfp(username: string): Promise<void> {
+    const pilotID = await SimbriefClient.getSimbriefUserIDFromUsername(username);
     const ofp = await SimbriefClient.getOfp(pilotID);
 
     this.eventPub.pub('fps_SendSimbriefOfp', ofp, true);

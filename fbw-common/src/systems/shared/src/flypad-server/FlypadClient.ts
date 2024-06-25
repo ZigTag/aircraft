@@ -37,8 +37,8 @@ export class FlypadClient {
     return this.waitForMessage('fps_SendMetar');
   }
 
-  public async getSimbriefOfp(): Promise<FlypadServerEvents['fps_SendSimbriefOfp']> {
-    this.sendMessage('fpc_GetSimbriefOfp', undefined);
+  public async getSimbriefOfp(username: string): Promise<FlypadServerEvents['fps_SendSimbriefOfp']> {
+    this.sendMessage('fpc_GetSimbriefOfp', username);
 
     return this.waitForMessage('fps_SendSimbriefOfp');
   }

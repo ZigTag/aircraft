@@ -10,13 +10,7 @@ import {
   ToggleSettingsItem,
 } from './Components/SettingItem';
 import { languageOptions } from '../../shared/translation';
-import {
-  FbwUserSettingsDefs,
-  FlypadTheme,
-  FlypadTimeDisplay,
-  FlypadTimeFormat,
-  IsisBaroUnit,
-} from '../../FbwUserSettings';
+import { FbwUserSettingsDefs, FlypadTheme, FlypadTimeDisplay, FlypadTimeFormat } from '../../FbwUserSettings';
 import { keyboardLayoutOptions } from '../../Components/KeyboardWrapper';
 import { Selector } from '../../Components/Selector';
 
