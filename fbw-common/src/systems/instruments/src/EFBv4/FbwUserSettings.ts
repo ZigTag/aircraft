@@ -236,6 +236,14 @@ const fbwUserSettings = [
     name: 'fbwEfbTheme',
     defaultValue: FlypadTheme.Blue as FlypadTheme,
   },
+  {
+    name: 'fbwEfbOfpFontSize',
+    defaultValue: 14 as number,
+  },
+  {
+    name: 'fbwEfbOfpImageSize',
+    defaultValue: 60 as number,
+  },
 ] as const;
 
 export type FbwUserSettingsDefs = {

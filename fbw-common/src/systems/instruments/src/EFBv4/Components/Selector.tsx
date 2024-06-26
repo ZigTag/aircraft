@@ -14,24 +14,24 @@ interface SelectorProps extends ComponentProps {
 export class Selector extends DisplayComponent<SelectorProps> {
   render(): VNode {
     return (
-      <div class={twMerge('flex justify-between', this.props.class)}>
+      <div class={twMerge('flex justify-between', this.props.class ?? '')}>
         <div
           class={twMerge(
-            'flex divide-x divide-theme-accent overflow-hidden rounded-md border border-theme-accent',
-            this.props.innerClass,
+            'flex size-full divide-x divide-theme-accent overflow-hidden rounded-md border border-theme-accent',
+            this.props.innerClass ?? '',
           )}
         >
           {this.props.tabs.map(([page, contents]) => (
             <NavButton
-              inactiveClass="flex items-center bg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
+              inactiveClass="flex items-centerbg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
               activeClass={twMerge(
                 'flex items-center bg-theme-accent bg-opacity-100 px-6 py-2',
-                this.props.activeClass,
+                this.props.activeClass ?? '',
               )}
               page={page}
               activePage={this.props.activePage}
             >
-              {contents}
+              <div class="size-full">{contents}</div>
             </NavButton>
           ))}
         </div>

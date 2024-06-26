@@ -9,6 +9,8 @@ import { PageTitle } from '../../Components/PageTitle';
 import { AbstractUIView } from '../../shared/UIView';
 import { ScrollableContainer } from '../Dashboard/Dashboard';
 import { Button } from '../../Components/Button';
+import { FbwUserSettings } from '../../FbwUserSettings';
+import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
 // import { Icon } from '../../Components/Icons';
 // import React from "react";
 // import {IconPlane} from "@tabler/icons";
@@ -26,8 +28,10 @@ interface LoadsheetProps {
 export class Loadsheet extends DisplayComponent<LoadsheetProps> {
   private readonly ofpRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly fontSize = Subject.create(14);
-  private readonly imageSize = Subject.create(60);
+  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
+
+  private readonly fontSize = this.settings.getSetting('fbwEfbOfpFontSize');
+  private readonly imageSize = this.settings.getSetting('fbwEfbOfpImageSize');
 
   constructor(props: LoadsheetProps) {
     super(props);
