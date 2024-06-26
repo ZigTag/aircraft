@@ -29,6 +29,13 @@ export namespace PageEnum {
     Overview,
   }
 
+  export enum GroundPage {
+    Services,
+    Fuel,
+    Payload,
+    Pushback,
+  }
+
   export enum NavigationPage {
     Navigraph,
     LocalFiles,

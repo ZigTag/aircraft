@@ -11,7 +11,7 @@ import {
 import { twMerge } from 'tailwind-merge';
 
 interface ButtonProps extends ComponentProps {
-  onClick: () => any;
+  onClick: (event: MouseEvent) => any;
   theme?: ButtonTheme | Subscribable<ButtonTheme>;
   class?: string | Subscribable<string>;
   unstyled?: boolean;
