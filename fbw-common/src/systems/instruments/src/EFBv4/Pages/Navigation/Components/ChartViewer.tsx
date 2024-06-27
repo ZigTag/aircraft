@@ -12,6 +12,7 @@ import { AbstractUIView, UIVIew } from '../../../shared/UIView';
 import { Chart } from 'navigraph/charts';
 import { navigraphCharts } from '../../../../navigraph';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
+import { TooltipWrapper } from '../../../Components/TooltipWrapper';
 
 export interface ChartViewerProps {
   shownChart: Subscribable<Chart | null>; // TODO use a generic type
@@ -290,74 +291,74 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
 
         <div class="absolute inset-y-6 right-6 z-20 flex cursor-pointer flex-col justify-between overflow-hidden rounded-md">
           <div class="flex flex-col overflow-hidden rounded-md">
-            {/*<TooltipWrapper text={t('NavigationAndCharts.TT.RotateLeft45Degrees')}>*/}
-            <Button
-              unstyled
-              class={`cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
-              onClick={(event) => this.handleChartRotateCounterClockwise(event.shiftKey)}
-            >
-              <i class="bi-arrow-counterclockwise text-[35px] text-inherit" />
-            </Button>
-            {/*</TooltipWrapper>*/}
-            {/*<TooltipWrapper text={t('NavigationAndCharts.TT.RotateRight45Degrees')}>*/}
-            <Button
-              unstyled
-              class={`cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
-              onClick={(event) => this.handleChartRotateClockwise(event.shiftKey)}
-            >
-              <i class="bi-arrow-clockwise fill-current text-[35px] text-inherit" />
-            </Button>
-            {/*</TooltipWrapper>*/}
+            <TooltipWrapper text="NavigationAndCharts.TT.RotateLeft45Degrees">
+              <Button
+                unstyled
+                class={`cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
+                onClick={(event) => this.handleChartRotateCounterClockwise(event.shiftKey)}
+              >
+                <i class="bi-arrow-counterclockwise text-[35px] text-inherit" />
+              </Button>
+            </TooltipWrapper>
+            <TooltipWrapper text="NavigationAndCharts.TT.RotateRight45Degrees">
+              <Button
+                unstyled
+                class={`cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
+                onClick={(event) => this.handleChartRotateClockwise(event.shiftKey)}
+              >
+                <i class="bi-arrow-clockwise fill-current text-[35px] text-inherit" />
+              </Button>
+            </TooltipWrapper>
           </div>
           <div class="flex flex-col overflow-hidden rounded-md">
-            {/*<TooltipWrapper text={t('NavigationAndCharts.TT.FitChartToHeight')}>*/}
-            <Button
-              unstyled
-              class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-              onClick={() => this.fitChart('height')}
-            >
-              <i class="bi-arrows-expand text-[35px] text-inherit" />
-            </Button>
-            {/*</TooltipWrapper>*/}
+            <TooltipWrapper text="NavigationAndCharts.TT.FitChartToHeight">
+              <Button
+                unstyled
+                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                onClick={() => this.fitChart('height')}
+              >
+                <i class="bi-arrows-expand text-[35px] text-inherit" />
+              </Button>
+            </TooltipWrapper>
 
-            {/*<TooltipWrapper text={t('NavigationAndCharts.TT.FitChartToWidth')}>*/}
-            <Button
-              unstyled
-              class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-              onClick={() => this.fitChart('width')}
-            >
-              <i class="bi-arrows-expand-vertical text-[35px] text-inherit" />
-            </Button>
-            {/*</TooltipWrapper>*/}
+            <TooltipWrapper text="NavigationAndCharts.TT.FitChartToWidth">
+              <Button
+                unstyled
+                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                onClick={() => this.fitChart('width')}
+              >
+                <i class="bi-arrows-expand-vertical text-[35px] text-inherit" />
+              </Button>
+            </TooltipWrapper>
 
-            {/*<TooltipWrapper text={t('NavigationAndCharts.TT.ResetMovement')}>*/}
-            <button
-              type="button"
-              class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-            >
-              <i class="bi-x-circle-fill text-[35px] text-inherit" />
-            </button>
-            {/*</TooltipWrapper>*/}
+            <TooltipWrapper text="NavigationAndCharts.TT.ResetMovement">
+              <button
+                type="button"
+                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+              >
+                <i class="bi-x-circle-fill text-[35px] text-inherit" />
+              </button>
+            </TooltipWrapper>
 
-            {/*<TooltipWrapper text={t('NavigationAndCharts.TT.ZoomIn')}>*/}
-            <Button
-              unstyled
-              class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-              onClick={this.handleChartZoomIn}
-            >
-              <i class="bi-plus text-[35px] text-inherit" />
-            </Button>
-            {/*</TooltipWrapper>*/}
+            <TooltipWrapper text="NavigationAndCharts.TT.ZoomIn">
+              <Button
+                unstyled
+                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                onClick={this.handleChartZoomIn}
+              >
+                <i class="bi-plus text-[35px] text-inherit" />
+              </Button>
+            </TooltipWrapper>
 
-            {/*<TooltipWrapper text={t('NavigationAndCharts.TT.ZoomOut')}>*/}
-            <Button
-              unstyled
-              class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-              onClick={this.handleChartZoomOut}
-            >
-              <i class="bi-dash text-[35px] text-inherit" />
-            </Button>
-            {/*</TooltipWrapper>*/}
+            <TooltipWrapper text="NavigationAndCharts.TT.ZoomOut">
+              <Button
+                unstyled
+                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                onClick={this.handleChartZoomOut}
+              >
+                <i class="bi-dash text-[35px] text-inherit" />
+              </Button>
+            </TooltipWrapper>
           </div>
           <div class="flex flex-col overflow-hidden rounded-md">
             <div class="cursor-pointer rounded-md bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body">

@@ -16,12 +16,10 @@ export class LocalizedText extends AbstractUIView<LocalizedTextProps> {
 
   pause() {
     super.pause();
-    console.log(`"${this.props.locKey}" paused!`);
   }
 
   resume() {
     super.resume();
-    console.log(`"${this.props.locKey}" resumed!`);
   }
 
   onAfterRender(node: VNode) {
