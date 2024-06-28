@@ -42,13 +42,11 @@ class PromptModal extends AbstractUIView<PromptModalProps> {
   private handleDecline(): void {
     this.props.onReject?.();
     popModal();
-    this.destroy();
   }
 
   private handleConfirm(): void {
     this.props.onConfirm?.();
     popModal();
-    this.destroy();
   }
 
   onAfterRender(): void {
