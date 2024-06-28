@@ -21,7 +21,7 @@ interface PromptModalProps extends BaseModalProps {
   onConfirm?: () => any;
   onReject?: () => any;
   confirmText?: string;
-  rejectText?: string;
+  declineText?: string;
 }
 
 interface AlertModalProps extends BaseModalProps {
@@ -66,7 +66,7 @@ class PromptModal extends AbstractUIView<PromptModalProps> {
             type="button"
             class="flex w-full items-center justify-center rounded-md border-2 border-theme-accent bg-theme-accent px-8 py-2 text-center text-theme-text transition duration-100 hover:border-theme-highlight hover:bg-theme-body hover:text-theme-highlight"
           >
-            {this.props.rejectText ?? t('Modals.Cancel')}
+            {this.props.declineText ?? t('Modals.Cancel')}
           </button>
           <button
             ref={this.confirmButtonRef}
