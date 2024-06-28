@@ -55,7 +55,7 @@ export class SettingsAboutPage extends AbstractUIView<SettingsAboutPageProps> {
   render(): VNode | null {
     return (
       <SettingsPage title={t('Settings.About.Title')} returnHome={this.props.returnHome} ref={this.rootRef}>
-        <div ref={this.rootRef} class="pointer-events-none inset-y-0 my-auto flex flex-col justify-center px-16">
+        <div ref={this.rootRef} class="pointer-events-none absolute inset-0 flex flex-col justify-center px-16">
           <div class="flex flex-row items-center">
             <div class="flex flex-col">
               <div class="flex flex-row items-center">
