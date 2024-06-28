@@ -142,7 +142,7 @@ export class SettingsPage extends AbstractUIView<SettingsPageProps> {
           </PageTitle>
         </Button>
         <PageBox>
-          <div class="relative -mt-6 h-full">{this.props.children}</div>
+          <div class="relative -mt-6 h-full divide-y-2 divide-theme-accent">{this.props.children}</div>
         </PageBox>
       </div>
     );

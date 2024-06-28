@@ -29,7 +29,7 @@ export interface SettingsItemProps extends ComponentProps {
 export class SettingsItem extends DisplayComponent<SettingsItemProps> {
   render(): VNode | null {
     return (
-      <div class="flex w-full items-center border-b-2 border-b-theme-accent py-4">
+      <div class="flex w-full items-center py-4">
         {this.props.settingName}
 
         {(this.props.unrealistic ?? false) && (
