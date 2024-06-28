@@ -323,15 +323,15 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
       newSettingName: 'fbwAircraftSatcom',
       valueMapper: (value) => value === '1',
     },
-    A32NX_CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS: {
+    A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS: {
       newSettingName: 'fbwAircraftFwcRadioAutoCallOutPins',
       valueMapper: (value) => parseInt(value),
     },
-
     A32NX_CONFIG_AUTO_SIMBRIEF_IMPORT: {
       newSettingName: 'fbwAutomaticallyImportSimbriefData',
       valueMapper: (value) => value === 'ENABLED',
     },
+
     // TODO AircraftOptionsPinProgramsPage
     // TODO RealismPage
     // TODO ThirdPartyOptionsPage
