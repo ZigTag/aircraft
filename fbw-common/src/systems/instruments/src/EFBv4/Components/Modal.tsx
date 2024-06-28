@@ -92,7 +92,7 @@ class AlertModal extends AbstractUIView<AlertModalProps> {
   }
 
   onAfterRender(): void {
-    this.acknowledgeButtonRef.instance.addEventListener('click', this.handleAcknowledge);
+    this.acknowledgeButtonRef.instance.addEventListener('click', this.handleAcknowledge.bind(this));
   }
 
   render(): VNode | null {
