@@ -113,7 +113,7 @@ class AlertModal extends AbstractUIView<AlertModalProps> {
 export class ModalContainer extends AbstractUIView {
   private readonly modalParentRef = FSComponent.createRef<HTMLDivElement>();
   private readonly backgroundRef = FSComponent.createRef<HTMLDivElement>();
-  private modalContainerOpen = Subject.create(false);
+  private isModalContainerOpen = Subject.create(false);
 
   private getModalComponent(modal: Modal | null): VNode {
     if (!modal) return <></>;
@@ -128,7 +128,7 @@ export class ModalContainer extends AbstractUIView {
 
   onAfterRender(): void {
     const handlePopModal = () => {
-      this.modalContainerOpen.set(false);
+      this.isModalContainerOpen.set(false);
 
       const child = this.modalParentRef.instance.firstChild;
 
@@ -138,7 +138,7 @@ export class ModalContainer extends AbstractUIView {
     };
 
     const handleShowModal = (modal: Modal) => {
-      this.modalContainerOpen.set(true);
+      this.isModalContainerOpen.set(true);
 
       FSComponent.render(this.getModalComponent(modal), this.modalParentRef.instance);
     };
@@ -152,9 +152,9 @@ export class ModalContainer extends AbstractUIView {
   render(): VNode | null {
     return (
       <div
-        class={this.modalContainerOpen.map(
-          (open) =>
-            `fixed inset-0 z-50 transition duration-200 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`,
+        class={this.isModalContainerOpen.map(
+          (isOpen) =>
+            `fixed inset-0 z-50 transition duration-200 ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`,
         )}
       >
         <div ref={this.backgroundRef} class="absolute inset-0 size-full bg-theme-body opacity-75" />
