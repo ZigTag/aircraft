@@ -24,6 +24,7 @@ export class Selector extends DisplayComponent<SelectorProps> {
           {this.props.tabs.map(([page, contents]) => (
             <NavButton
               inactiveClass="flex items-centerbg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
+              // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
               activeClass={twMerge(
                 'flex items-center bg-theme-accent bg-opacity-100 px-6 py-2',
                 this.props.activeClass ?? '',
@@ -31,7 +32,7 @@ export class Selector extends DisplayComponent<SelectorProps> {
               page={page}
               activePage={this.props.activePage}
             >
-              <div class="size-full">{contents}</div>
+              <div class="size-full text-inherit">{contents}</div>
             </NavButton>
           ))}
         </div>
