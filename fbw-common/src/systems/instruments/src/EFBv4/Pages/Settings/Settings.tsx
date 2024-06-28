@@ -111,11 +111,11 @@ class SettingsIndex extends AbstractUIView<SettingsIndexProps> {
         <div class="space-y-6">
           {this.items.map(([page, title]) => (
             <Button
-              class="page flex w-full justify-between rounded-md border-2 border-transparent bg-theme-accent p-6 transition duration-100 hover:border-theme-highlight"
+              class="page group flex w-full justify-between rounded-md border-2 border-transparent bg-theme-accent p-6 transition duration-100 hover:border-theme-highlight"
               onClick={() => this.props.onPageSelected(page)}
             >
               <p class="text-2xl">{title}</p>
-              <i class={`bi-chevron-right text-[30px] text-inherit`} />
+              <i class={`bi-chevron-right text-[30px] text-theme-text`} />
             </Button>
           ))}
         </div>
