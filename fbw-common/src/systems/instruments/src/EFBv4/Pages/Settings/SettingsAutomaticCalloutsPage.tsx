@@ -6,6 +6,7 @@ import { DEFAULT_RADIO_AUTO_CALL_OUTS, RadioAutoCallOutFlags } from '@flybywires
 import { SettingsItem } from './Components/SettingItem';
 import { Button } from '../../Components/Button';
 import { Toggle } from '../../Components/Toggle';
+import { ModalKind, showModal } from '../../Components/Modal';
 
 interface SettingsAutomaticCalloutsPageProps {
   returnHome: () => any;
@@ -101,7 +102,16 @@ export class SettingsAutomaticCalloutsPage extends AbstractUIView<SettingsAutoma
         </div>
 
         <SettingsItem settingName={t('Settings.AutomaticCallOuts.ResetStandardConfig')}>
-          <Button onClick={() => this.props.autoCallOuts.set(DEFAULT_RADIO_AUTO_CALL_OUTS)}>
+          <Button
+            onClick={() => {
+              showModal({
+                kind: ModalKind.Prompt,
+                title: 'Reset Call Outs to Standard Configuration?',
+                bodyText: 'This action is irrevirsible',
+                onConfirm: () => this.props.autoCallOuts.set(DEFAULT_RADIO_AUTO_CALL_OUTS),
+              });
+            }}
+          >
             {t('Settings.AutomaticCallOuts.Reset')}
           </Button>
         </SettingsItem>

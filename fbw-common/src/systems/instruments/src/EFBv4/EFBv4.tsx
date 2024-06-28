@@ -27,6 +27,7 @@ import { EFB_EVENT_BUS } from './EfbV4FsInstrument';
 import { Tooltip } from './Components/TooltipWrapper';
 import { FlypadControlEvents } from './FlypadControlEvents';
 import { LocalizedString } from './shared/translation';
+import { Modal, ModalContainer } from './Components/Modal';
 
 interface EfbProps extends ComponentProps {}
 
@@ -105,8 +106,20 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
         }, 250);
       });
 
+    const modalSubject = Subject.create<Modal | null>(null);
+
+    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
+      .on('show_modal')
+      .handle((modal) => modalSubject.set(modal));
+    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
+      .on('pop_modal')
+      .handle(() => {
+        modalSubject.set(null);
+      });
+
     FSComponent.render(
       <flypadClientContext.Provider value={flypadClient}>
+        <ModalContainer modal={modalSubject} />
         <div ref={this.renderRoot2} class="flex w-full flex-col items-stretch" />
         <Tooltip id={targetIDSubject} shown={shownSubject}>
           {textSubject}
