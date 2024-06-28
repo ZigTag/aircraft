@@ -56,7 +56,7 @@ class PromptModal extends AbstractUIView<PromptModalProps> {
 
   render(): VNode | null {
     return (
-      <div class="w-5/12 rounded-xl border-2 border-theme-accent bg-theme-body p-8">
+      <div class="pointer-events-auto w-5/12 rounded-xl border-2 border-theme-accent bg-theme-body p-8">
         <h1 class="font-bold">{this.props.title}</h1>
         <p class="mt-4">{this.props.bodyText}</p>
 
@@ -95,7 +95,7 @@ class AlertModal extends AbstractUIView<AlertModalProps> {
 
   render(): VNode | null {
     return (
-      <div class="w-5/12 rounded-xl border-2 border-theme-accent bg-theme-body p-8">
+      <div class="pointer-events-auto w-5/12 rounded-xl border-2 border-theme-accent bg-theme-body p-8">
         <h1 class="font-bold">{this.props.title}</h1>
         <p class="mt-4">{this.props.bodyText}</p>
         <button
@@ -112,6 +112,7 @@ class AlertModal extends AbstractUIView<AlertModalProps> {
 
 export class ModalContainer extends AbstractUIView {
   private readonly modalParentRef = FSComponent.createRef<HTMLDivElement>();
+  private readonly backgroundRef = FSComponent.createRef<HTMLDivElement>();
   private modalContainerOpen = Subject.create(false);
 
   private getModalComponent(modal: Modal | null): VNode {
@@ -126,25 +127,26 @@ export class ModalContainer extends AbstractUIView {
   }
 
   onAfterRender(): void {
-    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
-      .on('show_modal')
-      .handle((modal) => {
-        this.modalContainerOpen.set(true);
+    const handlePopModal = () => {
+      this.modalContainerOpen.set(false);
 
-        FSComponent.render(this.getModalComponent(modal), this.modalParentRef.instance);
-      });
+      const child = this.modalParentRef.instance.firstChild;
 
-    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
-      .on('pop_modal')
-      .handle(() => {
-        this.modalContainerOpen.set(false);
+      if (child) {
+        this.modalParentRef.instance.removeChild(child);
+      }
+    };
 
-        const child = this.modalParentRef.instance.firstChild;
+    const handleShowModal = (modal: Modal) => {
+      this.modalContainerOpen.set(true);
 
-        if (child) {
-          this.modalParentRef.instance.removeChild(child);
-        }
-      });
+      FSComponent.render(this.getModalComponent(modal), this.modalParentRef.instance);
+    };
+
+    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>().on('show_modal').handle(handleShowModal);
+
+    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>().on('pop_modal').handle(handlePopModal);
+    this.backgroundRef.instance.addEventListener('click', handlePopModal);
   }
 
   render(): VNode | null {
@@ -155,8 +157,11 @@ export class ModalContainer extends AbstractUIView {
             `fixed inset-0 z-50 transition duration-200 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`,
         )}
       >
-        <div class="absolute inset-0 size-full bg-theme-body opacity-75" />
-        <div ref={this.modalParentRef} class="absolute inset-0 flex flex-col items-center justify-center" />
+        <div ref={this.backgroundRef} class="absolute inset-0 size-full bg-theme-body opacity-75" />
+        <div
+          ref={this.modalParentRef}
+          class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+        />
       </div>
     );
   }

@@ -106,8 +106,9 @@ export class SettingsAutomaticCalloutsPage extends AbstractUIView<SettingsAutoma
             onClick={() => {
               showModal({
                 kind: ModalKind.Prompt,
-                title: 'Reset Call Outs to Standard Configuration?',
-                bodyText: 'This action is irrevirsible',
+                title: 'Automatic Call Out Configuration Reset',
+                bodyText:
+                  'Are you sure that you want to reset your current configuration for automatic call outs to its standard configuration? This action is irreversible.',
                 onConfirm: () => this.props.autoCallOuts.set(DEFAULT_RADIO_AUTO_CALL_OUTS),
               });
             }}
