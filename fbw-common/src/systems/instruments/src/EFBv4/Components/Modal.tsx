@@ -1,4 +1,4 @@
-import { Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractUIView } from 'instruments/src/EFBv4/shared/UIView';
 import { FSComponent } from '@microsoft/msfs-sdk';
 import { EFB_EVENT_BUS } from 'instruments/src/EFBv4/EfbV4FsInstrument';
@@ -31,10 +31,6 @@ interface AlertModalProps extends BaseModalProps {
 }
 
 export type Modal = PromptModalProps | AlertModalProps;
-
-interface ModalContainerProps {
-  modal: Subscribable<Modal | null>;
-}
 
 export const showModal = (modal: Modal) => EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('show_modal', modal);
 export const popModal = () => EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('pop_modal', {});
@@ -116,8 +112,9 @@ class AlertModal extends AbstractUIView<AlertModalProps> {
   }
 }
 
-export class ModalContainer extends AbstractUIView<ModalContainerProps> {
+export class ModalContainer extends AbstractUIView {
   private readonly modalParentRef = FSComponent.createRef<HTMLDivElement>();
+  private modalContainerOpen = Subject.create(false);
 
   private getModalComponent(modal: Modal | null): VNode {
     if (!modal) return <></>;
@@ -131,13 +128,19 @@ export class ModalContainer extends AbstractUIView<ModalContainerProps> {
   }
 
   onAfterRender(): void {
-    this.props.modal.sub((modal) => {
-      FSComponent.render(this.getModalComponent(modal), this.modalParentRef.instance);
-    });
+    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
+      .on('show_modal')
+      .handle((modal) => {
+        this.modalContainerOpen.set(true);
+
+        FSComponent.render(this.getModalComponent(modal), this.modalParentRef.instance);
+      });
 
     EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
       .on('pop_modal')
       .handle(() => {
+        this.modalContainerOpen.set(false);
+
         const child = this.modalParentRef.instance.firstChild;
 
         if (child) {
@@ -149,9 +152,9 @@ export class ModalContainer extends AbstractUIView<ModalContainerProps> {
   render(): VNode | null {
     return (
       <div
-        class={this.props.modal.map(
-          (modal) =>
-            `fixed inset-0 z-50 transition duration-200 ${modal !== null ? 'opacity-100' : 'pointer-events-none opacity-0'}`,
+        class={this.modalContainerOpen.map(
+          (open) =>
+            `fixed inset-0 z-50 transition duration-200 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`,
         )}
       >
         <div class="absolute inset-0 size-full bg-theme-body opacity-75" />
