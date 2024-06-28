@@ -182,7 +182,7 @@ class NavigraphAccountLinkSettingsItem extends AbstractUIView<NavigraphAccountLi
             style={{ visibility: this.props.navigraphAuthState.user.map((it) => (it ? 'visible' : 'hidden')) }}
           >
             <span>{this.props.navigraphAuthState.user.map((it) => it?.preferred_username ?? '')}</span>
-            <img src={navigraphLogo} class="mt-px h-6 w-6" />
+            <img src={navigraphLogo} class="mt-px size-6" />
             <span>{this.subscriptionText}</span>
           </span>
 

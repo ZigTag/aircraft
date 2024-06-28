@@ -5,6 +5,7 @@ import {
   UserSettingSaveManager,
   UserSettingValue,
 } from '@microsoft/msfs-sdk';
+import { DEFAULT_RADIO_AUTO_CALL_OUTS } from '@flybywiresim/fbw-sdk';
 
 const CURRENT_SETTINGS_VERSION = 1;
 
@@ -32,6 +33,11 @@ export enum VhfSpacing {
 export enum LatLonExtendedFormat {
   LLnn,
   AxxByyy,
+}
+
+export enum WeightUnit {
+  Kg,
+  Lbs,
 }
 
 export enum FpSyncMode {
@@ -103,6 +109,18 @@ const fbwUserSettings = [
   {
     name: 'fbwAircraftLatLonExtendedFormat',
     defaultValue: LatLonExtendedFormat.LLnn as LatLonExtendedFormat,
+  },
+  {
+    name: 'fbwAircraftWeightUnit',
+    defaultValue: WeightUnit.Kg as WeightUnit,
+  },
+  {
+    name: 'fbwAircraftSatcom',
+    defaultValue: false as boolean,
+  },
+  {
+    name: 'fbwAircraftFwcRadioAutoCallOutPins',
+    defaultValue: DEFAULT_RADIO_AUTO_CALL_OUTS,
   },
   {
     name: 'fbwAutomaticallyImportSimbriefData',
@@ -301,6 +319,15 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
       newSettingName: 'fbwAircraftLatLonExtendedFormat',
       valueMapper: (value) => parseInt(value),
     },
+    A32NX_MODEL_SATCOM_ENABLED: {
+      newSettingName: 'fbwAircraftSatcom',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS: {
+      newSettingName: 'fbwAircraftFwcRadioAutoCallOutPins',
+      valueMapper: (value) => parseInt(value),
+    },
+
     A32NX_CONFIG_AUTO_SIMBRIEF_IMPORT: {
       newSettingName: 'fbwAutomaticallyImportSimbriefData',
       valueMapper: (value) => value === 'ENABLED',

@@ -16,6 +16,7 @@ import { SettingsRealismPage } from './SettingsRealismPage';
 import { SettingsThirdPartyOptionsPage } from './SettingsThirdPartyOptionsPage';
 import { SettingsAtsuAocPage } from './SettingsAtsuAocPage';
 import { SettingsFlyPadPage } from './SettingsFlyPadPage';
+import { SettingsAutomaticCalloutsPage } from './SettingsAutomaticCalloutsPage';
 
 export interface SettingsProps {
   navigraphAuthState: NavigraphAuthState;
@@ -35,6 +36,14 @@ export class Settings extends AbstractUIView<SettingsProps> {
       <SettingsAircraftOptionsPinProgramsPage
         settings={this.settings}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+        openAutomaticCalloutsConfigurationPage={() => this.activePageSetter(PageEnum.SettingsPage.AutomaticCallouts)}
+      />,
+    ],
+    [
+      PageEnum.SettingsPage.AutomaticCallouts,
+      <SettingsAutomaticCalloutsPage
+        autoCallOuts={this.settings.getSetting('fbwAircraftFwcRadioAutoCallOutPins')}
+        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.AircraftOptionsPinPrograms)}
       />,
     ],
     [
@@ -136,6 +145,8 @@ export class SettingsPage extends AbstractUIView<SettingsPageProps> {
       <div ref={this.props.ref}>
         <Button onClick={this.props.returnHome} class="bg-inherit hover:text-theme-highlight" unstyled>
           <PageTitle>
+            <i class="bi-arrow-left mr-3 text-[30px]" />
+
             {t('Settings.Title')}
             {' &gt; '}
             {this.props.title}

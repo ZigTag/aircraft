@@ -82,6 +82,7 @@ export namespace PageEnum {
   export enum SettingsPage {
     Index,
     AircraftOptionsPinPrograms,
+    AutomaticCallouts,
     SimOptions,
     Realism,
     ThirdPartyOptions,

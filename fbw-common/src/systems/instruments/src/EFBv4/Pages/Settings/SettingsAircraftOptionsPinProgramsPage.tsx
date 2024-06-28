@@ -1,13 +1,22 @@
 import { AbstractUIView } from '../../shared/UIView';
 import { FSComponent, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
-import { ChoiceSettingsItem, InputSettingsItem, ToggleSettingsItem } from './Components/SettingItem';
-import { FbwUserSettingsDefs, IsisBaroUnit, LatLonExtendedFormat, PaxSigns, VhfSpacing } from '../../FbwUserSettings';
+import { ChoiceSettingsItem, InputSettingsItem, SettingsItem, ToggleSettingsItem } from './Components/SettingItem';
+import {
+  FbwUserSettingsDefs,
+  IsisBaroUnit,
+  LatLonExtendedFormat,
+  PaxSigns,
+  VhfSpacing,
+  WeightUnit,
+} from '../../FbwUserSettings';
 import { t } from '../../Components/LocalizedText';
 import { SettingsPage } from './Settings';
+import { Button } from '../../Components/Button';
 
 export interface SettingsAircraftOptionsPinProgramsPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
   returnHome: () => any;
+  openAutomaticCalloutsConfigurationPage: () => any;
 }
 
 export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<SettingsAircraftOptionsPinProgramsPageProps> {
@@ -65,7 +74,7 @@ export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<Setti
 
         <ChoiceSettingsItem
           setting={this.props.settings.getSetting('fbwAircraftVhfSpacing')}
-          settingName={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}
+          settingName={t('Settings.AircraftOptionsPinPrograms.RmpVhfSpacing')}
           choices={{
             [VhfSpacing.EightPointThirtyThreeKHz]: <>8.33 kHz</>,
             [VhfSpacing.TwentyFiveKHz]: <>25 kHz</>,
@@ -80,6 +89,26 @@ export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<Setti
             [LatLonExtendedFormat.AxxByyy]: <>AxxByyy</>,
           }}
         />
+
+        <ChoiceSettingsItem
+          setting={this.props.settings.getSetting('fbwAircraftWeightUnit')}
+          settingName={t('Settings.AircraftOptionsPinPrograms.WeightUnit')}
+          choices={{
+            [WeightUnit.Kg]: <>kg</>,
+            [WeightUnit.Lbs]: <>lbs</>,
+          }}
+        />
+
+        <ToggleSettingsItem
+          setting={this.props.settings.getSetting('fbwAircraftSatcom')}
+          settingName={t('Settings.AircraftOptionsPinPrograms.Satcom')}
+        />
+
+        <SettingsItem settingName={t('Settings.AutomaticCallOuts.Title')}>
+          <Button onClick={this.props.openAutomaticCalloutsConfigurationPage}>
+            {t('Settings.AircraftOptionsPinPrograms.Select')}
+          </Button>
+        </SettingsItem>
       </SettingsPage>
     );
   }
