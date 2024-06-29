@@ -78,9 +78,7 @@ class SettingsThirdPartyOptionsIndex extends DisplayComponent<SettingsThirdParty
       this.deviceFlowParams,
       this.props.navigraphAuthState.user,
     ).sub(([deviceFlowParams, user]) => {
-      if (deviceFlowParams && !user) {
-        this.deviceFlowOverlayVisible.set(true);
-      }
+      this.deviceFlowOverlayVisible.set(deviceFlowParams !== null && user === null);
     });
   }
 
