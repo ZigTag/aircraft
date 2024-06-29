@@ -13,9 +13,14 @@ import { Chart } from 'navigraph/charts';
 import { navigraphCharts } from '../../../../navigraph';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { TooltipWrapper } from '../../../Components/TooltipWrapper';
+import { twMerge } from 'tailwind-merge';
 
 export interface ChartViewerProps {
   shownChart: Subscribable<Chart | null>; // TODO use a generic type
+
+  isFullscreen: Subscribable<boolean>;
+
+  onToggleFullscreen: () => void;
 }
 
 export class ChartViewer extends AbstractUIView<ChartViewerProps> {
@@ -318,9 +323,13 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
     this.imageRef.instance.removeEventListener('load', this.handleChartImageLoaded);
   }
 
+  private readonly className = this.props.isFullscreen.map((it) =>
+    twMerge('relative h-[862px] grow self-stretch overflow-hidden rounded-md bg-theme-secondary', !it && 'ml-6'),
+  );
+
   render(): VNode | null {
     return (
-      <div ref={this.containerRef} class="relative grow self-stretch overflow-hidden bg-red-500">
+      <div ref={this.containerRef} class={this.className}>
         <div
           ref={this.wrapperRef}
           class="absolute"
@@ -344,7 +353,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             <TooltipWrapper text="NavigationAndCharts.TT.RotateLeft45Degrees">
               <Button
                 unstyled
-                class={`cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
+                class={`cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
                 onClick={(event) => this.handleChartRotateCounterClockwise(event.shiftKey)}
               >
                 <i class="bi-arrow-counterclockwise text-[35px] text-inherit" />
@@ -353,7 +362,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             <TooltipWrapper text="NavigationAndCharts.TT.RotateRight45Degrees">
               <Button
                 unstyled
-                class={`cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
+                class={`cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body ${false && 'pointer-events-none text-theme-unselected text-opacity-60'}`}
                 onClick={(event) => this.handleChartRotateClockwise(event.shiftKey)}
               >
                 <i class="bi-arrow-clockwise fill-current text-[35px] text-inherit" />
@@ -364,7 +373,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             <TooltipWrapper text="NavigationAndCharts.TT.FitChartToHeight">
               <Button
                 unstyled
-                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                class="cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                 onClick={() => this.fitChart('height')}
               >
                 <i class="bi-arrows-expand text-[35px] text-inherit" />
@@ -374,7 +383,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             <TooltipWrapper text="NavigationAndCharts.TT.FitChartToWidth">
               <Button
                 unstyled
-                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                class="cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                 onClick={() => this.fitChart('width')}
               >
                 <i class="bi-arrows-expand-vertical text-[35px] text-inherit" />
@@ -384,7 +393,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             <TooltipWrapper text="NavigationAndCharts.TT.ResetMovement">
               <button
                 type="button"
-                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                class="cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
               >
                 <i class="bi-x-circle-fill text-[35px] text-inherit" />
               </button>
@@ -393,7 +402,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             <TooltipWrapper text="NavigationAndCharts.TT.ZoomIn">
               <Button
                 unstyled
-                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                class="cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                 onClick={this.handleChartZoomIn}
               >
                 <i class="bi-plus text-[35px] text-inherit" />
@@ -403,34 +412,37 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             <TooltipWrapper text="NavigationAndCharts.TT.ZoomOut">
               <Button
                 unstyled
-                class="cursor-pointer bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                class="cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                 onClick={this.handleChartZoomOut}
               >
                 <i class="bi-dash text-[35px] text-inherit" />
               </Button>
             </TooltipWrapper>
           </div>
+
           <div class="flex flex-col overflow-hidden rounded-md">
-            <div class="cursor-pointer rounded-md bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body">
+            <Button // TODO TT
+              unstyled
+              class="cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+              onClick={this.props.onToggleFullscreen}
+            >
               <i
                 class={this.inFullScreen.map((it) =>
                   it ? 'bi-fullscreen text-[35px] text-inherit' : 'bi-fullscreen-exit text-[35px] text-inherit',
                 )}
               />
-            </div>
-
-            {true && (
-              <Button
-                class="mt-3 cursor-pointer rounded-md bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-                onClick={this.handleChartToggleTheme}
-              >
-                <i
-                  class={this.usingDarkTheme.map((it) =>
-                    it ? 'bi-moon-fill text-[35px] text-inherit' : 'bi-sun-fill text-[35px] text-inherit',
-                  )}
-                />
-              </Button>
-            )}
+            </Button>
+            <Button // TODO TT
+              unstyled
+              class="cursor-pointer bg-theme-accent p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+              onClick={this.handleChartToggleTheme}
+            >
+              <i
+                class={this.usingDarkTheme.map((it) =>
+                  it ? 'bi-moon-fill text-[35px] text-inherit' : 'bi-sun-fill text-[35px] text-inherit',
+                )}
+              />
+            </Button>
           </div>
         </div>
       </div>

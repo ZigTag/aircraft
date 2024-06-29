@@ -33,7 +33,7 @@ export class Navigation extends DisplayComponent<NavigationProps> {
   render(): VNode {
     return (
       <div class="h-full">
-        <div class="relative">
+        <div>
           <PageTitle>{t('NavigationAndCharts.Title')}</PageTitle>
           <Selector class="absolute right-0 top-0" tabs={this.tabs} activePage={this.activePage} />
         </div>
@@ -117,7 +117,9 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
 
   render(): VNode | null {
     return (
-      <div class="flex h-full">
+      <div class="flex h-full items-stretch">
+        <div class="w-0"></div>
+
         <SwitchOn
           condition={this.isFullscreen.map((value) => !value)}
           on={
@@ -189,7 +191,11 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
           }
         />
 
-        <ChartViewer shownChart={this.props.navigationState.selectedChart} />
+        <ChartViewer
+          shownChart={this.props.navigationState.selectedChart}
+          isFullscreen={this.isFullscreen}
+          onToggleFullscreen={() => this.isFullscreen.set(!this.isFullscreen.get())}
+        />
       </div>
     );
   }
