@@ -16,7 +16,7 @@ import { Button } from '../../Components/Button';
 export interface SettingsAircraftOptionsPinProgramsPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
   returnHome: () => any;
-  openAutomaticCalloutsConfigurationPage: () => any;
+  openAutomaticCallOutsConfigurationPage: () => any;
 }
 
 export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<SettingsAircraftOptionsPinProgramsPageProps> {
@@ -105,7 +105,7 @@ export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<Setti
         />
 
         <SettingsItem settingName={t('Settings.AutomaticCallOuts.Title')}>
-          <Button onClick={this.props.openAutomaticCalloutsConfigurationPage}>
+          <Button onClick={this.props.openAutomaticCallOutsConfigurationPage}>
             {t('Settings.AircraftOptionsPinPrograms.Select')}
           </Button>
         </SettingsItem>

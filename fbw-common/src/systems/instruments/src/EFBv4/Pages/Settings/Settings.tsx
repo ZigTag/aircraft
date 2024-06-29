@@ -36,7 +36,7 @@ export class Settings extends AbstractUIView<SettingsProps> {
       <SettingsAircraftOptionsPinProgramsPage
         settings={this.settings}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
-        openAutomaticCalloutsConfigurationPage={() => this.activePageSetter(PageEnum.SettingsPage.AutomaticCallouts)}
+        openAutomaticCallOutsConfigurationPage={() => this.activePageSetter(PageEnum.SettingsPage.AutomaticCallouts)}
       />,
     ],
     [

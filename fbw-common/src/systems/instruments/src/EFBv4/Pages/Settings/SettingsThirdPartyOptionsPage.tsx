@@ -51,13 +51,7 @@ interface SettingsThirdPartyOptionsIndexProps {
 class SettingsThirdPartyOptionsIndex extends DisplayComponent<SettingsThirdPartyOptionsIndexProps> {
   private readonly deviceFlowParams = Subject.create<DeviceFlowParams | null>(null);
 
-  private readonly deviceFlowOverlayVisible = MappedSubject.create(
-    ([deviceFlowParams, user]) => {
-      return deviceFlowParams && !user;
-    },
-    this.deviceFlowParams,
-    this.props.navigraphAuthState.user,
-  );
+  private readonly deviceFlowOverlayVisible = Subject.create(false);
 
   private readonly deviceFlowQrCode = this.deviceFlowParams.map((params) => {
     if (!params) {
@@ -71,53 +65,75 @@ class SettingsThirdPartyOptionsIndex extends DisplayComponent<SettingsThirdParty
 
   private readonly deviceFlowOverlayClass = this.deviceFlowOverlayVisible.map((visible) => {
     return twMerge(
-      'pointer-events-none absolute left-0 top-0 flex h-screen w-screen flex-col items-center justify-center space-y-6 bg-theme-body/80 opacity-0 transition-all duration-150',
+      'pointer-events-none absolute inset-0 flex items-center justify-center bg-theme-body/80 opacity-0 transition-all duration-150',
       visible && 'opacity-1 pointer-events-auto',
     );
   });
 
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    MappedSubject.create(
+      ([deviceFlowParams, user]) => [deviceFlowParams, user],
+      this.deviceFlowParams,
+      this.props.navigraphAuthState.user,
+    ).sub(([deviceFlowParams, user]) => {
+      if (deviceFlowParams && !user) {
+        this.deviceFlowOverlayVisible.set(true);
+      }
+    });
+  }
+
   render(): VNode | null {
     return (
-      <>
-        <NavigraphAccountLinkSettingsItem
-          navigraphAuthState={this.props.navigraphAuthState}
-          onShowDeviceFlowParams={(params) => this.deviceFlowParams.set(params)}
-          onLoginComplete={() => this.deviceFlowParams.set(null)}
-        />
+      <div>
+        <div class="divide-y-2 divide-theme-accent">
+          <NavigraphAccountLinkSettingsItem
+            navigraphAuthState={this.props.navigraphAuthState}
+            onShowDeviceFlowParams={(params) => this.deviceFlowParams.set(params)}
+            onLoginComplete={() => this.deviceFlowParams.set(null)}
+          />
 
-        <ToggleSettingsItem
-          setting={this.props.settings.getSetting('fbwGsxFuelSyncEnabled')}
-          settingName={t('Settings.ThirdPartyOptions.GsxFuelEnabled')}
-        />
-        <ToggleSettingsItem
-          setting={this.props.settings.getSetting('fbwGsxPayloadSyncEnabled')}
-          settingName={t('Settings.ThirdPartyOptions.GsxPayloadEnabled')}
-        />
-        <ToggleSettingsItem
-          setting={this.props.settings.getSetting('fbwAutomaticallyImportSimbriefData')}
-          settingName={t('Settings.AtsuAoc.AutomaticallyImportSimBriefData')}
-        />
+          <ToggleSettingsItem
+            setting={this.props.settings.getSetting('fbwGsxFuelSyncEnabled')}
+            settingName={t('Settings.ThirdPartyOptions.GsxFuelEnabled')}
+          />
+          <ToggleSettingsItem
+            setting={this.props.settings.getSetting('fbwGsxPayloadSyncEnabled')}
+            settingName={t('Settings.ThirdPartyOptions.GsxPayloadEnabled')}
+          />
+          <ToggleSettingsItem
+            setting={this.props.settings.getSetting('fbwAutomaticallyImportSimbriefData')}
+            settingName={t('Settings.AtsuAoc.AutomaticallyImportSimBriefData')}
+          />
+        </div>
 
         <div class={this.deviceFlowOverlayClass}>
-          <img src={navigraphLogo} class="w-20" />
+          <div class="flex flex-col items-center space-y-6">
+            <img src={navigraphLogo} class="w-20" />
 
-          <h2 class="font-semibold">{t('Settings.ThirdPartyOptions.NavigraphAccountLink.LoginPage.Title')}</h2>
+            <h2 class="font-semibold">{t('Settings.ThirdPartyOptions.NavigraphAccountLink.LoginPage.Title')}</h2>
 
-          <span class="max-w-prose text-center">
-            {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}{' '}
-            <span class="text-theme-highlight">
-              {this.deviceFlowParams.map((it) => it?.verification_uri ?? '(URL not yet Available)')}
-            </span>{' '}
-            {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
-          </span>
+            <span class="max-w-prose text-center">
+              {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}{' '}
+              <span class="text-theme-highlight">
+                {this.deviceFlowParams.map((it) => it?.verification_uri ?? '(URL not yet Available)')}
+              </span>{' '}
+              {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
+            </span>
 
-          <span class="rounded-md border-2 border-theme-accent bg-theme-secondary px-2 py-1.5 font-mono text-3xl">
-            {this.deviceFlowParams.map((it) => it?.user_code ?? '????????')}
-          </span>
+            <span class="rounded-md border-2 border-theme-accent bg-theme-secondary px-2 py-1.5 font-mono text-3xl">
+              {this.deviceFlowParams.map((it) => it?.user_code ?? '????????')}
+            </span>
 
-          <img src={this.deviceFlowQrCode} class="w-60 rounded-md border-4 border-theme-accent" />
+            <img src={this.deviceFlowQrCode} class="w-60 rounded-md border-4 border-theme-accent" />
+
+            <Button class={'!mt-16 w-full'} onClick={() => this.deviceFlowOverlayVisible.set(false)}>
+              {t('Modals.Cancel')}
+            </Button>
+          </div>
         </div>
-      </>
+      </div>
     );
   }
 }
