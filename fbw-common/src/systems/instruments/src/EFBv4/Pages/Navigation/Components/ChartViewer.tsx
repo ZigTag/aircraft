@@ -21,9 +21,13 @@ export interface ChartViewerProps {
 export class ChartViewer extends AbstractUIView<ChartViewerProps> {
   private readonly containerRef = FSComponent.createRef<HTMLDivElement>();
 
+  private readonly wrapperRef = FSComponent.createRef<HTMLDivElement>();
+
   private readonly imageRef = FSComponent.createRef<HTMLImageElement>();
 
-  private readonly chartImageUrl = Subject.create<string | null>(null);
+  private readonly chartImageLightUrl = Subject.create<string | null>(null);
+
+  private readonly chartImageDarkUrl = Subject.create<string | null>(null);
 
   private readonly inFullScreen = Subject.create(false);
 
@@ -36,6 +40,10 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
   private chartPanStartPositionX = 0;
 
   private chartPanStartPositionY = 0;
+
+  private chartPanAmountX = 0;
+
+  private chartPanAmountY = 0;
 
   private readonly chartTranslateOriginX = Subject.create(0);
 
@@ -89,7 +97,16 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
 
         const dayUrl = URL.createObjectURL(dayBlob);
 
-        this.chartImageUrl.set(dayUrl);
+        const nightBlob = await navigraphCharts.getChartImage({ chart, theme: 'dark' });
+
+        if (!nightBlob) {
+          throw new Error('[Navigation] Blob returned by Navigraph SDK was null');
+        }
+
+        const nightUrl = URL.createObjectURL(nightBlob);
+
+        this.chartImageLightUrl.set(dayUrl);
+        this.chartImageDarkUrl.set(nightUrl);
       }),
       MappedSubject.create(this.chartTranslateX, this.chartTranslateY, this.chartScale, this.chartRotation).sub(
         ([x, y, scale, rotation]) => {
@@ -100,8 +117,8 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
       ),
     );
 
-    this.imageRef.instance.addEventListener('mousedown', this.handleChartMouseDown);
-    this.imageRef.instance.addEventListener('dblclick', this.handleChartDoubleClick);
+    this.wrapperRef.instance.addEventListener('mousedown', this.handleChartMouseDown);
+    this.wrapperRef.instance.addEventListener('dblclick', this.handleChartDoubleClick);
     this.imageRef.instance.addEventListener('load', this.handleChartImageLoaded);
   }
 
@@ -150,12 +167,20 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
     this.chartTransform.resolve();
   };
 
-  private readonly handleChartMouseDown = (event: MouseEvent) => {
-    this.imageRef.instance.addEventListener('mousemove', this.handleChartMouseMove);
-    this.imageRef.instance.addEventListener('mouseup', this.handleChartMouseUp);
+  private readonly handleChartToggleTheme = () => {
+    this.usingDarkTheme.set(!this.usingDarkTheme.get());
+  };
 
-    this.chartPanStartPositionX = event.offsetX;
-    this.chartPanStartPositionY = event.offsetY;
+  private readonly handleChartMouseDown = (event: MouseEvent) => {
+    this.wrapperRef.instance.addEventListener('mousemove', this.handleChartMouseMove);
+    this.wrapperRef.instance.addEventListener('mouseup', this.handleChartMouseUp);
+
+    this.chartPanStartPositionX = event.screenX;
+    this.chartPanStartPositionY = event.screenY;
+    this.chartPanAmountX = 0;
+    this.chartPanAmountY = 0;
+
+    this.chartTransitionsEnabled.set(false);
   };
 
   private readonly handleChartDoubleClick = (event: MouseEvent) => {
@@ -165,18 +190,36 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
   };
 
   private readonly handleChartMouseMove = (event: MouseEvent) => {
-    const dx = (event.offsetX - this.chartPanStartPositionX) * this.chartScale.get();
-    const dy = (event.offsetY - this.chartPanStartPositionY) * this.chartScale.get();
+    const dx = event.screenX - this.chartPanStartPositionX;
+    const dy = event.screenY - this.chartPanStartPositionY;
 
-    // this.chartTranslateX.set(this.chartTranslateX.get() + dx);
-    // this.chartTranslateY.set(this.chartTranslateY.get() + dy);
-    // this.chartTranslateOriginX.set(event.offsetX);
-    // this.chartTranslateOriginX.set(event.offsetY);
+    this.chartPanStartPositionX = event.screenX;
+    this.chartPanStartPositionY = event.screenY;
+
+    this.chartPanAmountX += dx;
+    this.chartPanAmountY += dy;
+    this.chartTranslateX.set(this.chartTranslateX.get() + dx);
+    this.chartTranslateY.set(this.chartTranslateY.get() + dy);
+
+    this.chartTransform.resolve();
   };
 
   private readonly handleChartMouseUp = () => {
-    this.imageRef.instance.removeEventListener('mousemove', this.handleChartMouseMove);
-    this.imageRef.instance.removeEventListener('mouseup', this.handleChartMouseUp);
+    this.wrapperRef.instance.removeEventListener('mousemove', this.handleChartMouseMove);
+    this.wrapperRef.instance.removeEventListener('mouseup', this.handleChartMouseUp);
+
+    const hy = Math.hypot(this.chartPanAmountX, this.chartPanAmountY);
+    const angle = Math.atan2(-this.chartPanAmountY, -this.chartPanAmountX);
+
+    const correctedPanAmountX = hy * Math.cos(angle - Avionics.Utils.DEG2RAD * this.chartRotation.get());
+    const correctedPanAmountY = hy * Math.sin(angle - Avionics.Utils.DEG2RAD * this.chartRotation.get());
+
+    this.centerChartOnPoint(
+      this.chartTranslateOriginX.get() + correctedPanAmountX / this.chartScale.get(),
+      this.chartTranslateOriginY.get() + correctedPanAmountY / this.chartScale.get(),
+    );
+
+    this.chartTransitionsEnabled.set(true);
   };
 
   private readonly handleChartImageLoaded = () => {
@@ -269,25 +312,32 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
   destroy(childFilter?: (child: UIVIew) => boolean) {
     super.destroy(childFilter);
 
-    this.imageRef.instance.removeEventListener('mousedown', this.handleChartMouseDown);
-    this.imageRef.instance.removeEventListener('mousemove', this.handleChartMouseMove);
-    this.imageRef.instance.removeEventListener('mouseup', this.handleChartMouseUp);
+    this.wrapperRef.instance.removeEventListener('mousedown', this.handleChartMouseDown);
+    this.wrapperRef.instance.removeEventListener('mousemove', this.handleChartMouseMove);
+    this.wrapperRef.instance.removeEventListener('mouseup', this.handleChartMouseUp);
     this.imageRef.instance.removeEventListener('load', this.handleChartImageLoaded);
   }
 
   render(): VNode | null {
     return (
       <div ref={this.containerRef} class="relative grow self-stretch overflow-hidden bg-red-500">
-        <img
-          ref={this.imageRef}
-          src={this.chartImageUrl}
+        <div
+          ref={this.wrapperRef}
           class="absolute"
           style={{
             transition: this.chartTransitionsEnabled.map((it) => (it ? 'transform, transform-origin, 200ms' : 'unset')),
             transform: this.chartTransform,
             'transform-origin': this.chartTransformOriginString,
           }}
-        />
+        >
+          <img
+            ref={this.imageRef}
+            src={this.chartImageDarkUrl}
+            class="absolute z-10 transition-all duration-200"
+            style={{ opacity: this.usingDarkTheme.map((it) => (it ? 0 : 1).toString()) }}
+          />
+          <img ref={this.imageRef} src={this.chartImageLightUrl} class="absolute" />
+        </div>
 
         <div class="absolute inset-y-6 right-6 z-20 flex cursor-pointer flex-col justify-between overflow-hidden rounded-md">
           <div class="flex flex-col overflow-hidden rounded-md">
@@ -370,13 +420,16 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             </div>
 
             {true && (
-              <div class="mt-3 cursor-pointer rounded-md bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body">
+              <Button
+                class="mt-3 cursor-pointer rounded-md bg-theme-secondary p-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                onClick={this.handleChartToggleTheme}
+              >
                 <i
-                  class={this.inFullScreen.map((it) =>
+                  class={this.usingDarkTheme.map((it) =>
                     it ? 'bi-moon-fill text-[35px] text-inherit' : 'bi-sun-fill text-[35px] text-inherit',
                   )}
                 />
-              </div>
+              </Button>
             )}
           </div>
         </div>
