@@ -11,7 +11,7 @@ import { PageTitle } from '../../Components/PageTitle';
 import { AbstractUIView } from '../../shared/UIView';
 import { Failure } from '@shared/failures';
 import { AtaChapterNumber, AtaChaptersDescription, AtaChaptersTitle } from '@shared/ata';
-import { ScrollableContainer } from '../Dashboard/Dashboard';
+import { ScrollableContainer } from '../../Components/ScrollableContainer';
 import { PageBox } from '../../Components/PageBox';
 import { SimpleInput } from '../../Components/SimpleInput';
 import { Selector } from '../../Components/Selector';

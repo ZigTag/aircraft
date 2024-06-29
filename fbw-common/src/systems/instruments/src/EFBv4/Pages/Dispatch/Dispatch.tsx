@@ -7,7 +7,7 @@ import { Switch, Pages, SwitchIf, SimbriefState } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
 import { PageTitle } from '../../Components/PageTitle';
 import { AbstractUIView } from '../../shared/UIView';
-import { ScrollableContainer } from '../Dashboard/Dashboard';
+import { ScrollableContainer } from '../../Components/ScrollableContainer';
 import { Button } from '../../Components/Button';
 import { FbwUserSettings } from '../../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';

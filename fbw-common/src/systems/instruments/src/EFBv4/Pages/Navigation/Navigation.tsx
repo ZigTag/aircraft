@@ -6,7 +6,7 @@ import { NavigationState, NavigraphAuthState, Pages, SimbriefState, Switch, Swit
 import { PageEnum } from '../../shared/common';
 import { NavigraphKeys } from '@shared/navigraph';
 import { SimpleInput } from '../../Components/SimpleInput';
-import { ScrollableContainer } from '../Dashboard/Dashboard';
+import { ScrollableContainer } from '../../Components/ScrollableContainer';
 import { twMerge } from 'tailwind-merge';
 import { List } from '../../Components/List';
 import { Chart, ChartCategory } from 'navigraph/charts';

@@ -15,7 +15,7 @@ import { SimpleInput } from '../../../Components/SimpleInput';
 import { busContext } from '../../../Contexts';
 import { t } from '../../../Components/LocalizedText';
 import { Selector } from '../../../Components/Selector';
-import { ScrollableContainer } from '../../Dashboard/Dashboard';
+import { ScrollableContainer } from '../../../Components/ScrollableContainer';
 import { twMerge } from 'tailwind-merge';
 import { SwitchOn } from '../../Pages';
 import { Button } from '../../../Components/Button';
