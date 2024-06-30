@@ -10,6 +10,11 @@ export interface EFBSimvars {
   efbBrightness: number;
   isLookingAtLeftEfb: boolean;
   isLookingAtRightEfb: boolean;
+
+  currentLatitude: number;
+  currentLongitude: number;
+  activeFrequency: number;
+  standbyFrequency: number;
 }
 
 export enum EFBVars {
@@ -22,6 +27,12 @@ export enum EFBVars {
   efbBrightness = 'L:A32NX_EFB_BRIGHTNESS',
   isLookingAtLeftEfb = 'A:IS CAMERA RAY INTERSECT WITH NODE:1',
   isLookingAtRightEfb = 'A:IS CAMERA RAY INTERSECT WITH NODE:2',
+
+  currentLatitude = 'A:GPS POSITION LAT',
+  currentLongitude = 'A:GPS POSITION LON',
+
+  activeFrequency = 'COM ACTIVE FREQUENCY:1',
+  standbyFrequency = 'COM STANDBY FREQUENCY:1',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -36,6 +47,11 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['efbBrightness', { name: EFBVars.efbBrightness, type: SimVarValueType.Number }],
     ['isLookingAtLeftEfb', { name: EFBVars.isLookingAtLeftEfb, type: SimVarValueType.Bool }],
     ['isLookingAtRightEfb', { name: EFBVars.isLookingAtRightEfb, type: SimVarValueType.Bool }],
+
+    ['currentLatitude', { name: EFBVars.currentLatitude, type: SimVarValueType.Degree }],
+    ['currentLongitude', { name: EFBVars.currentLongitude, type: SimVarValueType.Degree }],
+    ['activeFrequency', { name: EFBVars.activeFrequency, type: 'Hz' as SimVarValueType }],
+    ['standbyFrequency', { name: EFBVars.standbyFrequency, type: 'Hz' as SimVarValueType }],
   ]);
 
   public constructor(bus: EventBus) {

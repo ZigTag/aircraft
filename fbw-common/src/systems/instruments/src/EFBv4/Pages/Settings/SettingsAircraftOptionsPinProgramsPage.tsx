@@ -100,7 +100,7 @@ export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<Setti
         />
 
         <ToggleSettingsItem
-          setting={this.props.settings.getSetting('fbwAircraftSatcom')}
+          setting={this.props.settings.getSetting('fbwAircraftSatcomEnabled')}
           settingName={t('Settings.AircraftOptionsPinPrograms.Satcom')}
         />
 

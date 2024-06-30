@@ -64,7 +64,10 @@ export class Settings extends AbstractUIView<SettingsProps> {
     ],
     [
       PageEnum.SettingsPage.AtsuAoc,
-      <SettingsAtsuAocPage returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsAtsuAocPage
+        settings={this.settings}
+        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+      />,
     ],
     [
       PageEnum.SettingsPage.Audio,

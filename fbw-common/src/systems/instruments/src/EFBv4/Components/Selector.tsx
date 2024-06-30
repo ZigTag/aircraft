@@ -1,12 +1,13 @@
 import { ComponentProps, DisplayComponent, FSComponent, MutableSubscribable, VNode } from '@microsoft/msfs-sdk';
 import { NavButton } from './Navbar';
-import { Pages } from '../Pages/Pages';
 import { twMerge } from 'tailwind-merge';
+import { TooltipWrapper } from '../Components/Tooltip';
 
+type SelectorTab = readonly [page: number, component: VNode, tooltipText?: string];
 interface SelectorProps extends ComponentProps {
   class?: string;
   activeClass?: string;
-  tabs: Pages;
+  tabs: SelectorTab[];
   activePage: MutableSubscribable<number>;
   innerClass?: string;
 }
@@ -21,20 +22,28 @@ export class Selector extends DisplayComponent<SelectorProps> {
             this.props.innerClass ?? '',
           )}
         >
-          {this.props.tabs.map(([page, contents]) => (
-            <NavButton
-              inactiveClass="flex items-centerbg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
-              // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
-              activeClass={twMerge(
-                'flex items-center bg-theme-accent bg-opacity-100 px-6 py-2',
-                this.props.activeClass ?? '',
-              )}
-              page={page}
-              activePage={this.props.activePage}
-            >
-              <div class="size-full text-inherit">{contents}</div>
-            </NavButton>
-          ))}
+          {this.props.tabs.map(([page, contents, tooltipText]) => {
+            const navButton = (
+              <NavButton
+                inactiveClass="flex items-centerbg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
+                // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
+                activeClass={twMerge(
+                  'flex items-center bg-theme-accent bg-opacity-100 px-6 py-2',
+                  this.props.activeClass ?? '',
+                )}
+                page={page}
+                activePage={this.props.activePage}
+              >
+                <div class="size-full text-inherit">{contents}</div>
+              </NavButton>
+            );
+
+            if (tooltipText) {
+              return <TooltipWrapper text={tooltipText}>{navButton}</TooltipWrapper>;
+            }
+
+            return navButton;
+          })}
         </div>
       </div>
     );
