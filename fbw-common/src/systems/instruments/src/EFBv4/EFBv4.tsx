@@ -24,7 +24,7 @@ import './Assets/bi-icons.css';
 
 import { FbwUserSettings, FbwUserSettingsSaveManager, FlypadTheme } from './FbwUserSettings';
 import { EFB_EVENT_BUS } from './EfbV4FsInstrument';
-import { Tooltip } from './Components/TooltipWrapper';
+import { TooltipContainer } from './Components/Tooltip';
 import { FlypadControlEvents } from './FlypadControlEvents';
 import { LocalizedString } from './shared/translation';
 import { ModalContainer } from './Components/Modal';
@@ -79,40 +79,11 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
 
     document.documentElement.classList.add(`theme-${theme.get()}`, 'animationsEnabled');
 
-    const targetIDSubject = Subject.create<string | null>(null);
-    const shownSubject = Subject.create(false);
-    const textSubject = LocalizedString.create('');
-
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-
-    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
-      .on('set_tooltip')
-      .handle(({ id, shown, text }) => {
-        if (!shown) {
-          shownSubject.set(false);
-        }
-
-        if (shown) {
-          textSubject.set(text);
-        }
-
-        if (timeout !== null) {
-          clearTimeout(timeout);
-        }
-
-        timeout = setTimeout(() => {
-          shownSubject.set(shown);
-          targetIDSubject.set(id);
-        }, 250);
-      });
-
     FSComponent.render(
       <flypadClientContext.Provider value={flypadClient}>
-        <ModalContainer />
         <div ref={this.renderRoot2} class="flex w-full flex-col items-stretch" />
-        <Tooltip id={targetIDSubject} shown={shownSubject}>
-          {textSubject}
-        </Tooltip>
+        <ModalContainer />
+        <TooltipContainer />
       </flypadClientContext.Provider>,
       this.renderRoot.instance,
     );

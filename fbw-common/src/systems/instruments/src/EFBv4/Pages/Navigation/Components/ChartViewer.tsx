@@ -12,7 +12,7 @@ import { AbstractUIView, UIVIew } from '../../../shared/UIView';
 import { Chart } from 'navigraph/charts';
 import { navigraphCharts } from '../../../../navigraph';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
-import { TooltipWrapper } from '../../../Components/TooltipWrapper';
+import { TooltipWrapper } from '../../../Components/Tooltip';
 
 export interface ChartViewerProps {
   shownChart: Subscribable<Chart | null>; // TODO use a generic type

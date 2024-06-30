@@ -13,6 +13,7 @@ import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 import { FlypadControlEvents } from '../FlypadControlEvents';
 import { FSComponentUtils } from '../Utils/FSComponentUtils';
 import { v4 } from 'uuid';
+import { LocalizedString } from '../shared/translation';
 
 export interface TooltipWrapperProps extends ComponentProps {
   text: string;
@@ -122,10 +123,12 @@ export class Tooltip extends DisplayComponent<TooltipProps> {
     super.onAfterRender(node);
 
     this.props.id.sub((id) => {
+      if (id === null) return;
+
       const element = document.querySelector(`*[data-fbw-tooltip-id="${id}"]`);
 
       if (!element) {
-        throw new Error('[Tooltip](onAfterRender) Could not find a DOM node with the provided tooltip ID');
+        throw new Error(`[Tooltip](onAfterRender) Could not find a DOM node with the provided tooltip ID: ${id}`);
       }
 
       const wrappedElementRect = element.getBoundingClientRect();
@@ -141,6 +144,47 @@ export class Tooltip extends DisplayComponent<TooltipProps> {
       <div ref={this.rootRef} class={this.className} style={{ top: this.top, left: this.left }}>
         {this.props.children}
       </div>
+    );
+  }
+}
+
+export class TooltipContainer extends AbstractUIView {
+  private targetIDSubject = Subject.create<string | null>(null);
+  private shownSubject = Subject.create(false);
+  private textSubject = LocalizedString.create('');
+
+  private timeout: ReturnType<typeof setTimeout> | null = null;
+
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
+      .on('set_tooltip')
+      .handle(({ id, shown, text }) => {
+        if (!shown) {
+          this.shownSubject.set(false);
+        }
+
+        if (shown) {
+          this.textSubject.set(text);
+        }
+
+        if (this.timeout !== null) {
+          clearTimeout(this.timeout);
+        }
+
+        this.timeout = setTimeout(() => {
+          this.shownSubject.set(shown);
+          this.targetIDSubject.set(id);
+        }, 250);
+      });
+  }
+
+  render(): VNode | null {
+    return (
+      <Tooltip id={this.targetIDSubject} shown={this.shownSubject}>
+        {this.textSubject}
+      </Tooltip>
     );
   }
 }
