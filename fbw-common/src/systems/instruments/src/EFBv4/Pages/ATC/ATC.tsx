@@ -134,7 +134,7 @@ class FrequencyInformation extends AbstractUIView<FrequencyInformationProps> {
           </div>
         </div>
 
-        <div ref={this.controllerInformationContainerRef} />
+        <div class="w-full" ref={this.controllerInformationContainerRef} />
       </div>
     );
   }
