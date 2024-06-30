@@ -7,7 +7,7 @@ type SelectorTab = readonly [page: number, component: VNode, tooltipText?: strin
 interface SelectorProps extends ComponentProps {
   class?: string;
   activeClass?: string;
-  tabs: SelectorTab[];
+  tabs: readonly SelectorTab[];
   activePage: MutableSubscribable<number>;
   innerClass?: string;
 }
@@ -15,7 +15,7 @@ interface SelectorProps extends ComponentProps {
 export class Selector extends DisplayComponent<SelectorProps> {
   render(): VNode {
     return (
-      <div class={twMerge('flex justify-between', this.props.class ?? '')}>
+      <div class={twMerge('flex h-12 justify-between', this.props.class ?? '')}>
         <div
           class={twMerge(
             'flex size-full divide-x divide-theme-accent overflow-hidden rounded-md border border-theme-accent',
@@ -25,16 +25,16 @@ export class Selector extends DisplayComponent<SelectorProps> {
           {this.props.tabs.map(([page, contents, tooltipText]) => {
             const navButton = (
               <NavButton
-                inactiveClass="flex items-centerbg-opacity-0 px-6 py-2 transition duration-300 hover:bg-opacity-100"
+                inactiveClass="flex items-centerbg-opacity-0 px-6 py-2 text-theme-text transition duration-300 hover:bg-opacity-100"
                 // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
                 activeClass={twMerge(
-                  'flex items-center bg-theme-accent bg-opacity-100 px-6 py-2',
+                  'flex items-center bg-theme-accent bg-opacity-100 px-6 py-2 text-theme-text',
                   this.props.activeClass ?? '',
                 )}
                 page={page}
                 activePage={this.props.activePage}
               >
-                <div class="size-full text-inherit">{contents}</div>
+                {contents}
               </NavButton>
             );
 

@@ -29,15 +29,23 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
 
   private readonly wrapperRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly imageRef = FSComponent.createRef<HTMLImageElement>();
+  private readonly lightImageRef = FSComponent.createRef<HTMLImageElement>();
+
+  private readonly darkImageRef = FSComponent.createRef<HTMLImageElement>();
 
   private readonly chartImageLightUrl = Subject.create<string | null>(null);
 
   private readonly chartImageDarkUrl = Subject.create<string | null>(null);
 
+  private readonly lightImageLoaded = Subject.create(false);
+
+  private readonly darkImageLoaded = Subject.create(false);
+
   private readonly inFullScreen = Subject.create(false);
 
   private readonly usingDarkTheme = Subject.create(false);
+
+  private readonly showLoadingOverlay = Subject.create(false);
 
   private containerWidth = 0;
 
@@ -86,16 +94,28 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
 
     this.subscriptions.push(
       this.props.shownChartID.sub(async (chartID) => {
+        this.lightImageLoaded.set(false);
+        this.darkImageLoaded.set(false);
+        this.showLoadingOverlay.set(true);
+        this.chartTransitionsEnabled.set(false);
+
         this.chartScale.set(1.0);
         this.chartTranslateX.set(0);
         this.chartTranslateY.set(0);
         this.chartTransform.resolve();
+
+        await Wait.awaitDelay(100);
+
+        this.chartTransitionsEnabled.set(true);
 
         if (!chartID) {
           return;
         }
 
         const nightUrl = await this.props.provider.getChartImage(chartID, ChartTheme.Dark);
+
+        this.chartImageDarkUrl.set(nightUrl);
+
         const dayUrl = await this.props.provider.getChartImage(chartID, ChartTheme.Light);
 
         this.chartImageDarkUrl.set(nightUrl);
@@ -112,7 +132,8 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
 
     this.wrapperRef.instance.addEventListener('mousedown', this.handleChartMouseDown);
     this.wrapperRef.instance.addEventListener('dblclick', this.handleChartDoubleClick);
-    this.imageRef.instance.addEventListener('load', this.handleChartImageLoaded);
+    this.lightImageRef.instance.addEventListener('load', this.onLightChartImageLoaded);
+    this.darkImageRef.instance.addEventListener('load', this.onDarkChartImageLoaded);
   }
 
   private readonly handleChartRotateCounterClockwise = (small: boolean) => {
@@ -215,9 +236,17 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
     this.chartTransitionsEnabled.set(true);
   };
 
-  private readonly handleChartImageLoaded = () => {
-    this.animate(() => this.fitChart(), true);
+  private readonly handleChartImageLoaded = (whichImage: 'light' | 'dark') => {
+    (whichImage === 'light' ? this.lightImageLoaded : this.darkImageLoaded).set(true);
+
+    if (this.lightImageLoaded.get() && this.darkImageLoaded.get()) {
+      this.animate(() => this.fitChart(), true);
+      this.showLoadingOverlay.set(false);
+    }
   };
+
+  private onLightChartImageLoaded = () => this.handleChartImageLoaded('light');
+  private onDarkChartImageLoaded = () => this.handleChartImageLoaded('dark');
 
   private centerChartOnPoint(chartX: number, chartY: number): void {
     const containerRect = this.containerRef.instance.getBoundingClientRect();
@@ -238,7 +267,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
   }
 
   private centerChartInContainer(): void {
-    const chartRect = this.imageRef.instance.getBoundingClientRect();
+    const chartRect = this.lightImageRef.instance.getBoundingClientRect();
 
     this.centerChartOnPoint(chartRect.width / this.chartScale.get() / 2, chartRect.height / this.chartScale.get() / 2);
   }
@@ -248,7 +277,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
     this.chartRotation.set(0);
 
     const containerRect = this.containerRef.instance.getBoundingClientRect();
-    const chartRect = this.imageRef.instance.getBoundingClientRect();
+    const chartRect = this.lightImageRef.instance.getBoundingClientRect();
 
     const aspectRatio = chartRect.width / chartRect.height;
 
@@ -308,7 +337,8 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
     this.wrapperRef.instance.removeEventListener('mousedown', this.handleChartMouseDown);
     this.wrapperRef.instance.removeEventListener('mousemove', this.handleChartMouseMove);
     this.wrapperRef.instance.removeEventListener('mouseup', this.handleChartMouseUp);
-    this.imageRef.instance.removeEventListener('load', this.handleChartImageLoaded);
+    this.lightImageRef.instance.removeEventListener('load', this.onLightChartImageLoaded);
+    this.darkImageRef.instance.removeEventListener('load', this.onDarkChartImageLoaded);
   }
 
   private readonly className = this.props.isFullscreen.map((it) =>
@@ -328,12 +358,22 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
           }}
         >
           <img
-            ref={this.imageRef}
+            ref={this.darkImageRef}
             src={this.chartImageDarkUrl}
             class="absolute z-10 transition-all duration-200"
-            style={{ opacity: this.usingDarkTheme.map((it) => (it ? 0 : 1).toString()) }}
+            style={{ opacity: this.usingDarkTheme.map((it) => (it ? 1 : 0).toString()) }}
           />
-          <img ref={this.imageRef} src={this.chartImageLightUrl} class="absolute" />
+          <img ref={this.lightImageRef} src={this.chartImageLightUrl} class="absolute" />
+        </div>
+
+        <div
+          class="absolute flex size-full items-center justify-center bg-theme-secondary"
+          style={{
+            visibility: this.showLoadingOverlay.map((it) => (it ? 'visible' : 'hidden')),
+            'pointer-events': this.showLoadingOverlay.map((it) => (it ? 'auto' : 'none')),
+          }}
+        >
+          <i class="bi-arrow-repeat animate-spin text-[50px]" />
         </div>
 
         <div class="absolute inset-y-6 right-6 z-20 flex cursor-pointer flex-col justify-between overflow-hidden rounded-md">

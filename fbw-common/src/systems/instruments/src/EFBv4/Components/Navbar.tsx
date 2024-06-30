@@ -11,6 +11,7 @@ import {
 import FbwTail from '../Assets/FBW-Tail.svg';
 import { PageEnum } from '../shared/common';
 import { Button } from './Button';
+import { twMerge } from 'tailwind-merge';
 
 interface NavbarProps extends ComponentProps {
   activePage: Subject<number>;
@@ -73,13 +74,13 @@ export class NavButton extends DisplayComponent<NavButtonProps> {
   private readonly activeClass = this.props.activePage.map((value) => {
     const activeClassText = value === this.props.page ? this.props.activeClass : this.props.inactiveClass;
 
-    return `${this.props.class} ${activeClassText}`;
+    return twMerge('bg-transparent', this.props.class, activeClassText);
   });
 
   render(): VNode {
     return (
-      <Button unstyled class="bg-transparent" onClick={this.handlePressed}>
-        <div class={this.activeClass}>{this.props.children}</div>
+      <Button unstyled class={this.activeClass} onClick={this.handlePressed}>
+        {this.props.children}
       </Button>
     );
   }

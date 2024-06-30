@@ -242,7 +242,7 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
   private readonly className = MappedSubject.create(
     ([disabled, prop_class]) => {
       return twMerge(
-        'w-full rounded-md border-2 border-theme-accent bg-theme-accent px-3 py-1.5 text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none',
+        'size-full rounded-md border-2 border-theme-accent bg-theme-accent px-3 py-1.5 text-theme-text transition duration-100 placeholder:text-theme-unselected focus-within:border-theme-highlight focus-within:outline-none',
         this.props.fontSizeClassName ?? 'text-lg',
         prop_class,
         disabled && 'opacity-50',
@@ -254,7 +254,7 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
 
   render(): VNode | null {
     return (
-      <div ref={this.rootRef} class={this.props.containerClass ?? ''}>
+      <div ref={this.rootRef} class={twMerge('h-12', this.props.containerClass)}>
         <input
           class={this.className}
           value={this.displayValue}

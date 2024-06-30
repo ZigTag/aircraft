@@ -35,9 +35,9 @@ export class Navigation extends DisplayComponent<NavigationProps> {
   render(): VNode {
     return (
       <div class="h-full">
-        <div>
+        <div class="flex items-start justify-between">
           <PageTitle>{t('NavigationAndCharts.Title')}</PageTitle>
-          <Selector class="absolute right-0 top-0" tabs={this.tabs} activePage={this.activePage} />
+          <Selector tabs={this.tabs} activePage={this.activePage} />
         </div>
         <Switch
           activePage={this.activePage}
