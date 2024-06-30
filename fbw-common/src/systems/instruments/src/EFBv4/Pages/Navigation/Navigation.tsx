@@ -12,6 +12,8 @@ import { List } from '../../Components/List';
 import { Chart, ChartCategory } from 'navigraph/charts';
 import { navigraphCharts } from '../../../navigraph';
 import { ChartViewer } from './Components/ChartViewer';
+import { NavigraphChartProvider } from './Providers/NavigraphChartProvider';
+import { ChartProvider, FlypadChart } from './ChartProvider';
 
 export interface NavigationProps {
   simbriefState: SimbriefState;
@@ -101,8 +103,29 @@ export interface NavigraphUIProps {
 
 export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
   private readonly isFullscreen = Subject.create(false);
+
   private readonly selectedAirport = Subject.create('');
+
   private readonly selectedCategory = Subject.create(PageEnum.ChartCategory.Star);
+
+  private readonly selectedCategoryAsNavigraphChartCategory: Subscribable<ChartCategory> = this.selectedCategory.map(
+    (it) => {
+      switch (it) {
+        case PageEnum.ChartCategory.Star:
+          return 'ARR';
+        case PageEnum.ChartCategory.App:
+          return 'APP';
+        case PageEnum.ChartCategory.Sid:
+          return 'DEP';
+        case PageEnum.ChartCategory.Taxi:
+          return 'APT';
+        case PageEnum.ChartCategory.Ref:
+          return 'REF';
+      }
+    },
+  );
+
+  private provider = new NavigraphChartProvider(this.props.navigraphState);
 
   private handleIcaoChange = () => {};
 
@@ -171,6 +194,7 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
                 <Selector
                   activeClass="bg-theme-highlight text-theme-body"
                   tabs={[
+                    // TODO those should somehow be dynamically generated
                     [PageEnum.ChartCategory.Star, <p class="text-inherit">STAR</p>],
                     [PageEnum.ChartCategory.App, <p class="text-inherit">APP</p>],
                     [PageEnum.ChartCategory.Taxi, <p class="text-inherit">TAXI</p>],
@@ -180,10 +204,11 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
                   activePage={this.selectedCategory}
                 />
                 <ScrollableContainer class="mt-5" height={42.75}>
-                  <NavigraphChartSelector
+                  <ChartSelector
+                    provider={this.provider}
                     navigraphState={this.props.navigraphState}
                     navigationState={this.props.navigationState}
-                    selectedCategory={this.selectedCategory}
+                    selectedCategory={this.selectedCategoryAsNavigraphChartCategory}
                   />
                 </ScrollableContainer>
               </div>
@@ -192,7 +217,8 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
         />
 
         <ChartViewer
-          shownChart={this.props.navigationState.selectedChart}
+          provider={this.provider}
+          shownChartID={this.props.navigationState.selectedChart.map((it) => it?.id ?? null)}
           isFullscreen={this.isFullscreen}
           onToggleFullscreen={() => this.isFullscreen.set(!this.isFullscreen.get())}
         />
@@ -201,24 +227,18 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
   }
 }
 
-interface NavigraphChartSelectorProps {
+interface ChartSelectorProps<C extends string | number> {
+  provider: ChartProvider<C>;
+
   navigraphState: NavigraphAuthState;
 
   navigationState: NavigationState;
 
-  selectedCategory: Subscribable<PageEnum.ChartCategory>;
+  selectedCategory: Subscribable<C>;
 }
 
-const UIChartCategoryToNavigraphChartCategory: Record<PageEnum.ChartCategory, ChartCategory> = {
-  [PageEnum.ChartCategory.Star]: 'ARR',
-  [PageEnum.ChartCategory.App]: 'APP',
-  [PageEnum.ChartCategory.Sid]: 'DEP',
-  [PageEnum.ChartCategory.Ref]: 'REF',
-  [PageEnum.ChartCategory.Taxi]: 'APT',
-};
-
-class NavigraphChartSelector extends DisplayComponent<NavigraphChartSelectorProps> {
-  private readonly charts = Subject.create<Chart[]>([]);
+class ChartSelector<C extends string | number> extends DisplayComponent<ChartSelectorProps<C>> {
+  private readonly charts = Subject.create<FlypadChart[]>([]);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -230,16 +250,9 @@ class NavigraphChartSelector extends DisplayComponent<NavigraphChartSelectorProp
           return;
         }
 
-        const charts = await navigraphCharts.getChartsIndex({ icao: 'RKSI' });
+        const airportCharts = await this.props.provider.getChartsForAirport('RKSI');
 
-        if (!charts) {
-          this.charts.set([]);
-          return;
-        }
-
-        const filteredCharts = charts.filter(
-          (it) => it.category === UIChartCategoryToNavigraphChartCategory[selectedCategory],
-        );
+        const filteredCharts = airportCharts.charts[selectedCategory];
 
         this.charts.set(filteredCharts);
       },
@@ -267,7 +280,7 @@ class NavigraphChartSelector extends DisplayComponent<NavigraphChartSelectorProp
 }
 
 interface ChartCardProps {
-  chart: Chart;
+  chart: FlypadChart;
 
   isPinned: Subscribable<boolean>;
 
@@ -346,7 +359,7 @@ class ChartCard extends DisplayComponent<ChartCardProps> {
         <div class="m-2 flex flex-col">
           <span>{this.props.chart.name || 'BRUH'}</span>
           <span class="mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">
-            {this.props.chart.index_number}
+            {this.props.chart.indexNumber}
           </span>
         </div>
       </div>

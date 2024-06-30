@@ -28,6 +28,7 @@ import { navigraphAuth, navigraphCharts } from '../../navigraph';
 import { Chart } from 'navigraph/charts';
 import { FbwUserSettings } from '../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
+import { FlypadChart } from './Navigation/ChartProvider';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -53,29 +54,11 @@ export class SimbriefState {
 }
 
 export class NavigationState {
-  private readonly _selectedChart = Subject.create<Chart | null>(null);
+  private readonly _selectedChart = Subject.create<FlypadChart | null>(null);
 
-  public readonly selectedChart: Subscribable<Chart | null> = this._selectedChart;
-  public setSelectedChart(chart: Chart): void {
+  public readonly selectedChart: Subscribable<FlypadChart | null> = this._selectedChart;
+  public setSelectedChart(chart: FlypadChart): void {
     this._selectedChart.set(chart);
-  }
-
-  public readonly selectedChartImage = Subject.create<Blob | null>(null);
-
-  constructor() {
-    this.selectedChart.sub(async (chart) => {
-      if (!chart) {
-        return;
-      }
-
-      const blob = await navigraphCharts.getChartImage({ chart: chart, theme: 'dark' });
-
-      if (!blob) {
-        return;
-      }
-
-      this.selectedChartImage.set(blob);
-    });
   }
 }
 

@@ -9,14 +9,15 @@ import {
   Wait,
 } from '@microsoft/msfs-sdk';
 import { AbstractUIView, UIVIew } from '../../../shared/UIView';
-import { Chart } from 'navigraph/charts';
-import { navigraphCharts } from '../../../../navigraph';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { TooltipWrapper } from '../../../Components/TooltipWrapper';
 import { twMerge } from 'tailwind-merge';
+import { ChartProvider, ChartTheme } from '../ChartProvider';
 
 export interface ChartViewerProps {
-  shownChart: Subscribable<Chart | null>; // TODO use a generic type
+  provider: ChartProvider<string | number>;
+
+  shownChartID: Subscribable<string | null>;
 
   isFullscreen: Subscribable<boolean>;
 
@@ -84,34 +85,21 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
     super.onAfterRender(node);
 
     this.subscriptions.push(
-      this.props.shownChart.sub(async (chart) => {
+      this.props.shownChartID.sub(async (chartID) => {
         this.chartScale.set(1.0);
         this.chartTranslateX.set(0);
         this.chartTranslateY.set(0);
         this.chartTransform.resolve();
 
-        if (!chart) {
+        if (!chartID) {
           return;
         }
 
-        const dayBlob = await navigraphCharts.getChartImage({ chart, theme: 'light' });
+        const nightUrl = await this.props.provider.getChartImage(chartID, ChartTheme.Dark);
+        const dayUrl = await this.props.provider.getChartImage(chartID, ChartTheme.Light);
 
-        if (!dayBlob) {
-          throw new Error('[Navigation] Blob returned by Navigraph SDK was null');
-        }
-
-        const dayUrl = URL.createObjectURL(dayBlob);
-
-        const nightBlob = await navigraphCharts.getChartImage({ chart, theme: 'dark' });
-
-        if (!nightBlob) {
-          throw new Error('[Navigation] Blob returned by Navigraph SDK was null');
-        }
-
-        const nightUrl = URL.createObjectURL(nightBlob);
-
-        this.chartImageLightUrl.set(dayUrl);
         this.chartImageDarkUrl.set(nightUrl);
+        this.chartImageLightUrl.set(dayUrl);
       }),
       MappedSubject.create(this.chartTranslateX, this.chartTranslateY, this.chartScale, this.chartRotation).sub(
         ([x, y, scale, rotation]) => {
