@@ -11,6 +11,8 @@ import {
 import { AbstractUIView, UIVIew } from '../../../shared/UIView';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { TooltipWrapper } from '../../../Components/Tooltip';
+import { ChartProvider, ChartTheme } from '../ChartProvider';
+import { twMerge } from 'tailwind-merge';
 
 export interface ChartViewerProps {
   provider: ChartProvider<string | number>;
