@@ -1,4 +1,11 @@
-import { ChartsError, ChartProvider, FlypadAirportCharts, FlypadChart, ChartTheme } from '../ChartProvider';
+import {
+  ChartsError,
+  ChartProvider,
+  FlypadAirportCharts,
+  FlypadChart,
+  ChartTheme,
+  ChartSemanticColor,
+} from '../ChartProvider';
 import { navigraphCharts } from '../../../../navigraph';
 import { NavigraphAuthState } from '../../Pages';
 import { Chart, ChartCategory } from 'navigraph/charts';
@@ -28,10 +35,36 @@ export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
     }
 
     const chartMapper = (it: Chart): FlypadChart => {
+      let semanticColor: ChartSemanticColor;
+      switch (it.category) {
+        case 'ARR':
+          semanticColor = ChartSemanticColor.Green;
+          break;
+        case 'APP':
+          semanticColor = ChartSemanticColor.Orange;
+          break;
+        case 'APT':
+          semanticColor = ChartSemanticColor.LightBlue;
+          break;
+        case 'DEP':
+          semanticColor = ChartSemanticColor.Pink;
+          break;
+        case 'REF':
+          semanticColor = ChartSemanticColor.Purple;
+          break;
+        default:
+          semanticColor = ChartSemanticColor.Default;
+          break;
+      }
+
       return {
         id: it.id,
         name: it.name,
+        airportIcao: it.icao_airport_identifier,
         indexNumber: it.index_number,
+        category: it.category,
+        tag: it.category,
+        semanticColor,
         numPages: 1,
         hasDarkMode: true,
       };

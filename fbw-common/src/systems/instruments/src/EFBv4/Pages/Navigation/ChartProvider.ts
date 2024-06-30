@@ -21,18 +21,32 @@ export interface FlypadAirportCharts<C extends string | number> {
   charts: Record<C, FlypadChart[]>;
 }
 
-export interface FlypadChart {
+export interface FlypadChart<C extends string | number = string | number> {
   id: string;
 
   name: string;
 
+  airportIcao: string;
+
   indexNumber: string;
+
+  category: C;
+
+  tag: string;
+
+  semanticColor: ChartSemanticColor;
 
   numPages: number;
 
   hasDarkMode: boolean;
 }
 
-export interface ChartPage {
-  urls: Record<ChartTheme, string | unknown>;
+export enum ChartSemanticColor {
+  Green,
+  Orange,
+  LightBlue,
+  Pink,
+  Purple,
+  Red,
+  Default,
 }

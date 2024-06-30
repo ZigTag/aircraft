@@ -14,6 +14,7 @@ import { navigraphCharts } from '../../../navigraph';
 import { ChartViewer } from './Components/ChartViewer';
 import { NavigraphChartProvider } from './Providers/NavigraphChartProvider';
 import { ChartProvider, FlypadChart } from './ChartProvider';
+import { Button } from '../../Components/Button';
 
 export interface NavigationProps {
   simbriefState: SimbriefState;
@@ -266,14 +267,26 @@ class ChartSelector<C extends string | number> extends DisplayComponent<ChartSel
       <List
         class="space-y-4"
         items={this.charts}
-        render={(chart) => (
-          <ChartCard
-            chart={chart}
-            isPinned={Subject.create(true)}
-            isSelected={Subject.create(false)}
-            onSelected={() => this.props.navigationState.setSelectedChart(chart)}
-          />
-        )}
+        render={(chart, index, subscriptionsForItem) => {
+          const pinned = Subject.create(false);
+
+          subscriptionsForItem.push(
+            this.props.navigationState.pinnedCharts.sub(
+              (index, type, item, array) => pinned.set(array.some((it) => it.id === chart.id)),
+              true,
+            ),
+          );
+
+          return (
+            <ChartCard
+              chart={chart}
+              isPinned={pinned}
+              isSelected={Subject.create(false)}
+              onSelected={() => this.props.navigationState.setSelectedChart(chart)}
+              onPinnedToggle={() => this.props.navigationState.toggleChartPinned(chart)}
+            />
+          );
+        }}
       />
     );
   }
@@ -285,6 +298,8 @@ interface ChartCardProps {
   isPinned: Subscribable<boolean>;
 
   isSelected: Subscribable<boolean>;
+
+  onPinnedToggle: () => void;
 
   onSelected: () => void;
 }
@@ -311,35 +326,11 @@ class ChartCard extends DisplayComponent<ChartCardProps> {
       >
         <div class="flex flex-row items-center">
           <div class={this.className} />
-          <div
+          <Button
+            unstyled
             class="flex h-full items-center px-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
-            // onClick={(event) => {
-            //   event.stopPropagation();
-            //
-            //   if (isChartPinned(chart.id)) {
-            //     dispatch(removedPinnedChart({ chartId: chart.id }));
-            //   } else {
-            //     dispatch(
-            //       addPinnedChart({
-            //         chartId: chart.id,
-            //         chartName: { light: chart.fileDay, dark: chart.fileNight },
-            //         title: searchQuery,
-            //         subTitle: chart.procedureIdentifier,
-            //         tabIndex: selectedTabIndex,
-            //         timeAccessed: 0,
-            //         tag: selectedTab.name,
-            //         provider: ChartProvider.NAVIGRAPH,
-            //         pagesViewable: 1,
-            //         boundingBox: chart.boundingBox,
-            //         pageIndex: navigationTabs.findIndex((tab) => tab.associatedTab === NavigationTab.NAVIGRAPH),
-            //       }),
-            //     );
-            //   }
-            // }}
+            onClick={this.props.onPinnedToggle}
           >
-            {/*{pinnedCharts.some((pinnedChart) => pinnedChart.chartId === chart.id) ? (*/}
-            {/*  <PinFill size={40} />*/}
-            {/*) : (*/}
             <SwitchIf
               condition={this.props.isPinned}
               on={
@@ -354,7 +345,7 @@ class ChartCard extends DisplayComponent<ChartCardProps> {
               }
             />
             {/*)}*/}
-          </div>
+          </Button>
         </div>
         <div class="m-2 flex flex-col">
           <span>{this.props.chart.name || 'BRUH'}</span>

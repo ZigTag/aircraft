@@ -1,10 +1,12 @@
 import {
+  ArraySubject,
   ComponentProps,
   DisplayComponent,
   FSComponent,
   MappedSubject,
   Subject,
   Subscribable,
+  SubscribableArray,
   SubscribableUtils,
   VNode,
 } from '@microsoft/msfs-sdk';
@@ -24,8 +26,7 @@ import { twMerge } from 'tailwind-merge';
 import { ISimbriefData, simbriefDataParser } from '../../EFB/Apis/Simbrief';
 import { FlypadClient } from '@shared/flypad-server/FlypadClient';
 import { DeviceFlowParams, User } from 'navigraph/auth';
-import { navigraphAuth, navigraphCharts } from '../../navigraph';
-import { Chart } from 'navigraph/charts';
+import { navigraphAuth } from '../../navigraph';
 import { FbwUserSettings } from '../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 import { FlypadChart } from './Navigation/ChartProvider';
@@ -57,8 +58,23 @@ export class NavigationState {
   private readonly _selectedChart = Subject.create<FlypadChart | null>(null);
 
   public readonly selectedChart: Subscribable<FlypadChart | null> = this._selectedChart;
+
+  private readonly _pinnedCharts = ArraySubject.create<FlypadChart>([]);
+
+  public readonly pinnedCharts: SubscribableArray<FlypadChart> = this._pinnedCharts;
+
   public setSelectedChart(chart: FlypadChart): void {
     this._selectedChart.set(chart);
+  }
+
+  public toggleChartPinned(chart: FlypadChart): void {
+    const pinnedIndex = this._pinnedCharts.getArray().findIndex((it) => it.id === chart.id);
+
+    if (pinnedIndex !== -1) {
+      this._pinnedCharts.removeAt(pinnedIndex);
+    } else {
+      this._pinnedCharts.insert(chart);
+    }
   }
 }
 
@@ -103,7 +119,11 @@ export class MainPage extends DisplayComponent<MainPageProps> {
   private readonly pages: Pages = [
     [
       PageEnum.MainPage.Dashboard,
-      <Dashboard simbriefState={this.simbriefState} navigraphAuthState={this.navigraphAuthState} />,
+      <Dashboard
+        simbriefState={this.simbriefState}
+        navigraphAuthState={this.navigraphAuthState}
+        navigationState={this.navigationState}
+      />,
     ],
     [PageEnum.MainPage.Dispatch, <Dispatch simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Ground, <Ground />],
