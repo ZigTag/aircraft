@@ -69,6 +69,24 @@ export enum FlypadTheme {
   Light,
 }
 
+export enum AtisSource {
+  FAA,
+  PILOT_EDGE,
+  IVAO,
+  VATSIM,
+}
+
+export enum MetarSource {
+  MSFS,
+  PILOT_EDGE,
+  NOAA,
+  VATSIM,
+}
+
+export enum TafSource {
+  NOAA,
+}
+
 const fbwUserSettings = [
   {
     name: 'fbwSettingsVersion',
@@ -115,7 +133,7 @@ const fbwUserSettings = [
     defaultValue: WeightUnit.Kg as WeightUnit,
   },
   {
-    name: 'fbwAircraftSatcom',
+    name: 'fbwAircraftSatcomEnabled',
     defaultValue: false as boolean,
   },
   {
@@ -126,6 +144,32 @@ const fbwUserSettings = [
     name: 'fbwAutomaticallyImportSimbriefData',
     defaultValue: false as boolean,
   },
+
+  {
+    name: 'fbwAtsuAocAtisSource',
+    defaultValue: AtisSource.FAA as AtisSource,
+  },
+  {
+    name: 'fbwAtsuAocMetarSource',
+    defaultValue: MetarSource.MSFS as MetarSource,
+  },
+  {
+    name: 'fbwAtsuAocTafSource',
+    defaultValue: TafSource.NOAA as TafSource,
+  },
+  {
+    name: 'fbwAtsuAocOnlineFeaturesEnabled',
+    defaultValue: false as boolean,
+  },
+  {
+    name: 'fbwAtsuAocHoppieEnabled',
+    defaultValue: false as boolean,
+  },
+  {
+    name: 'fbwAtsuAocHoppieUserId',
+    defaultValue: '',
+  },
+
   {
     name: 'fbwAudioLevelExteriorMaster',
     defaultValue: 0 as number,
@@ -320,7 +364,7 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
       valueMapper: (value) => parseInt(value),
     },
     A32NX_MODEL_SATCOM_ENABLED: {
-      newSettingName: 'fbwAircraftSatcom',
+      newSettingName: 'fbwAircraftSatcomEnabled',
       valueMapper: (value) => value === '1',
     },
     A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS: {
@@ -335,7 +379,54 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     // TODO AircraftOptionsPinProgramsPage
     // TODO RealismPage
     // TODO ThirdPartyOptionsPage
-    // TODO AtsuAocPage
+    A32NX_CONFIG_ATIS_SRC: {
+      newSettingName: 'fbwAtsuAocAtisSource',
+      valueMapper: (value) => {
+        switch (value) {
+          case 'FAA':
+            return AtisSource.FAA;
+          case 'PILOTEDGE':
+            return AtisSource.PILOT_EDGE;
+          case 'IVAO':
+            return AtisSource.IVAO;
+          case 'VATSIM':
+            return AtisSource.VATSIM;
+          default:
+            return AtisSource.FAA;
+        }
+      },
+    },
+    A32NX_CONFIG_METAR_SRC: {
+      newSettingName: 'fbwAtsuAocMetarSource',
+      valueMapper: (value) => {
+        switch (value) {
+          case 'MSFS':
+            return MetarSource.MSFS;
+          case 'PILOTEDGE':
+            return MetarSource.PILOT_EDGE;
+          case 'NOAA':
+            return MetarSource.NOAA;
+          case 'VATSIM':
+            return MetarSource.VATSIM;
+          default:
+            return MetarSource.MSFS;
+        }
+      },
+    },
+    A32NX_CONFIG_TAF_SRC: {
+      newSettingName: 'fbwAtsuAocTafSource',
+      valueMapper: () => TafSource.NOAA,
+    },
+    A32NX_CONFIG_ONLINE_FEATURES_STATUS: {
+      newSettingName: 'fbwAtsuAocOnlineFeaturesEnabled',
+      valueMapper: (value) => value === 'ENABLED',
+    },
+    A32NX_CONFIG_HOPPIE_ENABLED: {
+      newSettingName: 'fbwAtsuAocHoppieEnabled',
+      valueMapper: (value) => value === 'ENABLED',
+    },
+    // TODO add sentry setting key here later
+
     // TODO AudioPage
     // TODO FlyPadPage
 
