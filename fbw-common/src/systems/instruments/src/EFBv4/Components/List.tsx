@@ -1,19 +1,20 @@
 import {
-  AbstractSubscribableArray,
   ArraySubject,
   FSComponent,
   RenderPosition,
   Subscribable,
+  SubscribableArray,
   SubscribableArrayEventType,
   SubscribableUtils,
+  Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from '../shared/UIView';
+import { AbstractUIView, UIVIew } from '../shared/UIView';
 
 export interface ListProps<T> {
-  items: AbstractSubscribableArray<T> | Subscribable<T[]>;
+  items: SubscribableArray<T> | Subscribable<T[]>;
 
-  render: (item: T, index: number) => VNode;
+  render: (item: T, index: number, subscriptionsForItem: Subscription[]) => VNode;
 
   class?: string;
 }
@@ -22,6 +23,8 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
   private subArray = ArraySubject.create<T>([]);
 
   private readonly vnodes: VNode[] = [];
+
+  private readonly itemSubscriptions: Subscription[][] = [];
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
@@ -39,7 +42,12 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
         switch (type) {
           case SubscribableArrayEventType.Added: {
             for (const it of Array.isArray(item) ? item : [item]) {
-              const renderedNode = this.props.render(it, array.indexOf(it));
+              if (!this.itemSubscriptions[index]) {
+                this.itemSubscriptions[index] = [];
+              }
+              this.itemSubscriptions[index].length = 0;
+
+              const renderedNode = this.props.render(it, array.indexOf(it), this.itemSubscriptions[index]);
 
               this.vnodes[array.indexOf(it)] = renderedNode;
 
@@ -52,11 +60,8 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
             this.removeItem(index);
             break;
           case SubscribableArrayEventType.Cleared: {
-            const children = Array.from(this.rootRef.instance.children);
-
-            for (let i = 0; i < children.length; i++) {
-              this.removeItem(0);
-            }
+            this.clearItems();
+            break;
           }
         }
       }, true),
@@ -77,6 +82,14 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
     }
   }
 
+  private clearItems(): void {
+    const children = Array.from(this.rootRef.instance.children);
+
+    for (let i = 0; i < children.length; i++) {
+      this.removeItem(0);
+    }
+  }
+
   private removeItem(childIndex: number): void {
     const vnode = this.vnodes[childIndex];
 
@@ -87,6 +100,36 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
     FSComponent.shallowDestroy(vnode);
 
     this.rootRef.instance.children.item(childIndex)?.remove();
+
+    const itemSubscriptions = this.itemSubscriptions[childIndex];
+
+    if (itemSubscriptions) {
+      for (const sub of itemSubscriptions) {
+        sub.destroy();
+      }
+    }
+  }
+
+  pause(childFilter?: (child: UIVIew) => boolean) {
+    super.pause(childFilter);
+
+    this.clearItems();
+
+    for (const array of this.itemSubscriptions) {
+      for (const sub of array) {
+        sub.pause();
+      }
+    }
+  }
+
+  resume(childFilter?: (child: UIVIew) => boolean) {
+    super.resume(childFilter);
+
+    for (const array of this.itemSubscriptions) {
+      for (const sub of array) {
+        sub.resume();
+      }
+    }
   }
 
   render(): VNode | null {
