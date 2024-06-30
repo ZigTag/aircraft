@@ -186,7 +186,7 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
   private readonly simBridgeConnected: Subject<boolean> = Subject.create(false);
 
   private readonly wifiClass = this.simBridgeConnected.map(
-    (value) => `bi-${value ? 'wifi' : 'wifi-off'} text-inherit text-[26px]`,
+    (isConnected) => `bi-${isConnected ? 'wifi' : 'wifi-off'} text-inherit text-[26px]`,
   );
 
   private get bus() {
