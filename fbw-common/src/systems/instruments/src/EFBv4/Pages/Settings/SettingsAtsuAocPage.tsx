@@ -52,9 +52,10 @@ export class SettingsAtsuAocPage extends AbstractUIView<SettingsAtsuAocPageProps
           setting={this.props.settings.getSetting('fbwAtsuAocHoppieEnabled')}
           settingName={t('Settings.AtsuAoc.HoppieEnabled')}
         />
+        {/* TODO: This is missing validation logic from the React implementation. Port that over when possible. */}
         <InputSettingsItem
           setting={this.props.settings.getSetting('fbwAtsuAocHoppieUserId')}
-          settingName={t('Settings.AtsuAoc.HoppieEnabled')}
+          settingName={t('Settings.AtsuAoc.HoppieUserId')}
         />
       </SettingsPage>
     );
