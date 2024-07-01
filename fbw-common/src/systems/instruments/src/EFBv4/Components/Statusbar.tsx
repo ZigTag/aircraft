@@ -78,7 +78,7 @@ export class BatteryIcon extends DisplayComponent<BatteryStatusIconProps> {
           [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-[35px] !text-green-700" />],
           [PageEnum.BatteryLevel.Warning, <i class="bi-battery text-[35px] !text-utility-red" />],
           [PageEnum.BatteryLevel.Low, <i class="bi-battery text-[35px] !text-white" />],
-          [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery text-[35px] !text-white" />],
+          [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery-half text-[35px] !text-white" />],
           [PageEnum.BatteryLevel.Medium, <i class="bi-battery-half text-[35px] !text-white" />],
           [PageEnum.BatteryLevel.HighMedium, <i class="bi-battery-half text-[35px] !text-white" />],
           [PageEnum.BatteryLevel.Full, <i class="bi-battery-full text-[35px] !text-white" />],
@@ -93,8 +93,6 @@ interface BatteryProps extends ComponentProps {
   batteryLevel: Subscribable<number>;
   isCharging: Subscribable<boolean>;
 }
-
-const BATTERY_ICON_SIZE = 28;
 
 export class Battery extends DisplayComponent<BatteryProps> {
   private readonly activeClass = this.props.batteryLevel.map(
