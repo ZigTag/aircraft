@@ -237,8 +237,9 @@ class AtcAvailableUI extends AbstractUIView<AtcAvailableUIProps> {
             />
           </div>
 
-          <ScrollableContainer innerClass="grid grid-cols-2" height={34}>
+          <ScrollableContainer height={34}>
             <List
+              class="grid grid-cols-2 [grid-gap:1rem]"
               items={MappedSubject.create(
                 ([controllers, callSignFilter, typeFilterIndex]) => {
                   const controllerTypeFilter = this.atcTypeOptions[typeFilterIndex].atcType;
@@ -248,9 +249,8 @@ class AtcAvailableUI extends AbstractUIView<AtcAvailableUIProps> {
                 this.controllerCallSignFilter,
                 this.controllerTypeFilterIndex,
               )}
-              render={(controller, index) => (
+              render={(controller) => (
                 <FrequencyCard
-                  class={`${index && index % 2 !== 0 && 'ml-4'} ${index >= 2 && 'mt-4'}`}
                   callsign={controller.callsign}
                   frequency={controller.frequency}
                   setActive={() => this.props.setActiveFrequency(this.toFrequency(controller.frequency))}
