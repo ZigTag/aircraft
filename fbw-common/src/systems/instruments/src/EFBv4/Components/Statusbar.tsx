@@ -102,7 +102,7 @@ export class Battery extends DisplayComponent<BatteryProps> {
   render(): VNode {
     return (
       <div class="flex items-center space-x-4">
-        <p class={this.activeClass}>{this.props.batteryLevel.map((value) => Math.round(value))}%</p>
+        <p class={this.activeClass}>{this.props.batteryLevel.map((value) => Math.ceil(value))}%</p>
         <BatteryIcon batteryLevel={this.props.batteryLevel} isCharging={this.props.isCharging} />
       </div>
     );
