@@ -52,7 +52,6 @@ export class PowerManager {
   private battery: Battery;
 
   private batteryLifeEnabled: boolean;
-  private absoluteTime: number;
 
   private powerState: Subject<PowerStates>;
   private isCharging: Subject<boolean>;
@@ -61,20 +60,15 @@ export class PowerManager {
   constructor(efbSimvarSubscriber: EventSubscriber<EFBSimvars>, batteryLifeEnabled: UserSetting<boolean>) {
     this.batteryLifeEnabled = batteryLifeEnabled.get();
     this.isCharging = Subject.create(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
-    this.absoluteTime = SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds');
 
-    this.battery = new Battery(100, this.absoluteTime);
+    this.battery = new Battery(100, SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds'));
     this.powerState = Subject.create(PowerStates.SHUTOFF as PowerStates);
     this.charge = Subject.create(100);
 
     batteryLifeEnabled.sub((enabled) => (this.batteryLifeEnabled = enabled));
-    efbSimvarSubscriber.on('dc2BusIsPowered').handle((isPowered) => {
-      this.isCharging.set(isPowered);
-      this.updateCharge();
-    });
+    efbSimvarSubscriber.on('dc2BusIsPowered').handle((isPowered) => this.isCharging.set(isPowered));
     efbSimvarSubscriber.on('absoluteTime').handle((time) => {
-      this.absoluteTime = time;
-      this.updateCharge();
+      this.updateCharge(time);
     });
   }
 
@@ -90,10 +84,10 @@ export class PowerManager {
     return this.charge;
   }
 
-  updateCharge() {
+  updateCharge(absoluteTime: number) {
     if (this.powerState.get() !== PowerStates.LOADED || !this.batteryLifeEnabled) return;
 
-    const newCharge = this.battery.update(this.absoluteTime, this.isCharging.get());
+    const newCharge = this.battery.update(absoluteTime, this.isCharging.get());
     this.charge.set(newCharge);
 
     if (newCharge <= 0) {
