@@ -15,6 +15,9 @@ export interface EFBSimvars {
   currentLongitude: number;
   activeFrequency: number;
   standbyFrequency: number;
+
+  dc2BusIsPowered: boolean;
+  absoluteTime: number;
 }
 
 export enum EFBVars {
@@ -33,6 +36,9 @@ export enum EFBVars {
 
   activeFrequency = 'COM ACTIVE FREQUENCY:1',
   standbyFrequency = 'COM STANDBY FREQUENCY:1',
+
+  dc2BusIsPowered = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
+  absoluteTime = 'E:ABSOLUTE TIME',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -52,6 +58,9 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['currentLongitude', { name: EFBVars.currentLongitude, type: SimVarValueType.Degree }],
     ['activeFrequency', { name: EFBVars.activeFrequency, type: 'Hz' as SimVarValueType }],
     ['standbyFrequency', { name: EFBVars.standbyFrequency, type: 'Hz' as SimVarValueType }],
+
+    ['dc2BusIsPowered', { name: EFBVars.dc2BusIsPowered, type: SimVarValueType.Bool }],
+    ['absoluteTime', { name: EFBVars.absoluteTime, type: SimVarValueType.Seconds }],
   ]);
 
   public constructor(bus: EventBus) {

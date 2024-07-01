@@ -17,13 +17,6 @@ import { EFBSimvars } from '../EFBSimvarPublisher';
 import { FbwUserSettings, FlypadTimeDisplay, FlypadTimeFormat } from '../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
-const BATTERY_LEVEL_WARNING = 8;
-const BATTERY_LEVEL_0 = 13;
-const BATTERY_LEVEL_1 = 37;
-const BATTERY_LEVEL_2 = 62;
-const BATTERY_LEVEL_3 = 87;
-const BATTERY_ICON_SIZE = 28;
-
 export class QuickControls extends DisplayComponent<any> {
   render(): VNode {
     return (
@@ -101,9 +94,11 @@ interface BatteryProps extends ComponentProps {
   isCharging: Subscribable<boolean>;
 }
 
+const BATTERY_ICON_SIZE = 28;
+
 export class Battery extends DisplayComponent<BatteryProps> {
   private readonly activeClass = this.props.batteryLevel.map(
-    (value) => `w-12 text-right ${value < BATTERY_LEVEL_WARNING ? 'text-utility-red' : 'text-theme-text'}`,
+    (value) => `w-12 text-right ${value < PageEnum.BatteryLevel.Warning ? 'text-utility-red' : 'text-theme-text'}`,
   );
 
   render(): VNode {
@@ -115,7 +110,6 @@ export class Battery extends DisplayComponent<BatteryProps> {
     );
   }
 }
-
 interface StatusbarProps extends ComponentProps {
   batteryLevel: Subscribable<number>;
   isCharging: Subscribable<boolean>;

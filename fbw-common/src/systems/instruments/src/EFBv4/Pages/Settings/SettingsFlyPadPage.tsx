@@ -89,7 +89,7 @@ export class SettingsFlyPadPage extends AbstractUIView<SettingsFlyPadPageProps> 
         />
 
         <ToggleSettingsItem
-          setting={this.props.settings.getSetting('fbwEfbEnableBattery')}
+          setting={this.props.settings.getSetting('fbwEfbBatteryLifeEnabled')}
           settingName={t('Settings.flyPad.BatteryLifeEnabled')}
         />
 

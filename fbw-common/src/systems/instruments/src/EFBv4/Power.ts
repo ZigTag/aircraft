@@ -1,0 +1,130 @@
+import { EventSubscriber, MathUtils, Subject, Subscribable, UserSetting } from '@microsoft/msfs-sdk';
+import { ModalKind, showModal } from 'instruments/src/EFBv4/Components/Modal';
+import { EFBSimvars } from 'instruments/src/EFBv4/EFBSimvarPublisher';
+
+const BATTERY_DURATION_CHARGE_MIN = 180;
+const BATTERY_DURATION_DISCHARGE_MIN = 540;
+
+class Battery {
+  private charge: number;
+  private lastChangeTimestamp: number;
+
+  constructor(initialCharge: number, lastChangeTimestamp: number) {
+    this.charge = initialCharge;
+    this.lastChangeTimestamp = lastChangeTimestamp;
+  }
+
+  update(absoluteTime: number, powerBeingSupplied: boolean): number {
+    const deltaTs = Math.max(absoluteTime - this.lastChangeTimestamp, 0);
+    const batteryDurationSec = powerBeingSupplied
+      ? BATTERY_DURATION_CHARGE_MIN * 60
+      : -BATTERY_DURATION_DISCHARGE_MIN * 60;
+
+    const deltaCharge = (100 * deltaTs) / batteryDurationSec;
+    const newCharge = MathUtils.clamp(this.charge + deltaCharge, 0, 100);
+
+    // FIXME for purposes of encapsulation, this very likely shouldn't be here but ill let it slide 😏😏😎
+    if (this.charge > 20 && newCharge <= 20) {
+      showModal({
+        kind: ModalKind.Alert,
+        title: 'Battery Low',
+        bodyText: 'The battery is getting very low. Please charge the battery soon.',
+      });
+    }
+
+    this.charge = newCharge;
+    this.lastChangeTimestamp = absoluteTime;
+
+    return newCharge;
+  }
+}
+
+export enum PowerStates {
+  SHUTOFF,
+  SHUTDOWN,
+  STANDBY,
+  LOADING,
+  LOADED,
+  EMPTY,
+}
+
+export class PowerManager {
+  private battery: Battery;
+
+  private batteryLifeEnabled: boolean;
+  private absoluteTime: number;
+
+  private powerState: Subject<PowerStates>;
+  private isCharging: Subject<boolean>;
+  private charge: Subject<number>;
+
+  constructor(efbSimvarSubscriber: EventSubscriber<EFBSimvars>, batteryLifeEnabled: UserSetting<boolean>) {
+    this.batteryLifeEnabled = batteryLifeEnabled.get();
+    this.isCharging = Subject.create(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
+    this.absoluteTime = SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds');
+
+    this.battery = new Battery(100, this.absoluteTime);
+    this.powerState = Subject.create(PowerStates.SHUTOFF as PowerStates);
+    this.charge = Subject.create(100);
+
+    batteryLifeEnabled.sub((enabled) => (this.batteryLifeEnabled = enabled));
+    efbSimvarSubscriber.on('dc2BusIsPowered').handle((isPowered) => {
+      this.isCharging.set(isPowered);
+      this.updateCharge();
+    });
+    efbSimvarSubscriber.on('absoluteTime').handle((time) => {
+      this.absoluteTime = time;
+      this.updateCharge();
+    });
+  }
+
+  get power(): Subscribable<PowerStates> {
+    return this.powerState;
+  }
+
+  get isBatteryCharging(): Subscribable<boolean> {
+    return this.isCharging;
+  }
+
+  get batteryCharge(): Subscribable<number> {
+    return this.charge;
+  }
+
+  updateCharge() {
+    if (this.powerState.get() !== PowerStates.LOADED || !this.batteryLifeEnabled) return;
+
+    const newCharge = this.battery.update(this.absoluteTime, this.isCharging.get());
+    this.charge.set(newCharge);
+
+    if (newCharge <= 0) {
+      this.powerState.set(PowerStates.EMPTY);
+    }
+
+    if (newCharge > 2 && this.powerState.get() === PowerStates.EMPTY) {
+      this.offToLoaded();
+    }
+  }
+
+  offToLoaded() {
+    const shouldWait = this.powerState.get() === PowerStates.SHUTOFF || this.powerState.get() === PowerStates.EMPTY;
+    this.powerState.set(PowerStates.LOADING);
+
+    if (shouldWait) {
+      setTimeout(() => {
+        this.powerState.set(PowerStates.LOADED);
+      }, 2500);
+    } else {
+      this.powerState.set(PowerStates.LOADED);
+    }
+  }
+
+  handlePowerButtonPress() {
+    if (this.powerState.get() === PowerStates.STANDBY) {
+      this.offToLoaded();
+    } else {
+      // TODO Get history to work
+      //   history.push('/');
+      this.powerState.set(PowerStates.STANDBY);
+    }
+  }
+}

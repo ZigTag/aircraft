@@ -275,7 +275,7 @@ const fbwUserSettings = [
     defaultValue: false as boolean,
   },
   {
-    name: 'fbwEfbEnableBattery',
+    name: 'fbwEfbBatteryLifeEnabled',
     defaultValue: true as boolean,
   },
   {
@@ -515,7 +515,7 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
       valueMapper: (value) => value === '1',
     },
     A32NX_EFB_BATTERY_LIFE_ENABLED: {
-      newSettingName: 'fbwEfbEnableBattery',
+      newSettingName: 'fbwEfbBatteryLifeEnabled',
       valueMapper: (value) => value === '1',
     },
     A32NX_EFB_SHOW_STATUSBAR_FLIGHTPROGRESS: {
