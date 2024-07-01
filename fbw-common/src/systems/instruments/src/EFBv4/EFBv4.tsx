@@ -93,13 +93,13 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
         case PowerStates.LOADING:
         case PowerStates.SHUTDOWN:
           return (
-            <div class="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
+            <div class="flex h-screen w-screen items-center justify-center bg-theme-body">
               <FbwLogo width={128} height={120} class="text-theme-text" />
             </div>
           );
         case PowerStates.EMPTY:
           return (
-            <div class="flex h-screen w-screen items-center justify-center bg-theme-statusbar">
+            <div class="flex h-screen w-screen items-center justify-center bg-black">
               <i class="bi-battery text-[128px] text-utility-red" />
             </div>
           );
