@@ -37,9 +37,6 @@ export const showModal = (modal: Modal) => EFB_EVENT_BUS.getPublisher<FlypadCont
 export const popModal = () => EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('pop_modal', {});
 
 class PromptModal extends AbstractUIView<PromptModalProps> {
-  private readonly declineButtonRef = FSComponent.createRef<HTMLButtonElement>();
-  private readonly confirmButtonRef = FSComponent.createRef<HTMLButtonElement>();
-
   private handleDecline = () => {
     this.props.onReject?.();
     popModal();
@@ -73,8 +70,6 @@ class PromptModal extends AbstractUIView<PromptModalProps> {
 }
 
 class AlertModal extends AbstractUIView<AlertModalProps> {
-  private readonly acknowledgeButtonRef = FSComponent.createRef<HTMLButtonElement>();
-
   private handleAcknowledge = () => {
     this.props.onAcknowledge?.();
     popModal();
