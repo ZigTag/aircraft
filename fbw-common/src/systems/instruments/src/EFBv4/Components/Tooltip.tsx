@@ -16,7 +16,7 @@ export class TooltipWrapper extends AbstractUIView<TooltipWrapperProps> {
   private hiddenLocked = false;
   private timeout: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly TOOLTIP_SHOW_DELAY = 500 as const;
+  private readonly TOOLTIP_SHOW_DELAY = 350 as const;
 
   private get childNode(): VNode {
     if (this.props.children?.length !== 1) {
