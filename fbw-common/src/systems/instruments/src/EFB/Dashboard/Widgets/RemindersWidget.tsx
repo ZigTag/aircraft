@@ -113,8 +113,7 @@ export const RemindersWidget = () => {
         <div
           className={`absolute inset-0 z-30 transition duration-100 ${reorderMode ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         >
-          <div className="absolute inset-0 bg-theme-body opacity-80" />
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-theme-body opacity-80">
             <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
               {reminderKeyArr.map((key, index) => (
                 <ReminderKeyEditCard

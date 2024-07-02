@@ -360,6 +360,51 @@ interface RemindersWidgetProps {
   navigationState: NavigationState;
 }
 
+interface ReminderKeyEditCardProps {
+  reminderText: VNode;
+  index: number;
+  setter: (destIndex: number) => void;
+  keyArrLen: number;
+}
+
+class ReminderKeyEditCard extends AbstractUIView<ReminderKeyEditCardProps> {
+  render() {
+    return (
+      <div class="flex w-full flex-row items-center justify-between rounded-md bg-theme-accent p-4">
+        <h1>{this.props.reminderText}</h1>
+        <div class="flex flex-row">
+          <Button
+            unstyled
+            class="w-10 bg-transparent"
+            onClick={() => {
+              if (this.props.index === 0) {
+                this.props.setter(this.props.keyArrLen - 1);
+              } else {
+                this.props.setter(this.props.index - 1);
+              }
+            }}
+          >
+            <i class="bi-arrow-up text-[25px]" />
+          </Button>
+          <Button
+            unstyled
+            class="w-10 bg-transparent"
+            onClick={() => {
+              if (this.props.index === this.props.keyArrLen - 1) {
+                this.props.setter(0);
+              } else {
+                this.props.setter(this.props.index + 1);
+              }
+            }}
+          >
+            <i class="bi-arrow-down text-[25px]" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+}
+
 export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
   // Has to be in here idk why
   private readonly REMINDERS = new Map<PageEnum.ReminderWidgets, VNode>([
@@ -404,6 +449,17 @@ export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
     });
   }
 
+  private arrayMove = (element: PageEnum.ReminderWidgets, toIndex: number): string => {
+    // FIXME what the hell this is updating properly
+    console.log(this.reminderKeyArr.getArray().map((key) => PageEnum.ReminderWidgets[key]));
+    this.reminderKeyArr.removeItem(element);
+    this.reminderKeyArr.insert(element, toIndex);
+    console.log(this.reminderKeyArr.getArray().map((key) => PageEnum.ReminderWidgets[key]));
+
+    console.log(this.reminderKeyArr.getArray().toString());
+    return this.reminderKeyArr.getArray().toString();
+  };
+
   render(): VNode {
     return (
       <div class="w-1/2">
@@ -425,12 +481,33 @@ export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
           </TooltipWrapper>
         </div>
 
-        <PageBox>
+        <PageBox class="relative">
           <ScrollableContainer height={51}>
-            <div class="flex flex-col space-y-4">
-              {this.reminderKeyArr.getArray().map((key) => this.REMINDERS.get(key))}
-            </div>
+            <List class="space-y-4" items={this.reminderKeyArr} render={(key) => this.REMINDERS.get(key) as VNode} />
           </ScrollableContainer>
+          <div
+            class={this.reorderModeActive.map(
+              (reorderModeActive) =>
+                `absolute inset-0 z-30 transition duration-100 ${reorderModeActive ? 'opacity-100' : 'pointer-events-none opacity-0'}`,
+            )}
+          >
+            <div class="absolute inset-0 bg-theme-body/80">
+              <ScrollableContainer class="p-6" height={51}>
+                <List
+                  class="space-y-4"
+                  items={this.reminderKeyArr}
+                  render={(key, index) => (
+                    <ReminderKeyEditCard
+                      reminderText={t(this.TRANSLATIONS.get(key) as string)}
+                      keyArrLen={this.reminderKeyArr.length}
+                      setter={(idx) => this.orderedReminderKeys.set(this.arrayMove(key, idx))}
+                      index={index}
+                    />
+                  )}
+                />
+              </ScrollableContainer>
+            </div>
+          </div>
         </PageBox>
       </div>
     );
