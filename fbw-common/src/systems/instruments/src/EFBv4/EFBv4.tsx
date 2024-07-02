@@ -32,6 +32,7 @@ import { PowerManager, PowerStates } from './Power';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 
 import { FbwLogo } from './Assets/FbwLogo';
+import { NotificationContainer } from './Components/Notification';
 
 interface EfbProps extends ComponentProps {}
 
@@ -111,19 +112,18 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
                 <Navbar activePage={this.currentPage} />
                 <MainPage activePage={this.currentPage} flypadClient={flypadClient} />
               </div>
-              <ModalContainer />
               <TooltipContainer />
+              <NotificationContainer />
+              <ModalContainer />
             </>
           );
       }
     };
 
-    // FIXME this doesn't seem to work for some reason :(
     this.bus
       .getSubscriber<HEvent>()
       .on('hEvent')
       .handle((eventName) => {
-        console.log(eventName);
         if (eventName === 'A32NX_EFB_POWER') {
           powerManager.handlePowerButtonPress();
         }

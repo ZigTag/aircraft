@@ -20,6 +20,8 @@ export class EfbV4FsInstrument implements FsInstrument {
 
     initializeEventBusContext(this.bus);
 
+    this.hEventPublisher.startPublish();
+
     FSComponent.render(
       <busContext.Provider value={this.bus}>
         <EFBv4 />
