@@ -375,3 +375,20 @@
 .view-hidden {
   display: none;
 }
+
+.bounce-in {
+    animation: bounce-in 0.5s ease normal;
+}
+
+@keyframes bounce-in {
+    0% {
+        opacity: 0;
+        transform: scale(.2);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.025);
+    }
+    70% { transform: scale(.975); }
+    100% { transform: scale(1); }
+}

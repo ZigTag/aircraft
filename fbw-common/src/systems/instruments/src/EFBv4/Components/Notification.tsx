@@ -85,7 +85,7 @@ class NotificationComponent extends AbstractUIView<NotificationComponentProps> {
     return (
       <button
         type="button"
-        class="pointer-events-auto relative w-5/12 shrink-0 overflow-hidden rounded-lg border-2 border-theme-accent bg-theme-body p-6"
+        class="bounce-in pointer-events-auto relative w-5/12 shrink-0 overflow-hidden rounded-lg border-2 border-theme-accent bg-theme-body p-6"
         ref={this.bodyRef}
       >
         <div class="flex flex-row items-center space-x-4">
