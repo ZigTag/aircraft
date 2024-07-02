@@ -1,12 +1,4 @@
-import {
-  DisplayComponent,
-  ComponentProps,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  VNode,
-  Subscribable,
-} from '@microsoft/msfs-sdk';
+import { DisplayComponent, ComponentProps, FSComponent, Subject, VNode, Subscribable } from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
 import { AbstractUIView, UIVIew } from '../shared/UIView';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
@@ -21,6 +13,10 @@ export interface TooltipWrapperProps extends ComponentProps {
 
 export class TooltipWrapper extends AbstractUIView<TooltipWrapperProps> {
   private id: string | null = null;
+  private hiddenLocked = false;
+  private timeout: ReturnType<typeof setTimeout> | null = null;
+
+  private readonly TOOLTIP_SHOW_DELAY = 500 as const;
 
   private get childNode(): VNode {
     if (this.props.children?.length !== 1) {
@@ -54,18 +50,46 @@ export class TooltipWrapper extends AbstractUIView<TooltipWrapperProps> {
     this.childNodeElement.setAttribute('data-fbw-tooltip-id', this.id);
 
     this.childNodeElement.addEventListener('mouseenter', this.handleMouseEnter);
+    this.childNodeElement.addEventListener('mousedown', this.handleMouseDown);
   }
 
-  private readonly handleMouseEnter = (event: MouseEvent) => {
+  private readonly handleMouseDown = () => {
+    this.hiddenLocked = true;
+
     EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('set_tooltip', {
       id: this.id,
-      shown: true,
+      shown: false,
       text: this.props.text,
     });
 
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
+  };
+
+  private readonly handleMouseEnter = () => {
+    if (this.timeout === null && !this.hiddenLocked) {
+      this.timeout = setTimeout(() => {
+        EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('set_tooltip', {
+          id: this.id,
+          shown: true,
+          text: this.props.text,
+        });
+      }, this.TOOLTIP_SHOW_DELAY);
+    }
+
     this.childNodeElement.addEventListener('mouseleave', this.handleMouseLeave);
   };
-  private readonly handleMouseLeave = (event: MouseEvent) => {
+
+  private readonly handleMouseLeave = () => {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
+
+    this.hiddenLocked = false;
+
     EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('set_tooltip', {
       id: null,
       shown: false,
@@ -78,8 +102,9 @@ export class TooltipWrapper extends AbstractUIView<TooltipWrapperProps> {
   destroy(childFilter?: (child: UIVIew) => boolean) {
     super.destroy(childFilter);
 
-    this.childNodeElement.addEventListener('mouseenter', this.handleMouseEnter);
-    this.childNodeElement.addEventListener('mouseleave', this.handleMouseLeave);
+    this.childNodeElement.removeEventListener('mousedown', this.handleMouseDown);
+    this.childNodeElement.removeEventListener('mouseenter', this.handleMouseEnter);
+    this.childNodeElement.removeEventListener('mouseleave', this.handleMouseLeave);
   }
 
   render(): VNode | null {
@@ -94,23 +119,15 @@ export interface TooltipProps extends ComponentProps {
 }
 
 export class Tooltip extends DisplayComponent<TooltipProps> {
+  private readonly PADDING_PX = 10 as const;
+
   private readonly rootRef = FSComponent.createRef<HTMLDivElement>();
 
   private readonly x = Subject.create(0);
-
   private readonly y = Subject.create(0);
 
-  private readonly offsetY = Subject.create(0);
-
-  private readonly top = MappedSubject.create(
-    ([posY, offsetY]) => {
-      return `${posY + offsetY}px`;
-    },
-    this.y,
-    this.offsetY,
-  );
-
-  private readonly left = this.x.map((it) => `${it}px`);
+  private readonly top = this.y.map((y) => `${y}px`);
+  private readonly left = this.x.map((x) => `${x}px`);
 
   private readonly className = this.props.shown.map((shown) =>
     twMerge(
@@ -131,12 +148,30 @@ export class Tooltip extends DisplayComponent<TooltipProps> {
         throw new Error(`[Tooltip](onAfterRender) Could not find a DOM node with the provided tooltip ID: ${id}`);
       }
 
-      const wrappedElementRect = element.getBoundingClientRect();
-      const tooltipRect = this.rootRef.instance.getBoundingClientRect();
-
-      this.x.set(wrappedElementRect.left - tooltipRect.width - 15);
-      this.y.set(wrappedElementRect.top + wrappedElementRect.height / 2 - tooltipRect.height / 2);
+      this.updatePosition(element);
     });
+  }
+
+  private updatePosition(wrappedElement: Element) {
+    const wrappedElementRect = wrappedElement.getBoundingClientRect();
+    const tooltipRect = this.rootRef.instance.getBoundingClientRect();
+
+    const totalheight = wrappedElementRect.height + tooltipRect.height;
+    const combinedVerticalOffset = wrappedElementRect.top + totalheight + this.PADDING_PX;
+
+    if (combinedVerticalOffset > window.innerHeight) {
+      this.y.set(wrappedElementRect.top - tooltipRect.height - this.PADDING_PX);
+    } else {
+      this.y.set(wrappedElementRect.bottom + this.PADDING_PX);
+    }
+
+    const combinedHorizontalOffset = wrappedElementRect.left + tooltipRect.width + this.PADDING_PX;
+
+    if (combinedHorizontalOffset > window.innerWidth) {
+      this.x.set(wrappedElementRect.right - tooltipRect.width);
+    } else {
+      this.x.set(wrappedElementRect.left);
+    }
   }
 
   render(): VNode | null {
@@ -153,30 +188,15 @@ export class TooltipContainer extends AbstractUIView {
   private shownSubject = Subject.create(false);
   private textSubject = LocalizedString.create('');
 
-  private timeout: ReturnType<typeof setTimeout> | null = null;
-
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
     EFB_EVENT_BUS.getSubscriber<FlypadControlEvents>()
       .on('set_tooltip')
       .handle(({ id, shown, text }) => {
-        if (!shown) {
-          this.shownSubject.set(false);
-        }
-
-        if (shown) {
-          this.textSubject.set(text);
-        }
-
-        if (this.timeout !== null) {
-          clearTimeout(this.timeout);
-        }
-
-        this.timeout = setTimeout(() => {
-          this.shownSubject.set(shown);
-          this.targetIDSubject.set(id);
-        }, 250);
+        this.textSubject.set(text);
+        this.shownSubject.set(shown);
+        this.targetIDSubject.set(id);
       });
   }
 

@@ -23,6 +23,7 @@ import { ChartSemanticColor, PinnedChartCard } from '../Navigation/Components/Pi
 import { twMerge } from 'tailwind-merge';
 import { ChartCategory } from 'navigraph/charts';
 import { AirplaneIndicator } from 'instruments/src/EFBv4/Assets/AirplaneIndicator';
+import { TooltipWrapper } from 'instruments/src/EFBv4/Components/Tooltip';
 
 export interface FlightWidgetProps {
   simbriefState: SimbriefState;
@@ -180,7 +181,7 @@ class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
                   width={50}
                   height={50}
                   class={this.flightPlanProgress.map(
-                    (progress) => `text-theme-highlight -translate-y-1/2 ${progress >= 0 ? 'visible' : 'hidden'}`,
+                    (progress) => `text-theme-highlight -translate-y-1/2 ${progress > 0 ? 'visible' : 'hidden'}`,
                   )}
                 />
               </div>
@@ -378,6 +379,8 @@ export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
   // This gets saved to settings
   private readonly orderedReminderKeys = Subject.create<string>([...this.REMINDERS.keys()].toString());
 
+  private reorderModeActive = Subject.create(false);
+
   private readonly reminderKeyArr = ArraySubject.create(
     this.orderedReminderKeys
       .get()
@@ -404,7 +407,23 @@ export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
   render(): VNode {
     return (
       <div class="w-1/2">
-        <PageTitle>{t('Dashboard.ImportantInformation.Title')}</PageTitle>
+        <div class="flex flex-row items-center justify-between">
+          <PageTitle>{t('Dashboard.ImportantInformation.Title')}</PageTitle>
+          <TooltipWrapper text="Dashboard.ImportantInformation.TT.RearrangeWidgets">
+            <Button
+              unstyled
+              class="bg-transparent"
+              onClick={() => this.reorderModeActive.set(!this.reorderModeActive.get())}
+            >
+              <i
+                class={this.reorderModeActive.map(
+                  (reorderModeActive) =>
+                    `bi-pencil-fill transition duration-100 text-[25px] ${reorderModeActive && 'text-theme-highlight'}`,
+                )}
+              />
+            </Button>
+          </TooltipWrapper>
+        </div>
 
         <PageBox>
           <ScrollableContainer height={51}>
