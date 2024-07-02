@@ -22,6 +22,7 @@ import { List } from '../../Components/List';
 import { ChartSemanticColor, PinnedChartCard } from '../Navigation/Components/PinnedChart';
 import { twMerge } from 'tailwind-merge';
 import { ChartCategory } from 'navigraph/charts';
+import { AirplaneIndicator } from 'instruments/src/EFBv4/Assets/AirplaneIndicator';
 
 export interface FlightWidgetProps {
   simbriefState: SimbriefState;
@@ -175,9 +176,12 @@ class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
                 class="relative w-full bg-theme-highlight"
                 style={{ width: this.flightPlanProgress.map((it) => `${it}%`) }}
               >
-                <i
-                  class="bi-airplane text-[50px] text-inherit"
-                  style={{ visibility: this.flightPlanProgress.map((it) => (it ? 'visible' : 'hidden')) }}
+                <AirplaneIndicator
+                  width={50}
+                  height={50}
+                  class={this.flightPlanProgress.map(
+                    (progress) => `text-theme-highlight -translate-y-1/2 ${progress >= 0 ? 'visible' : 'hidden'}`,
+                  )}
                 />
               </div>
             </div>
@@ -246,7 +250,7 @@ class SimBriefOfpData extends DisplayComponent<SimBriefOfpDataProps> {
           </ScrollableContainer>
         </div>
 
-        <Button onClick={this.props.onFetchSimbriefOfp} class="!mt-auto w-96 w-full">
+        <Button onClick={this.props.onFetchSimbriefOfp} class="!mt-auto w-full">
           <i class="bi-cloud-arrow-down text-[26px] text-inherit" />
           <p class="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
         </Button>

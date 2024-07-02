@@ -17,7 +17,7 @@ export class FbwLogo extends AbstractUIView<LogoProps> {
         width={this.props.width}
         height={this.props.height}
         viewBox="0 0 214 200"
-        className={this.props.class}
+        class={this.props.class}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
