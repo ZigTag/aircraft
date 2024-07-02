@@ -14,14 +14,11 @@ import { Button } from '../../Components/Button';
 import { flypadClientContext } from '../../Contexts';
 import { NavigationState, NavigraphAuthState, Pages, SimbriefState, Switch, SwitchIf, SwitchOn } from '../Pages';
 import { ISimbriefData } from '../../../EFB/Apis/Simbrief';
-import { FbwUserSettings } from '../../FbwUserSettings';
-import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
 import { RemindersSection } from './Widgets/ReminderSection';
 import { ScrollableContainer } from '../../Components/ScrollableContainer';
 import { List } from '../../Components/List';
-import { ChartSemanticColor, PinnedChartCard } from '../Navigation/Components/PinnedChart';
+import { PinnedChartCard } from '../Navigation/Components/PinnedChart';
 import { twMerge } from 'tailwind-merge';
-import { ChartCategory } from 'navigraph/charts';
 import { AirplaneIndicator } from 'instruments/src/EFBv4/Assets/AirplaneIndicator';
 import { TooltipWrapper } from 'instruments/src/EFBv4/Components/Tooltip';
 
@@ -31,8 +28,6 @@ export interface FlightWidgetProps {
 }
 
 export class FlightWidget extends DisplayComponent<FlightWidgetProps, [FlypadClient]> {
-  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
-
   public override contextType = [flypadClientContext] as const;
 
   onAfterRender(node: VNode) {
@@ -407,12 +402,12 @@ class ReminderKeyEditCard extends AbstractUIView<ReminderKeyEditCardProps> {
 
 export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
   // Has to be in here idk why
-  private readonly REMINDERS = new Map<PageEnum.ReminderWidgets, VNode>([
-    [PageEnum.ReminderWidgets.Weather, <WeatherReminder simbriefState={this.props.simbriefState} />],
-    [PageEnum.ReminderWidgets.PinnedCharts, <PinnedChartsReminder navigationState={this.props.navigationState} />],
-    [PageEnum.ReminderWidgets.Maintenance, <MaintenanceReminder />],
-    [PageEnum.ReminderWidgets.Checklists, <ChecklistsReminder />],
-  ]);
+  private readonly REMINDERS = [
+    PageEnum.ReminderWidgets.Weather,
+    PageEnum.ReminderWidgets.PinnedCharts,
+    PageEnum.ReminderWidgets.Maintenance,
+    PageEnum.ReminderWidgets.Checklists,
+  ];
 
   private readonly TRANSLATIONS = new Map<PageEnum.ReminderWidgets, string>([
     [PageEnum.ReminderWidgets.Weather, 'Dashboard.ImportantInformation.Weather.Title'],
@@ -483,7 +478,22 @@ export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
 
         <PageBox class="relative">
           <ScrollableContainer height={51}>
-            <List class="space-y-4" items={this.reminderKeyArr} render={(key) => this.REMINDERS.get(key) as VNode} />
+            <List
+              class="space-y-4"
+              items={this.reminderKeyArr}
+              render={(key) => {
+                switch (key) {
+                  case PageEnum.ReminderWidgets.Weather:
+                    return <WeatherReminder simbriefState={this.props.simbriefState} />;
+                  case PageEnum.ReminderWidgets.PinnedCharts:
+                    return <PinnedChartsReminder navigationState={this.props.navigationState} />;
+                  case PageEnum.ReminderWidgets.Maintenance:
+                    return <MaintenanceReminder />;
+                  case PageEnum.ReminderWidgets.Checklists:
+                    return <ChecklistsReminder />;
+                }
+              }}
+            />
           </ScrollableContainer>
           <div
             class={this.reorderModeActive.map(
