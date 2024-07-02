@@ -5,6 +5,19 @@ import { FlypadControlEvents } from 'instruments/src/EFBv4/FlypadControlEvents';
 import { List } from 'instruments/src/EFBv4/Components/List';
 import { v4 } from 'uuid';
 
+enum NotificationLifetimeKind {
+  Indefinite,
+  Definite,
+}
+type IndefiniteLifetime = { kind: NotificationLifetimeKind.Indefinite };
+type DefiniteLifetime = {
+  kind: NotificationLifetimeKind.Definite;
+  naturalLifeSpan: number;
+  timeRemaining: Subscribable<number>;
+  paused: boolean;
+};
+type NotificationLifetime = IndefiniteLifetime | DefiniteLifetime;
+
 export enum NotificationKind {
   Error,
   Info,
@@ -14,21 +27,8 @@ export enum NotificationKind {
 export type Notification = {
   kind: NotificationKind;
   text: string;
+  lifetime?: IndefiniteLifetime | Omit<DefiniteLifetime, 'timeRemaining' | 'paused'>;
 };
-
-enum NotificationLifetimeKind {
-  Indefinite,
-  Definite,
-}
-
-type IndefiniteLifetime = { kind: NotificationLifetimeKind.Indefinite };
-type DefiniteLifetime = {
-  kind: NotificationLifetimeKind.Definite;
-  naturalLifeSpan: number;
-  timeRemaining: Subscribable<number>;
-  paused: boolean;
-};
-type NotificationLifetime = IndefiniteLifetime | DefiniteLifetime;
 
 type NotificationInfo = {
   notification: Notification;
@@ -110,19 +110,34 @@ class NotificationComponent extends AbstractUIView<NotificationComponentProps> {
 
 export class NotificationContainer extends AbstractUIView {
   private notifications = ArraySubject.create<NotificationInfo>();
+  private DEFAULT_NOTIFICATION_LIFESPAN_MS = 3_000 as const;
 
   onAfterRender(node: VNode): void {
     super.onAfterRender(node);
 
+    const getNotificationLifetime = (notification: Notification): NotificationLifetime => {
+      if (notification.lifetime?.kind === NotificationLifetimeKind.Indefinite) return notification.lifetime;
+
+      if (notification.lifetime === undefined) {
+        return {
+          kind: NotificationLifetimeKind.Definite,
+          naturalLifeSpan: this.DEFAULT_NOTIFICATION_LIFESPAN_MS,
+          paused: false,
+          timeRemaining: Subject.create(this.DEFAULT_NOTIFICATION_LIFESPAN_MS),
+        };
+      }
+
+      return {
+        ...notification.lifetime,
+        timeRemaining: Subject.create(notification.lifetime.naturalLifeSpan),
+        paused: false,
+      };
+    };
+
     const handleShowNotification = (notification: Notification) => {
       this.notifications.insert({
         notification: notification,
-        lifetime: {
-          kind: NotificationLifetimeKind.Definite,
-          naturalLifeSpan: 10_000,
-          timeRemaining: Subject.create(10_000),
-          paused: false,
-        },
+        lifetime: getNotificationLifetime(notification),
         id: v4(),
       });
     };
