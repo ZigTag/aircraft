@@ -47,9 +47,14 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
               }
               this.itemSubscriptions[index].length = 0;
 
-              const renderedNode = this.props.render(it, array.indexOf(it), this.itemSubscriptions[index]);
+              const itemIndex = array.indexOf(it);
+              const renderedNode = this.props.render(it, itemIndex, this.itemSubscriptions[index]);
 
-              this.vnodes[array.indexOf(it)] = renderedNode;
+              if (this.vnodes[itemIndex] === renderedNode) {
+                throw new Error(`[List] VNodes should not be reused as return values of the 'render()' prop`);
+              }
+
+              this.vnodes[itemIndex] = renderedNode;
 
               this.appendItemAfter(previousIndex, renderedNode);
             }
