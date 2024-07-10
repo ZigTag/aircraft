@@ -27,6 +27,7 @@ interface SelectInputProps {
   className?: string;
   forceShowAll?: boolean; // Forces dropdown to show all options
   maxHeight?: number; // max height before it becomes scrollable
+  disabled?: boolean;
 }
 
 const defaultOptionFallback: Option = { value: 0, displayValue: '' };
@@ -60,13 +61,15 @@ export const SelectInput = (props: SelectInputProps) => {
   };
 
   const handleToggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    if (props.disabled !== true) {
+      setShowDropdown(!showDropdown);
+    }
   };
 
   return (
     <div className="flex flex-row">
       <div
-        className={`relative cursor-pointer rounded-md border-2 border-theme-accent ${props.className} ${' '}
+        className={`relative ${props.disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} rounded-md border-2 border-theme-accent ${props.className} ${' '}
                 ${showDropdown && (props.dropdownOnTop ? 'rounded-t-none border-t-theme-body' : 'rounded-b-none border-b-theme-body')}`}
         onClick={handleToggleDropdown}
       >
@@ -94,7 +97,7 @@ export const SelectInput = (props: SelectInputProps) => {
                   (option.tooltip ? (
                     <TooltipWrapper key={option.value} text={option.tooltip}>
                       <div
-                        className="px-3 py-1.5 transition duration-300 hover:bg-theme-highlight/5 hover:text-theme-body"
+                        className="hover:bg-theme-highlight/5 px-3 py-1.5 transition duration-300 hover:text-theme-body"
                         onClick={() => onOptionClicked(option)}
                       >
                         {option.displayValue}
@@ -103,7 +106,7 @@ export const SelectInput = (props: SelectInputProps) => {
                   ) : (
                     <div
                       key={option.value}
-                      className="px-3 py-1.5 transition duration-300 hover:bg-theme-highlight/5 hover:text-theme-body"
+                      className="hover:bg-theme-highlight/5 px-3 py-1.5 transition duration-300 hover:text-theme-body"
                       onClick={() => onOptionClicked(option)}
                     >
                       {option.displayValue}
