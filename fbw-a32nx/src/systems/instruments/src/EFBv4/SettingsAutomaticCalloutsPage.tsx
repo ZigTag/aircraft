@@ -1,12 +1,19 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, MappedSubject, UserSetting, VNode } from '@microsoft/msfs-sdk';
-import { SettingsPage } from '../../Pages/Settings/Settings';
-import { AbstractUIView } from '../../shared/UIView';
-import { t } from '../../Components/LocalizedText';
-import { DEFAULT_RADIO_AUTO_CALL_OUTS, RadioAutoCallOutFlags } from '@flybywiresim/fbw-sdk';
-import { SettingsItem } from './Components/SettingItem';
-import { Button } from '../../Components/Button';
-import { Toggle } from '../../Components/Toggle';
-import { ModalKind, showModal } from '../../Components/Modal';
+import {
+  AbstractUIView,
+  Button,
+  ModalKind,
+  SettingsItem,
+  SettingsPage,
+  showModal,
+  t,
+  Toggle,
+} from '@flybywiresim/EFBv4';
+import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '../../../shared/src/AutoCallOuts';
 
 interface SettingsAutomaticCalloutsPageProps {
   returnHome: () => any;
@@ -14,29 +21,29 @@ interface SettingsAutomaticCalloutsPageProps {
 }
 
 export class SettingsAutomaticCalloutsPage extends AbstractUIView<SettingsAutomaticCalloutsPageProps> {
-  private readonly majorCallOutOptions: [flag: RadioAutoCallOutFlags, name: string][] = [
-    [RadioAutoCallOutFlags.TwoThousandFiveHundred, 'Two Thousand Five Hundred'],
-    [RadioAutoCallOutFlags.TwentyFiveHundred, 'Twenty Five Hundred'],
-    [RadioAutoCallOutFlags.TwoThousand, 'Two Thousand'],
-    [RadioAutoCallOutFlags.OneThousand, 'One Thousand'],
-    [RadioAutoCallOutFlags.FiveHundred, 'Five Hundred'],
-    [RadioAutoCallOutFlags.FiveHundredGlide, 'Five Hundred'],
-    [RadioAutoCallOutFlags.FourHundred, 'Four Hundred'],
-    [RadioAutoCallOutFlags.ThreeHundred, 'Three Hundred'],
-    [RadioAutoCallOutFlags.TwoHundred, 'Two Hundred'],
-    [RadioAutoCallOutFlags.OneHundred, 'One Hundred'],
+  private readonly majorCallOutOptions: [flag: A32NXRadioAutoCallOutFlags, name: string][] = [
+    [A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred, 'Two Thousand Five Hundred'],
+    [A32NXRadioAutoCallOutFlags.TwentyFiveHundred, 'Twenty Five Hundred'],
+    [A32NXRadioAutoCallOutFlags.TwoThousand, 'Two Thousand'],
+    [A32NXRadioAutoCallOutFlags.OneThousand, 'One Thousand'],
+    [A32NXRadioAutoCallOutFlags.FiveHundred, 'Five Hundred'],
+    [A32NXRadioAutoCallOutFlags.FiveHundredGlide, 'Five Hundred'],
+    [A32NXRadioAutoCallOutFlags.FourHundred, 'Four Hundred'],
+    [A32NXRadioAutoCallOutFlags.ThreeHundred, 'Three Hundred'],
+    [A32NXRadioAutoCallOutFlags.TwoHundred, 'Two Hundred'],
+    [A32NXRadioAutoCallOutFlags.OneHundred, 'One Hundred'],
   ];
 
-  private readonly minorCallOutOptions: [flag: RadioAutoCallOutFlags, name: string][] = [
-    [RadioAutoCallOutFlags.Fifty, 'Fifty'],
-    [RadioAutoCallOutFlags.Forty, 'Forty'],
-    [RadioAutoCallOutFlags.Thirty, 'Thirty'],
-    [RadioAutoCallOutFlags.Twenty, 'Twenty'],
-    [RadioAutoCallOutFlags.Ten, 'Ten'],
-    [RadioAutoCallOutFlags.Five, 'Five'],
+  private readonly minorCallOutOptions: [flag: A32NXRadioAutoCallOutFlags, name: string][] = [
+    [A32NXRadioAutoCallOutFlags.Fifty, 'Fifty'],
+    [A32NXRadioAutoCallOutFlags.Forty, 'Forty'],
+    [A32NXRadioAutoCallOutFlags.Thirty, 'Thirty'],
+    [A32NXRadioAutoCallOutFlags.Twenty, 'Twenty'],
+    [A32NXRadioAutoCallOutFlags.Ten, 'Ten'],
+    [A32NXRadioAutoCallOutFlags.Five, 'Five'],
   ];
 
-  private toggleRadioAcoFlag(flag: RadioAutoCallOutFlags): void {
+  private toggleRadioAcoFlag(flag: A32NXRadioAutoCallOutFlags): void {
     let newFlags = this.props.autoCallOuts.get();
 
     if ((this.props.autoCallOuts.get() & flag) > 0) {
@@ -46,29 +53,29 @@ export class SettingsAutomaticCalloutsPage extends AbstractUIView<SettingsAutoma
     }
 
     // two-thousand-five-hundred and twenty-five-hundred are exclusive
-    const both2500s = RadioAutoCallOutFlags.TwoThousandFiveHundred | RadioAutoCallOutFlags.TwentyFiveHundred;
+    const both2500s = A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred | A32NXRadioAutoCallOutFlags.TwentyFiveHundred;
     if ((newFlags & both2500s) === both2500s) {
-      if (flag === RadioAutoCallOutFlags.TwentyFiveHundred) {
-        newFlags &= ~RadioAutoCallOutFlags.TwoThousandFiveHundred;
+      if (flag === A32NXRadioAutoCallOutFlags.TwentyFiveHundred) {
+        newFlags &= ~A32NXRadioAutoCallOutFlags.TwoThousandFiveHundred;
       } else {
-        newFlags &= ~RadioAutoCallOutFlags.TwentyFiveHundred;
+        newFlags &= ~A32NXRadioAutoCallOutFlags.TwentyFiveHundred;
       }
     }
 
     // one of five-hundred or four-hundred is mandatory
-    const fiveHundredFourHundred = RadioAutoCallOutFlags.FiveHundred | RadioAutoCallOutFlags.FourHundred;
+    const fiveHundredFourHundred = A32NXRadioAutoCallOutFlags.FiveHundred | A32NXRadioAutoCallOutFlags.FourHundred;
     if ((newFlags & fiveHundredFourHundred) === 0) {
       // Airbus basic config is four hundred so prefer that if it wasn't just de-selected
-      if (flag === RadioAutoCallOutFlags.FourHundred) {
-        newFlags |= RadioAutoCallOutFlags.FiveHundred;
+      if (flag === A32NXRadioAutoCallOutFlags.FourHundred) {
+        newFlags |= A32NXRadioAutoCallOutFlags.FiveHundred;
       } else {
-        newFlags |= RadioAutoCallOutFlags.FourHundred;
+        newFlags |= A32NXRadioAutoCallOutFlags.FourHundred;
       }
     }
 
     // can't have 500 glide without 500
-    if ((newFlags & RadioAutoCallOutFlags.FiveHundred) === 0) {
-      newFlags &= ~RadioAutoCallOutFlags.FiveHundredGlide;
+    if ((newFlags & A32NXRadioAutoCallOutFlags.FiveHundred) === 0) {
+      newFlags &= ~A32NXRadioAutoCallOutFlags.FiveHundredGlide;
     }
 
     this.props.autoCallOuts.set(newFlags);
@@ -109,7 +116,7 @@ export class SettingsAutomaticCalloutsPage extends AbstractUIView<SettingsAutoma
                 title: 'Automatic Call Out Configuration Reset',
                 bodyText:
                   'Are you sure that you want to reset your current configuration for automatic call outs to its standard configuration? This action is irreversible.',
-                onConfirm: () => this.props.autoCallOuts.set(DEFAULT_RADIO_AUTO_CALL_OUTS),
+                onConfirm: () => this.props.autoCallOuts.set(A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS),
               });
             }}
           >

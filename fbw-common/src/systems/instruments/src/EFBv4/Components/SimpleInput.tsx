@@ -8,7 +8,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
-import { AbstractUIView } from '../shared/UIView';
+import { AbstractUIView } from '../Shared/UIView';
 import { EFBSimvars } from '../EFBSimvarPublisher';
 import { v4 } from 'uuid';
 

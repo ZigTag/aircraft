@@ -13,7 +13,7 @@ import { busContext } from './Contexts/EventBusContext';
 import { flypadClientContext, initializeFlypadClientContext } from './Contexts/FlypadClientContext';
 
 import { Navbar } from './Components/Navbar';
-import { PageEnum } from './shared/common';
+import { PageEnum } from './Shared/common';
 import { MainPage } from './Pages/Pages';
 import { Statusbar } from './Components/Statusbar';
 import { FlypadClient } from '../../../shared/src/flypad-server/FlypadClient';
@@ -24,7 +24,7 @@ import './Assets/Slider.scss';
 import './Assets/bi-icons.css';
 
 import { FbwUserSettings, FbwUserSettingsSaveManager, FlypadTheme } from './FbwUserSettings';
-import { EFB_EVENT_BUS } from './EfbV4FsInstrument';
+import { EFB_EVENT_BUS, EfbV4FsInstrumentAircraftSpecificData } from './EfbV4FsInstrument';
 import { TooltipContainer } from './Components/Tooltip';
 import { ModalContainer } from './Components/Modal';
 import { EFBSimvars } from './EFBSimvarPublisher';
@@ -34,7 +34,9 @@ import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { FbwLogo } from './Assets/FbwLogo';
 import { NotificationContainer } from './Components/Notification';
 
-interface EfbProps extends ComponentProps {}
+interface EfbProps extends ComponentProps {
+  aircraftSpecificData: EfbV4FsInstrumentAircraftSpecificData;
+}
 
 export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
   public override contextType = [busContext] as const;
@@ -49,9 +51,14 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
     return this.getContext(busContext).get();
   }
 
+  private settings = FbwUserSettings.getManager(
+    EFB_EVENT_BUS,
+    this.props.aircraftSpecificData.defaultAutoCalloutsSettingValue,
+  );
+
   onAfterRender(_node: VNode): void {
     // Load user settings
-    const settingsSaveManager = new FbwUserSettingsSaveManager(this.bus);
+    const settingsSaveManager = new FbwUserSettingsSaveManager(this.bus, this.settings);
 
     const saveKey = `fbw.${process.env.AIRCRAFT_PROJECT_PREFIX}.profile.default`;
 
@@ -65,25 +72,23 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
 
     flypadClient.initialized.on((it) => it.sendHelloWorld());
 
-    const theme = FbwUserSettings.getManager(EFB_EVENT_BUS)
-      .getSetting('fbwEfbTheme')
-      .map((theme) => {
-        switch (theme) {
-          case FlypadTheme.Light:
-            return 'light';
-          case FlypadTheme.Dark:
-            return 'dark';
-          default:
-            return 'blue';
-        }
-      });
+    const theme = this.settings.getSetting('fbwEfbTheme').map((theme) => {
+      switch (theme) {
+        case FlypadTheme.Light:
+          return 'light';
+        case FlypadTheme.Dark:
+          return 'dark';
+        default:
+          return 'blue';
+      }
+    });
 
     document.documentElement.classList.add(`theme-${theme.get()}`, 'animationsEnabled');
 
     // FIXME seems like the power manager needs to be initialized here in this method... bus is probably not ready to use yet
     const powerManager = new PowerManager(
       this.bus.getSubscriber<EFBSimvars>(),
-      FbwUserSettings.getManager(EFB_EVENT_BUS).getSetting('fbwEfbBatteryLifeEnabled'),
+      this.settings.getSetting('fbwEfbBatteryLifeEnabled'),
     );
 
     const getComponentFromPowerState = (powerState: PowerStates): VNode => {
@@ -107,10 +112,19 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
         case PowerStates.LOADED:
           return (
             <>
-              <Statusbar batteryLevel={powerManager.batteryCharge} isCharging={powerManager.isBatteryCharging} />
+              <Statusbar
+                settings={this.settings}
+                batteryLevel={powerManager.batteryCharge}
+                isCharging={powerManager.isBatteryCharging}
+              />
               <div class="flex grow items-stretch">
                 <Navbar activePage={this.currentPage} />
-                <MainPage activePage={this.currentPage} flypadClient={flypadClient} />
+                <MainPage
+                  settings={this.settings}
+                  activePage={this.currentPage}
+                  flypadClient={flypadClient}
+                  renderAutomaticCalloutsPage={this.props.aircraftSpecificData.renderAutomaticCalloutsPage}
+                />
               </div>
               <TooltipContainer />
               <NotificationContainer />
@@ -146,7 +160,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
   render(): VNode {
     return (
       <div class="h-screen w-screen bg-theme-body">
-        <div ref={this.renderRoot} class="flex size-full flex-row" />
+        <div ref={this.renderRoot} class="size-full flex flex-row" />
       </div>
     );
   }

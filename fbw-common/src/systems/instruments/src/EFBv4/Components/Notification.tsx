@@ -1,5 +1,5 @@
 import { ArraySubject, FSComponent, MathUtils, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from '../shared/UIView';
+import { AbstractUIView } from '../Shared/UIView';
 import { EFB_EVENT_BUS } from 'instruments/src/EFBv4/EfbV4FsInstrument';
 import { FlypadControlEvents } from 'instruments/src/EFBv4/FlypadControlEvents';
 import { List } from 'instruments/src/EFBv4/Components/List';

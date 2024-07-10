@@ -1,4 +1,4 @@
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { FSComponent, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { ChoiceSettingsItem, InputSettingsItem, SettingsItem, ToggleSettingsItem } from './Components/SettingItem';
 import {

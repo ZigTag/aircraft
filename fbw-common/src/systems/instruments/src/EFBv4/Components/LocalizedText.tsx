@@ -4,8 +4,8 @@
 
 import { FSComponent, VNode, Fragment } from '@microsoft/msfs-sdk';
 
-import { LocalizedString } from '../shared/translation';
-import { AbstractUIView } from '../shared/UIView';
+import { LocalizedString } from '../Shared/translation';
+import { AbstractUIView } from '../Shared/UIView';
 
 export interface LocalizedTextProps {
   locKey: string;

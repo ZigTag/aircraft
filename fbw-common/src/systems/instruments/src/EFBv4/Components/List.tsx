@@ -9,7 +9,7 @@ import {
   Subscription,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { AbstractUIView, UIVIew } from '../shared/UIView';
+import { AbstractUIView, UIVIew } from '../Shared/UIView';
 
 export interface ListProps<T> {
   items: SubscribableArray<T> | Subscribable<T[]>;

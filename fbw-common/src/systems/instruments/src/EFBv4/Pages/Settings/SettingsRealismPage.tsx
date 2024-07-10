@@ -1,4 +1,4 @@
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { SettingsPage } from './Settings';
 import { t } from '../../Components/LocalizedText';

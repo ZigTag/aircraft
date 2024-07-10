@@ -1,13 +1,13 @@
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { DisplayComponent, FSComponent, MappedSubject, Subject, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { SettingsPage } from './Settings';
 import { t } from '../../Components/LocalizedText';
 import { NavigraphAuthState, Pages, Switch } from '../Pages';
-import { PageEnum } from '../../shared/common';
+import { PageEnum } from '../../Shared/common';
 import { SettingsItem, ToggleSettingsItem } from './Components/SettingItem';
 import { Button, ButtonTheme } from '../../Components/Button';
 import { FbwUserSettingsDefs } from '../../FbwUserSettings';
-import { LocalizedString } from '../../shared/translation';
+import { LocalizedString } from '../../Shared/translation';
 import { DeviceFlowParams } from 'navigraph/auth';
 import { twMerge } from 'tailwind-merge';
 import { QRCodeSVG } from '@akamfoad/qrcode';
@@ -196,7 +196,7 @@ class NavigraphAccountLinkSettingsItem extends AbstractUIView<NavigraphAccountLi
             style={{ visibility: this.props.navigraphAuthState.user.map((it) => (it ? 'visible' : 'hidden')) }}
           >
             <span>{this.props.navigraphAuthState.user.map((it) => it?.preferred_username ?? '')}</span>
-            <img src={navigraphLogo} class="mt-px size-6" />
+            <img src={navigraphLogo} class="size-6 mt-px" />
             <span>{this.subscriptionText}</span>
           </span>
 

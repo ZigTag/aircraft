@@ -1,5 +1,5 @@
 import { FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from '../shared/UIView';
+import { AbstractUIView } from '../Shared/UIView';
 
 interface AirplaneIndicatorProps {
   width: number;

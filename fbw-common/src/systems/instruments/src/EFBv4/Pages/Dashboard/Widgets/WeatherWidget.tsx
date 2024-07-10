@@ -8,7 +8,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FlypadClient, MetarParserType } from '@flybywiresim/fbw-sdk';
-import { PageEnum } from '../../../shared/common';
+import { PageEnum } from '../../../Shared/common';
 import { Pages, SimbriefState, Switch } from '../../Pages';
 import { flypadClientContext } from '../../../Contexts';
 import { ColoredMetar } from './ColoredMetar';

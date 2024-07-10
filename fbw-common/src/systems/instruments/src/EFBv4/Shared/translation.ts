@@ -4,6 +4,7 @@
 /* eslint-disable no-console */
 
 import { MappedSubject, MappedSubscribable, MutableSubscribable, Subject, Subscription } from '@microsoft/msfs-sdk';
+import { FbwUserSettings } from '../FbwUserSettings';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 // source language
@@ -43,8 +44,6 @@ import vi from '@localization/data/vi.json';
 import zhHansCN from '@localization/data/zh-Hans-CN.json';
 import zhHantHK from '@localization/data/zh-Hant-HK.json';
 import zhHantTW from '@localization/data/zh-Hant-TW.json';
-import { FbwUserSettings } from '../FbwUserSettings';
-import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 console.log('Initializing Translation');
 
@@ -156,55 +155,55 @@ if (process.env.VITE_BUILD) {
   watchLanguageChanges();
 }
 
-const placeholderReplace = (translation: string, replacements: Record<string, string>[]): string => {
-  let result = translation;
-  replacements.forEach((replacement: Record<string, string>) => {
-    // Localazy uses $<key> as placeholder - $key will be replaced with the value of key
-    const searchValue = `$${Object.keys(replacement)[0]}`;
-    const replaceValue = Object.values(replacement)[0].toString();
-    result = result.replace(searchValue, replaceValue);
-  });
-  return result;
-};
-
-/**
- * Returns localized string in the currently configured language when provided with
- * correct identifier key.
- * It will fall back to the default language and will try to
- * find the key there.
- * If the key is not available in the default language the key itself will be returned.
- *
- * If a replacement list is provided it will replace the placeholders in the string with the
- * key as placeholder-text to be search and the value as the string to be put in place.
- *
- * Placeholders are defined as follows: $key
- *
- * E.g. "Hello $name" with {name: "John"} will return "Hello John"
- *
- * Note: Currently all language files are imported and contain all keys so this is redundant
- * but still implemented for future changes.
- * @param key String identifier key
- * @param replacements list of Records of key value pairs to replace in the string
- * @return translated string in the current language if available, or default
- *         language, or key string
- */
-export function t(key: string, replacements?: Record<string, string>[]): string {
-  const translation = currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
-  if (replacements) {
-    return placeholderReplace(translation, replacements);
-  }
-  return translation;
-}
-
-// Workaround after simvar hook changes - only required on FlyPadPage.tsx from flypad settings
-// to ensure correct update of the page when user changes language. Update timing/order changed
-// with simvar hook change and the page was refreshing before the t() function had the updated
-// language code.
-export function tt(key: string, lang: string): string {
-  currentEfbLanguage = lang;
-  currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || currentLanguageMap;
-  return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
-}
+// const placeholderReplace = (translation: string, replacements: Record<string, string>[]): string => {
+//   let result = translation;
+//   replacements.forEach((replacement: Record<string, string>) => {
+//     // Localazy uses $<key> as placeholder - $key will be replaced with the value of key
+//     const searchValue = `$${Object.keys(replacement)[0]}`;
+//     const replaceValue = Object.values(replacement)[0].toString();
+//     result = result.replace(searchValue, replaceValue);
+//   });
+//   return result;
+// };
+//
+// /**
+//  * Returns localized string in the currently configured language when provided with
+//  * correct identifier key.
+//  * It will fall back to the default language and will try to
+//  * find the key there.
+//  * If the key is not available in the default language the key itself will be returned.
+//  *
+//  * If a replacement list is provided it will replace the placeholders in the string with the
+//  * key as placeholder-text to be search and the value as the string to be put in place.
+//  *
+//  * Placeholders are defined as follows: $key
+//  *
+//  * E.g. "Hello $name" with {name: "John"} will return "Hello John"
+//  *
+//  * Note: Currently all language files are imported and contain all keys so this is redundant
+//  * but still implemented for future changes.
+//  * @param key String identifier key
+//  * @param replacements list of Records of key value pairs to replace in the string
+//  * @return translated string in the current language if available, or default
+//  *         language, or key string
+//  */
+// export function t(key: string, replacements?: Record<string, string>[]): string {
+//   const translation = currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+//   if (replacements) {
+//     return placeholderReplace(translation, replacements);
+//   }
+//   return translation;
+// }
+//
+// // Workaround after simvar hook changes - only required on FlyPadPage.tsx from flypad settings
+// // to ensure correct update of the page when user changes language. Update timing/order changed
+// // with simvar hook change and the page was refreshing before the t() function had the updated
+// // language code.
+// export function tt(key: string, lang: string): string {
+//   currentEfbLanguage = lang;
+//   currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || currentLanguageMap;
+//   return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+// }
 
 export class LocalizedString implements MutableSubscribable<string>, Subscription {
   isSubscribable = true as const;
@@ -226,7 +225,7 @@ export class LocalizedString implements MutableSubscribable<string>, Subscriptio
   private readonly updateCallback: MappedSubject<any, any>;
 
   private constructor(private readonly locKeyProp: string) {
-    this.languageSettingSubscription = FbwUserSettings.getManager(EFB_EVENT_BUS)
+    this.languageSettingSubscription = FbwUserSettings.getExistingManager()
       .getSetting('fbwEfbLanguage')
       .pipe(this.efbLanguage);
 

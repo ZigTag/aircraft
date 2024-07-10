@@ -2,7 +2,7 @@ import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-s
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { Switch } from '../Pages';
-import { PageEnum } from '../../shared/common';
+import { PageEnum } from '../../Shared/common';
 import { Services } from './Pages/Services';
 import { Selector } from '../../Components/Selector';
 
