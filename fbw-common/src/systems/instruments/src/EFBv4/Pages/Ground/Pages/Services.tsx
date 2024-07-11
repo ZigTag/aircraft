@@ -1,11 +1,9 @@
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { A320GroundOutline } from './Widgets/GroundOutlines';
-import React from 'react';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { twMerge } from 'tailwind-merge';
 import { t } from '@localization/translation';
 import { GroundState, SwitchOn } from '../../Pages';
-import { TriangleFill as Chock, VinylFill as Wheel } from 'react-bootstrap-icons';
 
 export interface ServicesProps {
   groundState: GroundState;
@@ -29,6 +27,9 @@ export class Services extends DisplayComponent<ServicesProps> {
 export class A320Services extends DisplayComponent<ServicesProps> {
   private readonly wheelChocksEnabled = Subject.create(true);
   private readonly wheelChocksVisible = Subject.create(false);
+
+  private readonly conesEnabled = Subject.create(true);
+  private readonly conesVisible = Subject.create(false);
 
   render(): VNode | null {
     return (
@@ -83,23 +84,47 @@ export class A320Services extends DisplayComponent<ServicesProps> {
             },
           ]}
         >
-          {/*<SwitchOn*/}
-          {/*  condition={this.wheelChocksEnabled}*/}
-          {/*  on={*/}
-          {/*    <div*/}
-          {/*      class={`flex cursor-pointer flex-row items-center space-x-6 p-6 ${this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500'}`}*/}
-          {/*    >*/}
-          {/*      <div*/}
-          {/*        class={`-ml-2 mr-[-2px] flex items-end justify-center ${this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500'}`}*/}
-          {/*      >*/}
-          {/*        <span class="bi-chock text-[12px] font-[4px] text-inherit" />*/}
-          {/*        <span class="bi-wheel -mx-0.5 text-[36px] font-[5px] text-inherit" />*/}
-          {/*        <span class="bi-chock text-[12px] font-[4px] text-inherit" />*/}
-          {/*      </div>*/}
-          {/*      <h1 className="shrink-0 text-2xl font-medium text-current">{t('Ground.Services.WheelChocks')}</h1>*/}
-          {/*    </div>*/}
-          {/*  }*/}
-          {/*/>*/}
+          <SwitchOn
+            condition={this.wheelChocksEnabled}
+            on={
+              <div
+                class={twMerge(
+                  `flex cursor-pointer flex-row items-center space-x-6 p-6`,
+                  this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500',
+                )}
+              >
+                <div
+                  class={twMerge(
+                    `-ml-2 mr-[-2px] flex justify-center`,
+                    this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500',
+                  )}
+                >
+                  <div class="relative w-[12px] text-inherit">
+                    <span class="bi-triangle-fill absolute bottom-[-6px] text-[12px] font-[4px] text-inherit" />
+                  </div>
+                  <span class="bi-vinyl-fill -mx-0.5 text-[36px] font-[5px] text-inherit" />
+                  <div class="relative w-[12px] text-inherit">
+                    <span class="bi-triangle-fill absolute bottom-[-6px] text-[12px] font-[4px] text-inherit" />
+                  </div>
+                </div>
+                <h1 class="shrink-0 text-2xl font-medium text-inherit">{t('Ground.Services.WheelChocks')}</h1>
+              </div>
+            }
+          />
+          <SwitchOn
+            condition={this.conesEnabled}
+            on={
+              <div
+                class={twMerge(
+                  `flex cursor-pointer flex-row items-center space-x-6 p-6`,
+                  this.conesVisible ? 'text-green-500' : 'text-gray-500',
+                )}
+              >
+                <span class="bi-cone-striped mr-2 text-[38px] font-[1.5px] text-inherit" />
+                <h1 class="shrink-0 text-2xl font-medium text-inherit">{t('Ground.Services.Cones')}</h1>
+              </div>
+            }
+          />
         </ServiceButtons>
 
         <ServiceButtons
