@@ -18,6 +18,20 @@ export enum ServiceButtonState {
   RELEASED,
 }
 
+export enum ServiceButtonType {
+  CabinLeftDoor,
+  CabinRightDoor,
+  JetBridge,
+  FuelTruck,
+  Gpu,
+  CargoDoor,
+  BaggageTruck,
+  AftLeftDoor,
+  AftRightDoor,
+  CateringTruck,
+  AirStarterUnit,
+}
+
 export class Services extends DisplayComponent<ServicesProps> {
   render(): VNode | null {
     return <A320Services {...this.props} />;
@@ -49,27 +63,28 @@ export class A320Services extends DisplayComponent<ServicesProps> {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
               state: this.props.groundState.boardingDoor1ButtonState,
-              handler: () => {},
+              id: ServiceButtonType.CabinLeftDoor,
             },
             {
               icon: 'person-plus-fill',
               name: t('Ground.Services.JetBridge'),
               state: this.props.groundState.jetwayButtonState,
-              handler: () => {},
+              id: ServiceButtonType.JetBridge,
             },
             {
               icon: 'truck',
               name: t('Ground.Services.FuelTruck'),
               state: this.props.groundState.fuelTruckButtonState,
-              handler: () => {},
+              id: ServiceButtonType.FuelTruck,
             },
             {
               icon: 'fan',
               name: t('Ground.Services.AirStarterUnit'),
               state: this.props.groundState.asuButtonState,
-              handler: () => {},
+              id: ServiceButtonType.AirStarterUnit,
             },
           ]}
+          groundState={this.props.groundState}
         />
 
         <ServiceButtons
@@ -80,9 +95,10 @@ export class A320Services extends DisplayComponent<ServicesProps> {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
               state: this.props.groundState.boardingDoor3ButtonState,
-              handler: () => {},
+              id: ServiceButtonType.AftLeftDoor,
             },
           ]}
+          groundState={this.props.groundState}
         >
           <SwitchOn
             condition={this.wheelChocksEnabled}
@@ -135,27 +151,28 @@ export class A320Services extends DisplayComponent<ServicesProps> {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
               state: this.props.groundState.boardingDoor2ButtonState,
-              handler: () => {},
+              id: ServiceButtonType.CabinRightDoor,
             },
             {
               icon: 'plug-fill',
               name: t('Ground.Services.ExternalPower'),
               state: this.props.groundState.gpuButtonState,
-              handler: () => {},
+              id: ServiceButtonType.Gpu,
             },
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorCargo'),
-              state: this.props.groundState.cargoDoor1State,
-              handler: () => {},
+              state: this.props.groundState.cargoDoor1ButtonState,
+              id: ServiceButtonType.CargoDoor,
             },
             {
               icon: 'handbag-fill',
               name: t('Ground.Services.BaggageTruck'),
               state: this.props.groundState.baggageButtonState,
-              handler: () => {},
+              id: ServiceButtonType.BaggageTruck,
             },
           ]}
+          groundState={this.props.groundState}
         />
 
         <ServiceButtons
@@ -166,15 +183,16 @@ export class A320Services extends DisplayComponent<ServicesProps> {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorAft'),
               state: this.props.groundState.boardingDoor4ButtonState,
-              handler: () => {},
+              id: ServiceButtonType.AftRightDoor,
             },
             {
               icon: 'archive-fill',
               name: t('Ground.Services.CateringTruck'),
               state: this.props.groundState.cateringButtonState,
-              handler: () => {},
+              id: ServiceButtonType.CateringTruck,
             },
           ]}
+          groundState={this.props.groundState}
         />
       </div>
     );
@@ -186,7 +204,8 @@ interface ServiceButtonsProps {
   xl?: string;
   xr?: string;
   y: string;
-  buttons: { icon: string; name: string | VNode; state: Subscribable<ServiceButtonState>; handler: () => void }[];
+  buttons: { icon: string; name: string | VNode; state: Subscribable<ServiceButtonState>; id: ServiceButtonType }[];
+  groundState: GroundState;
 }
 
 export class ServiceButtons extends DisplayComponent<ServiceButtonsProps> {
@@ -205,7 +224,13 @@ export class ServiceButtons extends DisplayComponent<ServiceButtonsProps> {
         }}
       >
         {this.props.buttons.map((button) => (
-          <ServiceButton icon={button.icon} name={button.name} handler={button.handler} state={button.state} />
+          <ServiceButton
+            icon={button.icon}
+            name={button.name}
+            id={button.id}
+            state={button.state}
+            groundState={this.props.groundState}
+          />
         ))}
         {this.props.children}
       </div>
@@ -217,7 +242,8 @@ interface ServiceButtonProps {
   icon: string;
   name: string | VNode;
   state: Subscribable<ServiceButtonState>;
-  handler: () => void;
+  id: ServiceButtonType;
+  groundState: GroundState;
 }
 
 const buttonsStyles: Record<ServiceButtonState, string> = {
@@ -238,19 +264,16 @@ export class ServiceButton extends DisplayComponent<ServiceButtonProps> {
     );
   });
 
-  private handlerWrapper() {
+  private handlerWrapper = () => {
+    // debugger;
     if (this.props.state.get() !== ServiceButtonState.DISABLED) {
-      this.props.handler();
+      this.props.groundState.handleButton(this.props.id);
     }
-  }
+  };
 
   render(): VNode | null {
     return (
-      <Button
-        unstyled
-        class={this.buttonStyle}
-        onClick={this.props.state.get() === ServiceButtonState.DISABLED ? () => {} : this.handlerWrapper}
-      >
+      <Button unstyled class={this.buttonStyle} onClick={this.handlerWrapper}>
         <span class={twMerge(`bi-${this.props.icon}`, 'text-[34px] text-inherit')} />
         <h1 class="shrink-0 text-2xl font-medium text-current">{this.props.name}</h1>
       </Button>
