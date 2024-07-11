@@ -1,5 +1,5 @@
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { AircraftGithubVersionChecker, BuildInfo } from '@flybywiresim/fbw-sdk';
 import { EFBSimvars } from '../../EFBSimvarPublisher';
 

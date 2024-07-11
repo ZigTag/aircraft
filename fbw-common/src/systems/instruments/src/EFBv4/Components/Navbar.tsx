@@ -8,7 +8,7 @@ import {
 } from '@microsoft/msfs-sdk';
 // @ts-ignore
 import FbwTail from '../Assets/FBW-Tail.svg';
-import { PageEnum } from '../shared/common';
+import { PageEnum } from '../Shared/common';
 import { Button } from './Button';
 import { twMerge } from 'tailwind-merge';
 import { TooltipWrapper } from 'instruments/src/EFBv4/Components/Tooltip';

@@ -1,10 +1,25 @@
-import { Clock, EventBus, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
+import {
+  Clock,
+  EventBus,
+  FSComponent,
+  FsInstrument,
+  HEventPublisher,
+  InstrumentBackplane,
+  UserSetting,
+  VNode,
+} from '@microsoft/msfs-sdk';
 
 import { EFBv4 } from './EFBv4';
 import { busContext, initializeEventBusContext } from './Contexts';
 import { EFBSimvarPublisher } from './EFBSimvarPublisher';
 
 export const EFB_EVENT_BUS = new EventBus();
+
+export interface EfbV4FsInstrumentAircraftSpecificData {
+  renderAutomaticCalloutsPage: (returnHome: () => any, autoCallOuts: UserSetting<number>) => VNode;
+
+  defaultAutoCalloutsSettingValue: number;
+}
 
 export class EfbV4FsInstrument implements FsInstrument {
   private readonly bus = EFB_EVENT_BUS;
@@ -13,7 +28,10 @@ export class EfbV4FsInstrument implements FsInstrument {
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
-  constructor(public readonly instrument: BaseInstrument) {
+  constructor(
+    public readonly instrument: BaseInstrument,
+    aircraftSpecificData: EfbV4FsInstrumentAircraftSpecificData, // TODO replace this with a plugin system. ACO settings should be in an aircraft-specific manager
+  ) {
     this.backplane.addInstrument('clock', new Clock(this.bus));
     this.backplane.addPublisher('efb', new EFBSimvarPublisher(this.bus));
     this.backplane.init();
@@ -24,7 +42,7 @@ export class EfbV4FsInstrument implements FsInstrument {
 
     FSComponent.render(
       <busContext.Provider value={this.bus}>
-        <EFBv4 />
+        <EFBv4 aircraftSpecificData={aircraftSpecificData} />
       </busContext.Provider>,
       document.getElementById('EFBv4_CONTENT'),
     );

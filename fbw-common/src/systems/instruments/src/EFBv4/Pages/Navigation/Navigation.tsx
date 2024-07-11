@@ -3,7 +3,7 @@ import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { Selector } from '../../Components/Selector';
 import { NavigationState, NavigraphAuthState, Pages, SimbriefState, Switch, SwitchIf, SwitchOn } from '../Pages';
-import { PageEnum } from '../../shared/common';
+import { PageEnum } from '../../Shared/common';
 import { NavigraphKeys } from '@shared/navigraph';
 import { SimpleInput } from '../../Components/SimpleInput';
 import { ScrollableContainer } from '../../Components/ScrollableContainer';

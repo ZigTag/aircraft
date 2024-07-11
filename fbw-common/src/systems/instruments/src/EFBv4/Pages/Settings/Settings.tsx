@@ -1,14 +1,13 @@
-import { FSComponent, NodeReference, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, NodeReference, Subject, UserSetting, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
-import { PageEnum } from '../../shared/common';
-import { AbstractUIView } from '../../shared/UIView';
+import { PageEnum } from '../../Shared/common';
+import { AbstractUIView } from '../../Shared/UIView';
 import { NavigraphAuthState, Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
 import { SettingsAudioPage } from './SettingsAudioPage';
-import { FbwUserSettings } from '../../FbwUserSettings';
-import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
+import { FbwUserSettingsDefs } from '../../FbwUserSettings';
 import { SettingsAircraftOptionsPinProgramsPage } from './SettingsAircraftOptionsPinProgramsPage';
 import { PageBox } from '../../Components/PageBox';
 import { SettingsSimOptionsPage } from './SettingsSimOptionsPage';
@@ -16,15 +15,16 @@ import { SettingsRealismPage } from './SettingsRealismPage';
 import { SettingsThirdPartyOptionsPage } from './SettingsThirdPartyOptionsPage';
 import { SettingsAtsuAocPage } from './SettingsAtsuAocPage';
 import { SettingsFlyPadPage } from './SettingsFlyPadPage';
-import { SettingsAutomaticCalloutsPage } from './SettingsAutomaticCalloutsPage';
 
 export interface SettingsProps {
+  settings: UserSettingManager<FbwUserSettingsDefs>;
+
   navigraphAuthState: NavigraphAuthState;
+
+  renderAutomaticCalloutsPage: (returnHome: () => any, autoCallOuts: UserSetting<number>) => VNode;
 }
 
 export class Settings extends AbstractUIView<SettingsProps> {
-  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
-
   private readonly activePage = Subject.create<PageEnum.SettingsPage>(PageEnum.SettingsPage.Index);
 
   private readonly activePageSetter = this.activePage.set.bind(this.activePage);
@@ -34,17 +34,17 @@ export class Settings extends AbstractUIView<SettingsProps> {
     [
       PageEnum.SettingsPage.AircraftOptionsPinPrograms,
       <SettingsAircraftOptionsPinProgramsPage
-        settings={this.settings}
+        settings={this.props.settings}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
         openAutomaticCallOutsConfigurationPage={() => this.activePageSetter(PageEnum.SettingsPage.AutomaticCallouts)}
       />,
     ],
     [
       PageEnum.SettingsPage.AutomaticCallouts,
-      <SettingsAutomaticCalloutsPage
-        autoCallOuts={this.settings.getSetting('fbwAircraftFwcRadioAutoCallOutPins')}
-        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.AircraftOptionsPinPrograms)}
-      />,
+      this.props.renderAutomaticCalloutsPage(
+        () => this.activePageSetter(PageEnum.SettingsPage.Index),
+        this.props.settings.getSetting('fbwAircraftFwcRadioAutoCallOutPins'),
+      ),
     ],
     [
       PageEnum.SettingsPage.SimOptions,
@@ -57,7 +57,7 @@ export class Settings extends AbstractUIView<SettingsProps> {
     [
       PageEnum.SettingsPage.ThirdPartyOptions,
       <SettingsThirdPartyOptionsPage
-        settings={this.settings}
+        settings={this.props.settings}
         navigraphAuthState={this.props.navigraphAuthState}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
@@ -65,21 +65,21 @@ export class Settings extends AbstractUIView<SettingsProps> {
     [
       PageEnum.SettingsPage.AtsuAoc,
       <SettingsAtsuAocPage
-        settings={this.settings}
+        settings={this.props.settings}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],
     [
       PageEnum.SettingsPage.Audio,
       <SettingsAudioPage
-        settings={this.settings}
+        settings={this.props.settings}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],
     [
       PageEnum.SettingsPage.flyPad,
       <SettingsFlyPadPage
-        settings={this.settings}
+        settings={this.props.settings}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],

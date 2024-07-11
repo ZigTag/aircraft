@@ -1,4 +1,4 @@
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { FSComponent, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { SettingsPage } from './Settings';
 import { t } from '../../Components/LocalizedText';
@@ -9,7 +9,7 @@ import {
   SliderSettingsItem,
   ToggleSettingsItem,
 } from './Components/SettingItem';
-import { languageOptions } from '../../shared/translation';
+import { languageOptions } from '../../Shared/translation';
 import { FbwUserSettingsDefs, FlypadTheme, FlypadTimeDisplay, FlypadTimeFormat } from '../../FbwUserSettings';
 import { keyboardLayoutOptions } from '../../Components/KeyboardWrapper';
 import { Selector } from '../../Components/Selector';

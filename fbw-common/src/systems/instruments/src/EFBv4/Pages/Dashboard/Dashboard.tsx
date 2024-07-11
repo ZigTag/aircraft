@@ -6,8 +6,8 @@ import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, VNo
 import { FlypadClient } from '@flybywiresim/fbw-sdk';
 import { t } from '../../Components/LocalizedText';
 import { WeatherReminder } from './Widgets/WeatherWidget';
-import { AbstractUIView } from '../../shared/UIView';
-import { PageEnum } from '../../shared/common';
+import { AbstractUIView } from '../../Shared/UIView';
+import { PageEnum } from '../../Shared/common';
 import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
 import { Button } from '../../Components/Button';

@@ -1,11 +1,11 @@
 import { DisplayComponent, ComponentProps, FSComponent, Subject, VNode, Subscribable } from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
-import { AbstractUIView, UIVIew } from '../shared/UIView';
+import { AbstractUIView, UIVIew } from '../Shared/UIView';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 import { FlypadControlEvents } from '../FlypadControlEvents';
 import { FSComponentUtils } from '../Utils/FSComponentUtils';
 import { v4 } from 'uuid';
-import { LocalizedString } from '../shared/translation';
+import { LocalizedString } from '../Shared/translation';
 
 export interface TooltipWrapperProps extends ComponentProps {
   text: string;

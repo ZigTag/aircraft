@@ -8,13 +8,14 @@ import {
   ConsumerSubject,
   Subject,
   MappedSubject,
+  UserSettingManager,
 } from '@microsoft/msfs-sdk';
-import { LocalizedString } from '../shared/translation';
-import { PageEnum } from '../shared/common';
+import { LocalizedString } from '../Shared/translation';
+import { PageEnum } from '../Shared/common';
 import { Switch } from '../Pages/Pages';
 import { busContext } from '../Contexts';
 import { EFBSimvars } from '../EFBSimvarPublisher';
-import { FbwUserSettings, FlypadTimeDisplay, FlypadTimeFormat } from '../FbwUserSettings';
+import { FbwUserSettings, FbwUserSettingsDefs, FlypadTimeDisplay, FlypadTimeFormat } from '../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 export class QuickControls extends DisplayComponent<any> {
@@ -109,13 +110,12 @@ export class Battery extends DisplayComponent<BatteryProps> {
   }
 }
 interface StatusbarProps extends ComponentProps {
+  settings: UserSettingManager<FbwUserSettingsDefs>;
   batteryLevel: Subscribable<number>;
   isCharging: Subscribable<boolean>;
 }
 
 export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
-  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
-
   public override contextType = [busContext] as const;
 
   private readonly currentUTC = ConsumerSubject.create(null, 0);
@@ -132,9 +132,9 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
 
   private readonly monthName: LocalizedString = LocalizedString.create('StatusBar.Jan');
 
-  private readonly timezones = this.settings.getSetting('fbwEfbTimeDisplay');
+  private readonly timezones = this.props.settings.getSetting('fbwEfbTimeDisplay');
 
-  private readonly timeFormat = this.settings.getSetting('fbwEfbTimeFormat');
+  private readonly timeFormat = this.props.settings.getSetting('fbwEfbTimeFormat');
 
   private readonly timeDisplayed = MappedSubject.create(
     ([currentUTC, currentLocalTime, timezones, timeFormat]) => {

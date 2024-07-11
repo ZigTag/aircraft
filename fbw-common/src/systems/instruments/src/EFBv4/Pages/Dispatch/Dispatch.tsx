@@ -1,15 +1,15 @@
-import { DisplayComponent, FSComponent, Subject, VNode, ComponentProps, MappedSubject } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, VNode, ComponentProps, UserSettingManager } from '@microsoft/msfs-sdk';
 import { Units } from '@flybywiresim/fbw-sdk';
 import { t } from '../../Components/LocalizedText';
-import { PageEnum } from '../../shared/common';
+import { PageEnum } from '../../Shared/common';
 import { Selector } from '../../Components/Selector';
 import { Switch, Pages, SwitchIf, SimbriefState } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
 import { PageTitle } from '../../Components/PageTitle';
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { ScrollableContainer } from '../../Components/ScrollableContainer';
 import { Button } from '../../Components/Button';
-import { FbwUserSettings } from '../../FbwUserSettings';
+import { FbwUserSettingsDefs } from '../../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
 // import { Icon } from '../../Components/Icons';
 // import React from "react";
@@ -22,16 +22,16 @@ interface AircraftItemProps extends ComponentProps {
 }
 
 interface LoadsheetProps {
+  settings: UserSettingManager<FbwUserSettingsDefs>;
+
   simbriefState: SimbriefState;
 }
 
 export class Loadsheet extends DisplayComponent<LoadsheetProps> {
   private readonly ofpRef = FSComponent.createRef<HTMLDivElement>();
 
-  private readonly settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
-
-  private readonly fontSize = this.settings.getSetting('fbwEfbOfpFontSize');
-  private readonly imageSize = this.settings.getSetting('fbwEfbOfpImageSize');
+  private readonly fontSize = this.props.settings.getSetting('fbwEfbOfpFontSize');
+  private readonly imageSize = this.props.settings.getSetting('fbwEfbOfpImageSize');
 
   constructor(props: LoadsheetProps) {
     super(props);
@@ -305,6 +305,8 @@ export class Overview extends DisplayComponent<any> {
 }
 
 interface DispatchProps {
+  settings: UserSettingManager<FbwUserSettingsDefs>;
+
   simbriefState: SimbriefState;
 }
 
@@ -319,7 +321,7 @@ export class Dispatch extends AbstractUIView<DispatchProps> {
   ];
 
   private readonly pages: Pages = [
-    [PageEnum.DispatchPage.OFP, <Loadsheet simbriefState={this.props.simbriefState} />],
+    [PageEnum.DispatchPage.OFP, <Loadsheet settings={this.props.settings} simbriefState={this.props.simbriefState} />],
     [PageEnum.DispatchPage.Overview, <Overview />],
   ];
 

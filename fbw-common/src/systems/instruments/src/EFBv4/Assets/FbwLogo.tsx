@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from '../shared/UIView';
+import { AbstractUIView } from '../Shared/UIView';
 
 interface LogoProps {
   width: number;

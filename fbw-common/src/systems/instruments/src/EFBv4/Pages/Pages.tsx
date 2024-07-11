@@ -6,24 +6,25 @@ import {
   Subject,
   Subscribable,
   SubscribableUtils,
+  UserSetting,
+  UserSettingManager,
   VNode,
 } from '@microsoft/msfs-sdk';
-import { PageEnum } from '../shared/common';
+import { PageEnum } from '../Shared/common';
 import { Dashboard } from './Dashboard/Dashboard';
 import { Dispatch } from './Dispatch/Dispatch';
 import { Ground } from './Ground/Ground';
 import { Performance } from './Performance/Performance';
 import { Navigation } from './Navigation/Navigation';
-import { ATC } from './ATC/ATC';
+import { Atc } from './ATC/Atc';
 import { Failures } from './Failures/Failures';
 import { Checklists } from './Checklists/Checklists';
 import { Presets } from './Presets/Presets';
 import { Settings } from './Settings/Settings';
-import { AbstractUIView, UIVIew, UIVIewUtils } from '../shared/UIView';
+import { AbstractUIView, UIVIew, UIVIewUtils } from '../Shared/UIView';
 import { twMerge } from 'tailwind-merge';
 import { FlypadClient } from '@shared/flypad-server/FlypadClient';
-import { FbwUserSettings } from '../FbwUserSettings';
-import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
+import { FbwUserSettingsDefs } from '../FbwUserSettings';
 import { GroundState } from '../State/GroundState';
 import { NavigationState, NavigraphAuthState, SimbriefState } from '../State/NavigationState';
 
@@ -32,16 +33,12 @@ export type Pages = readonly [page: number, component: VNode][];
 
 interface MainPageProps extends ComponentProps {
   activePage: Subject<number>;
+  settings: UserSettingManager<FbwUserSettingsDefs>;
   flypadClient: FlypadClient;
+  renderAutomaticCalloutsPage: (returnHome: () => any, autoCallOuts: UserSetting<number>) => VNode;
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
-  private _brightness = FbwUserSettings.getManager(EFB_EVENT_BUS)
-    .getSetting('fbwEfbBrightness')
-    .sub((val) => {
-      SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', val);
-    });
-
   private navigationState = new NavigationState();
 
   private simbriefState = new SimbriefState(this.props.flypadClient);
@@ -59,7 +56,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
         navigationState={this.navigationState}
       />,
     ],
-    [PageEnum.MainPage.Dispatch, <Dispatch simbriefState={this.simbriefState} />],
+    [PageEnum.MainPage.Dispatch, <Dispatch settings={this.props.settings} simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Ground, <Ground groundState={this.groundState} />],
     [PageEnum.MainPage.Performance, <Performance />],
     [
@@ -70,12 +67,28 @@ export class MainPage extends DisplayComponent<MainPageProps> {
         navigraphState={this.navigraphAuthState}
       />,
     ],
-    [PageEnum.MainPage.ATC, <ATC />],
+    [PageEnum.MainPage.ATC, <Atc settings={this.props.settings} />],
     [PageEnum.MainPage.Failures, <Failures />],
     [PageEnum.MainPage.Checklists, <Checklists />],
     [PageEnum.MainPage.Presets, <Presets />],
-    [PageEnum.MainPage.Settings, <Settings navigraphAuthState={this.navigraphAuthState} />],
+    [
+      PageEnum.MainPage.Settings,
+      <Settings
+        settings={this.props.settings}
+        navigraphAuthState={this.navigraphAuthState}
+        renderAutomaticCalloutsPage={this.props.renderAutomaticCalloutsPage}
+      />,
+    ],
   ];
+
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    // Manage brightness. TODO Should not be here, tbh
+    this.props.settings.getSetting('fbwEfbBrightness').sub((val) => {
+      SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', val);
+    });
+  }
 
   render(): VNode {
     return (

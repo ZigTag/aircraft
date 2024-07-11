@@ -1,12 +1,19 @@
+// Copyright (c) 2021-2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, MappedSubject, UserSetting, VNode } from '@microsoft/msfs-sdk';
-import { SettingsPage } from '../../Pages/Settings/Settings';
-import { AbstractUIView } from '../../shared/UIView';
-import { t } from '../../Components/LocalizedText';
-import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '@a32nx/shared/AutoCallOuts';
-import { SettingsItem } from './Components/SettingItem';
-import { Button } from '../../Components/Button';
-import { Toggle } from '../../Components/Toggle';
-import { ModalKind, showModal } from '../../Components/Modal';
+import {
+  AbstractUIView,
+  Button,
+  ModalKind,
+  SettingsItem,
+  SettingsPage,
+  showModal,
+  t,
+  Toggle,
+} from '@flybywiresim/EFBv4';
+import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS, A32NXRadioAutoCallOutFlags } from '../../../shared/src/AutoCallOuts';
 
 interface SettingsAutomaticCalloutsPageProps {
   returnHome: () => any;

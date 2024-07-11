@@ -8,7 +8,7 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { Failure } from '@shared/failures';
 import { AtaChapterNumber, AtaChaptersDescription, AtaChaptersTitle } from '@shared/ata';
 import { ScrollableContainer } from '../../Components/ScrollableContainer';
@@ -16,9 +16,9 @@ import { PageBox } from '../../Components/PageBox';
 import { SimpleInput } from '../../Components/SimpleInput';
 import { Selector } from '../../Components/Selector';
 import { Pages, Switch } from '../Pages';
-import { PageEnum } from '../../shared/common';
+import { PageEnum } from '../../Shared/common';
 import { t } from '../../Components/LocalizedText';
-import { LocalizedString } from '../../shared/translation';
+import { LocalizedString } from '../../Shared/translation';
 import { List } from '../../Components/List';
 import { twMerge } from 'tailwind-merge';
 
@@ -187,7 +187,7 @@ class AtaChapterCard extends DisplayComponent<AtaChapterCardProps> {
         <div class="flex h-full w-1/5 items-center justify-center rounded-md bg-theme-accent font-title text-5xl font-bold">
           {`ATA ${this.props.ataNumber}`}
 
-          <div class="relative -right-7 bottom-16 inline-block size-0 fill-current text-utility-red">
+          <div class="size-0 relative -right-7 bottom-16 inline-block fill-current text-utility-red">
             <svg
               style={{
                 width: '30px',

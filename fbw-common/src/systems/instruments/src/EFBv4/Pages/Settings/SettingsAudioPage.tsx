@@ -1,5 +1,5 @@
 import { FSComponent, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import { SliderSettingsItem, ToggleSettingsItem } from './Components/SettingItem';
 import { FbwUserSettingsDefs } from '../../FbwUserSettings';
 import { t } from '../../Components/LocalizedText';

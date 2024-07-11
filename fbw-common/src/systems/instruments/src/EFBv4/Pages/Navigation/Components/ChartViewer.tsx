@@ -8,7 +8,7 @@ import {
   VNode,
   Wait,
 } from '@microsoft/msfs-sdk';
-import { AbstractUIView, UIVIew } from '../../../shared/UIView';
+import { AbstractUIView, UIVIew } from '../../../Shared/UIView';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { TooltipWrapper } from '../../../Components/Tooltip';
 import { ChartProvider, ChartTheme } from '../ChartProvider';
@@ -367,7 +367,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
         </div>
 
         <div
-          class="absolute flex size-full items-center justify-center bg-theme-secondary"
+          class="size-full absolute flex items-center justify-center bg-theme-secondary"
           style={{
             visibility: this.showLoadingOverlay.map((it) => (it ? 'visible' : 'hidden')),
             'pointer-events': this.showLoadingOverlay.map((it) => (it ? 'auto' : 'none')),

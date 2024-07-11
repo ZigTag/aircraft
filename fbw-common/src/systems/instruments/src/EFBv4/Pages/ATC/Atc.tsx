@@ -1,11 +1,19 @@
-import { FSComponent, MappedSubject, MutableSubscribable, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  FSComponent,
+  ComponentProps,
+  MappedSubject,
+  MutableSubscribable,
+  Subject,
+  Subscribable,
+  UserSettingManager,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
-import { AbstractUIView } from '../../shared/UIView';
+import { AbstractUIView } from '../../Shared/UIView';
 import * as apiClient from '@flybywiresim/api-client';
 import { AtcType } from '@flybywiresim/api-client';
-import { AtisSource, FbwUserSettings } from '../../FbwUserSettings';
-import { EFB_EVENT_BUS } from '../../EfbV4FsInstrument';
+import { AtisSource, FbwUserSettingsDefs } from '../../FbwUserSettings';
 import { EFBSimvars } from '../../EFBSimvarPublisher';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { ScrollableContainer } from '../../Components/ScrollableContainer';
@@ -13,7 +21,7 @@ import { SimpleInput } from '../../Components/SimpleInput';
 import { TooltipWrapper } from '../../Components/Tooltip';
 import { Selector } from '../../Components/Selector';
 import { t } from '../../Components/LocalizedText';
-import { LocalizedString } from '../../shared/translation';
+import { LocalizedString } from '../../Shared/translation';
 import { List } from '../../Components/List';
 
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
@@ -287,9 +295,11 @@ class AtcAvailableUI extends AbstractUIView<AtcAvailableUIProps> {
   }
 }
 
-export class ATC extends AbstractUIView {
-  private settings = FbwUserSettings.getManager(EFB_EVENT_BUS);
+export interface AtcProps extends ComponentProps {
+  settings: UserSettingManager<FbwUserSettingsDefs>;
+}
 
+export class Atc extends AbstractUIView<AtcProps> {
   private controllers = Subject.create<ATCInfoExtended[]>([]);
   private currentAtc = Subject.create<ATCInfoExtended | undefined>(undefined);
 
@@ -301,7 +311,7 @@ export class ATC extends AbstractUIView {
   private displayedActiveFrequency = Subject.create<string>('');
   private displayedStandbyFrequency = Subject.create<string>('');
 
-  private atisSource = this.settings.getSetting('fbwAtsuAocAtisSource');
+  private atisSource = this.props.settings.getSetting('fbwAtsuAocAtisSource');
 
   private atcDataPending = Subject.create(true);
 
