@@ -37,7 +37,7 @@ import { NotificationContainer } from './Components/Notification';
 interface EfbProps extends ComponentProps {}
 
 // Disables power state for dev stuff
-const disableStartup = process.env.DISABLE_STARTUP ?? false;
+const disableStartup = process.env.DISABLE_EFB_STARTUP;
 
 export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
   public override contextType = [busContext] as const;
