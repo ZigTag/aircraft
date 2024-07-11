@@ -4,10 +4,14 @@ import React from 'react';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { twMerge } from 'tailwind-merge';
 import { t } from '@localization/translation';
-import { SwitchOn } from '../../Pages';
+import { GroundState, SwitchOn } from '../../Pages';
 import { TriangleFill as Chock, VinylFill as Wheel } from 'react-bootstrap-icons';
 
-enum ServiceButtonState {
+export interface ServicesProps {
+  groundState: GroundState;
+}
+
+export enum ServiceButtonState {
   HIDDEN,
   DISABLED,
   INACTIVE,
@@ -16,44 +20,24 @@ enum ServiceButtonState {
   RELEASED,
 }
 
-export class Services extends DisplayComponent<any> {
+export class Services extends DisplayComponent<ServicesProps> {
   render(): VNode | null {
-    return <A320Services />;
+    return <A320Services {...this.props} />;
   }
 }
 
-export class A320Services extends DisplayComponent<any> {
+export class A320Services extends DisplayComponent<ServicesProps> {
   private readonly wheelChocksEnabled = Subject.create(true);
   private readonly wheelChocksVisible = Subject.create(false);
-
-  private readonly cabinLeftStatus = Subject.create(false);
-  private readonly cabinRightStatus = Subject.create(false);
-  private readonly aftLeftStatus = Subject.create(false);
-  private readonly aftRightStatus = Subject.create(false);
-
-  private readonly boardingDoor1ButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boardingDoor2ButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boardingDoor3ButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boardingDoor4ButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly jetwayButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly fuelTruckButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly asuButtonState = Subject.create(ServiceButtonState.INACTIVE);
-
-  private readonly cargoDoor1State = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly cargoDoor2State = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly gpuButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly baggageButtonState = Subject.create(ServiceButtonState.INACTIVE);
-
-  private readonly cateringButtonState = Subject.create(ServiceButtonState.INACTIVE);
 
   render(): VNode | null {
     return (
       <div class="relative h-content-section-reduced">
         <A320GroundOutline
-          cabinLeftStatus={this.cabinLeftStatus}
-          cabinRightStatus={this.cabinRightStatus}
-          aftLeftStatus={this.aftLeftStatus}
-          aftRightStatus={this.aftRightStatus}
+          cabinLeftStatus={this.props.groundState.cabinLeftStatus}
+          cabinRightStatus={this.props.groundState.cabinRightStatus}
+          aftLeftStatus={this.props.groundState.aftLeftStatus}
+          aftRightStatus={this.props.groundState.aftRightStatus}
         />
 
         <ServiceButtons
@@ -63,25 +47,25 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
-              state: this.boardingDoor1ButtonState,
+              state: this.props.groundState.boardingDoor1ButtonState,
               handler: () => {},
             },
             {
               icon: 'person-plus-fill',
               name: t('Ground.Services.JetBridge'),
-              state: this.jetwayButtonState,
+              state: this.props.groundState.jetwayButtonState,
               handler: () => {},
             },
             {
               icon: 'truck',
               name: t('Ground.Services.FuelTruck'),
-              state: this.fuelTruckButtonState,
+              state: this.props.groundState.fuelTruckButtonState,
               handler: () => {},
             },
             {
               icon: 'fan',
               name: t('Ground.Services.AirStarterUnit'),
-              state: this.asuButtonState,
+              state: this.props.groundState.asuButtonState,
               handler: () => {},
             },
           ]}
@@ -94,7 +78,7 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
-              state: this.boardingDoor3ButtonState,
+              state: this.props.groundState.boardingDoor3ButtonState,
               handler: () => {},
             },
           ]}
@@ -125,25 +109,25 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
-              state: this.boardingDoor2ButtonState,
+              state: this.props.groundState.boardingDoor2ButtonState,
               handler: () => {},
             },
             {
               icon: 'plug-fill',
               name: t('Ground.Services.ExternalPower'),
-              state: this.gpuButtonState,
+              state: this.props.groundState.gpuButtonState,
               handler: () => {},
             },
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorCargo'),
-              state: this.cargoDoor1State,
+              state: this.props.groundState.cargoDoor1State,
               handler: () => {},
             },
             {
               icon: 'handbag-fill',
               name: t('Ground.Services.BaggageTruck'),
-              state: this.baggageButtonState,
+              state: this.props.groundState.baggageButtonState,
               handler: () => {},
             },
           ]}
@@ -156,13 +140,13 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorAft'),
-              state: this.boardingDoor4ButtonState,
+              state: this.props.groundState.boardingDoor4ButtonState,
               handler: () => {},
             },
             {
               icon: 'archive-fill',
               name: t('Ground.Services.CateringTruck'),
-              state: this.cateringButtonState,
+              state: this.props.groundState.cateringButtonState,
               handler: () => {},
             },
           ]}

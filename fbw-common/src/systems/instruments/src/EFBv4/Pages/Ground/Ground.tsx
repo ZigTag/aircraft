@@ -1,12 +1,16 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
-import { Switch } from '../Pages';
+import { GroundState, Switch } from '../Pages';
 import { PageEnum } from '../../shared/common';
 import { Services } from './Pages/Services';
 import { Selector } from '../../Components/Selector';
 
-export class Ground extends DisplayComponent<any> {
+export interface GroundProps {
+  groundState: GroundState;
+}
+
+export class Ground extends DisplayComponent<GroundProps> {
   private readonly activePage = Subject.create(PageEnum.GroundPage.Services);
 
   render(): VNode {
@@ -28,7 +32,7 @@ export class Ground extends DisplayComponent<any> {
         <Switch
           activePage={this.activePage}
           pages={[
-            [PageEnum.GroundPage.Services, <Services />],
+            [PageEnum.GroundPage.Services, <Services groundState={this.props.groundState} />],
             [PageEnum.GroundPage.Fuel, <></>],
             [PageEnum.GroundPage.Payload, <></>],
             [PageEnum.GroundPage.Pushback, <></>],

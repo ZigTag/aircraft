@@ -30,6 +30,7 @@ import { navigraphAuth } from '../../navigraph';
 import { FbwUserSettings } from '../FbwUserSettings';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 import { FlypadChart } from './Navigation/ChartProvider';
+import { ServiceButtonState } from './Ground/Pages/Services';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -103,6 +104,46 @@ export class NavigraphAuthState {
   }
 }
 
+export class GroundState {
+  private readonly _cabinLeftStatus = Subject.create(false);
+  private readonly _cabinRightStatus = Subject.create(false);
+  private readonly _aftLeftStatus = Subject.create(false);
+  private readonly _aftRightStatus = Subject.create(false);
+
+  public readonly cabinLeftStatus: Subscribable<boolean> = this._cabinLeftStatus;
+  public readonly cabinRightStatus: Subscribable<boolean> = this._cabinRightStatus;
+  public readonly aftLeftStatus: Subscribable<boolean> = this._aftLeftStatus;
+  public readonly aftRightStatus: Subscribable<boolean> = this._aftRightStatus;
+
+  private readonly _boardingDoor1ButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _boardingDoor2ButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _boardingDoor3ButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _boardingDoor4ButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _jetwayButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _fuelTruckButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _asuButtonState = Subject.create(ServiceButtonState.INACTIVE);
+
+  private readonly _cargoDoor1State = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _gpuButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly _baggageButtonState = Subject.create(ServiceButtonState.INACTIVE);
+
+  private readonly _cateringButtonState = Subject.create(ServiceButtonState.INACTIVE);
+
+  public readonly boardingDoor1ButtonState: Subscribable<ServiceButtonState> = this._boardingDoor1ButtonState;
+  public readonly boardingDoor2ButtonState: Subscribable<ServiceButtonState> = this._boardingDoor2ButtonState;
+  public readonly boardingDoor3ButtonState: Subscribable<ServiceButtonState> = this._boardingDoor3ButtonState;
+  public readonly boardingDoor4ButtonState: Subscribable<ServiceButtonState> = this._boardingDoor4ButtonState;
+  public readonly jetwayButtonState: Subscribable<ServiceButtonState> = this._jetwayButtonState;
+  public readonly fuelTruckButtonState: Subscribable<ServiceButtonState> = this._fuelTruckButtonState;
+  public readonly asuButtonState: Subscribable<ServiceButtonState> = this._asuButtonState;
+
+  public readonly cargoDoor1State: Subscribable<ServiceButtonState> = this._cargoDoor1State;
+  public readonly gpuButtonState: Subscribable<ServiceButtonState> = this._gpuButtonState;
+  public readonly baggageButtonState: Subscribable<ServiceButtonState> = this._baggageButtonState;
+
+  public readonly cateringButtonState: Subscribable<ServiceButtonState> = this._cateringButtonState;
+}
+
 export class MainPage extends DisplayComponent<MainPageProps> {
   private _brightness = FbwUserSettings.getManager(EFB_EVENT_BUS)
     .getSetting('fbwEfbBrightness')
@@ -113,6 +154,8 @@ export class MainPage extends DisplayComponent<MainPageProps> {
   private navigationState = new NavigationState();
 
   private simbriefState = new SimbriefState(this.props.flypadClient);
+
+  private groundState = new GroundState();
 
   private readonly navigraphAuthState = new NavigraphAuthState();
 
@@ -126,7 +169,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
       />,
     ],
     [PageEnum.MainPage.Dispatch, <Dispatch simbriefState={this.simbriefState} />],
-    [PageEnum.MainPage.Ground, <Ground />],
+    [PageEnum.MainPage.Ground, <Ground groundState={this.groundState} />],
     [PageEnum.MainPage.Performance, <Performance />],
     [
       PageEnum.MainPage.Navigation,
