@@ -56,7 +56,7 @@ export enum PowerStates {
 export class PowerManager {
   private battery: Battery;
 
-  private chargeBeingSimulated: Subscribable<boolean>;
+  private isBatteryChargeDischargeBeingSimulated: Subscribable<boolean>;
 
   private powerState: Subject<PowerStates>;
   private isCharging: Subject<boolean>;
@@ -77,7 +77,7 @@ export class PowerManager {
       this.updateCharge(time);
     });
 
-    this.chargeBeingSimulated = MappedSubject.create(
+    this.isBatteryChargeDischargeBeingSimulated = MappedSubject.create(
       ([batteryLifeEnabled, powerState]) => {
         return powerState === PowerStates.LOADED && batteryLifeEnabled;
       },
@@ -85,7 +85,7 @@ export class PowerManager {
       this.powerState,
     );
 
-    this.chargeBeingSimulated.sub(() =>
+    this.isBatteryChargeDischargeBeingSimulated.sub(() =>
       this.battery.onChargeStopStart(SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds')),
     );
   }
@@ -103,7 +103,7 @@ export class PowerManager {
   }
 
   updateCharge(absoluteTime: number) {
-    if (!this.chargeBeingSimulated.get()) return;
+    if (!this.isBatteryChargeDischargeBeingSimulated.get()) return;
 
     const newCharge = this.battery.update(absoluteTime, this.isCharging.get());
     this.charge.set(newCharge);
