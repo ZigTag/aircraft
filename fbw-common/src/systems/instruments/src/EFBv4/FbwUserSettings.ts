@@ -5,7 +5,7 @@ import {
   UserSettingSaveManager,
   UserSettingValue,
 } from '@microsoft/msfs-sdk';
-import { DEFAULT_RADIO_AUTO_CALL_OUTS } from '@flybywiresim/fbw-sdk';
+import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@a32nx/shared/AutoCallOuts';
 
 const CURRENT_SETTINGS_VERSION = 1;
 
@@ -138,7 +138,7 @@ const fbwUserSettings = [
   },
   {
     name: 'fbwAircraftFwcRadioAutoCallOutPins',
-    defaultValue: DEFAULT_RADIO_AUTO_CALL_OUTS,
+    defaultValue: A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS,
   },
   {
     name: 'fbwAutomaticallyImportSimbriefData',

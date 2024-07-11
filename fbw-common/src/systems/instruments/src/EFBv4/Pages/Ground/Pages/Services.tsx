@@ -1,13 +1,15 @@
 import { DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { A320GroundOutline } from './Widgets/GroundOutlines';
-import React from 'react';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { twMerge } from 'tailwind-merge';
 import { t } from '@localization/translation';
-import { SwitchOn } from '../../Pages';
-import { TriangleFill as Chock, VinylFill as Wheel } from 'react-bootstrap-icons';
+import { GroundState, SwitchOn } from '../../Pages';
 
-enum ServiceButtonState {
+export interface ServicesProps {
+  groundState: GroundState;
+}
+
+export enum ServiceButtonState {
   HIDDEN,
   DISABLED,
   INACTIVE,
@@ -16,37 +18,41 @@ enum ServiceButtonState {
   RELEASED,
 }
 
-export class Services extends DisplayComponent<any> {
+export enum ServiceButtonType {
+  CabinLeftDoor,
+  CabinRightDoor,
+  JetBridge,
+  FuelTruck,
+  Gpu,
+  CargoDoor,
+  BaggageTruck,
+  AftLeftDoor,
+  AftRightDoor,
+  CateringTruck,
+  AirStarterUnit,
+}
+
+export class Services extends DisplayComponent<ServicesProps> {
   render(): VNode | null {
-    return <A320Services />;
+    return <A320Services {...this.props} />;
   }
 }
 
-export class A320Services extends DisplayComponent<any> {
+export class A320Services extends DisplayComponent<ServicesProps> {
   private readonly wheelChocksEnabled = Subject.create(true);
   private readonly wheelChocksVisible = Subject.create(false);
 
-  private readonly cabinLeftStatus = Subject.create(false);
-  private readonly cabinRightStatus = Subject.create(false);
-  private readonly aftLeftStatus = Subject.create(false);
-  private readonly aftRightStatus = Subject.create(false);
-
-  private readonly boarding1DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boarding2DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boarding3DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boarding4DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly jetwayButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly fuelTruckButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly asuButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly conesEnabled = Subject.create(true);
+  private readonly conesVisible = Subject.create(false);
 
   render(): VNode | null {
     return (
       <div class="relative h-content-section-reduced">
         <A320GroundOutline
-          cabinLeftStatus={this.cabinLeftStatus}
-          cabinRightStatus={this.cabinRightStatus}
-          aftLeftStatus={this.aftLeftStatus}
-          aftRightStatus={this.aftRightStatus}
+          cabinLeftStatus={this.props.groundState.cabinLeftStatus}
+          cabinRightStatus={this.props.groundState.cabinRightStatus}
+          aftLeftStatus={this.props.groundState.aftLeftStatus}
+          aftRightStatus={this.props.groundState.aftRightStatus}
         />
 
         <ServiceButtons
@@ -56,28 +62,29 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
-              state: this.boarding1DoorButtonState,
-              handler: () => {},
+              state: this.props.groundState.boardingDoor1ButtonState,
+              id: ServiceButtonType.CabinLeftDoor,
             },
             {
               icon: 'person-plus-fill',
               name: t('Ground.Services.JetBridge'),
-              state: this.jetwayButtonState,
-              handler: () => {},
+              state: this.props.groundState.jetwayButtonState,
+              id: ServiceButtonType.JetBridge,
             },
             {
               icon: 'truck',
               name: t('Ground.Services.FuelTruck'),
-              state: this.fuelTruckButtonState,
-              handler: () => {},
+              state: this.props.groundState.fuelTruckButtonState,
+              id: ServiceButtonType.FuelTruck,
             },
             {
               icon: 'fan',
               name: t('Ground.Services.AirStarterUnit'),
-              state: this.asuButtonState,
-              handler: () => {},
+              state: this.props.groundState.asuButtonState,
+              id: ServiceButtonType.AirStarterUnit,
             },
           ]}
+          groundState={this.props.groundState}
         />
 
         <ServiceButtons
@@ -87,29 +94,106 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
-              state: this.boarding3DoorButtonState,
-              handler: () => {},
+              state: this.props.groundState.boardingDoor3ButtonState,
+              id: ServiceButtonType.AftLeftDoor,
             },
           ]}
+          groundState={this.props.groundState}
         >
-          {/*<SwitchOn*/}
-          {/*  condition={this.wheelChocksEnabled}*/}
-          {/*  on={*/}
-          {/*    <div*/}
-          {/*      class={`flex cursor-pointer flex-row items-center space-x-6 p-6 ${this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500'}`}*/}
-          {/*    >*/}
-          {/*      <div*/}
-          {/*        class={`-ml-2 mr-[-2px] flex items-end justify-center ${this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500'}`}*/}
-          {/*      >*/}
-          {/*        <span class="bi-chock text-[12px] font-[4px] text-inherit" />*/}
-          {/*        <span class="bi-wheel -mx-0.5 text-[36px] font-[5px] text-inherit" />*/}
-          {/*        <span class="bi-chock text-[12px] font-[4px] text-inherit" />*/}
-          {/*      </div>*/}
-          {/*      <h1 className="shrink-0 text-2xl font-medium text-current">{t('Ground.Services.WheelChocks')}</h1>*/}
-          {/*    </div>*/}
-          {/*  }*/}
-          {/*/>*/}
+          <SwitchOn
+            condition={this.wheelChocksEnabled}
+            on={
+              <div
+                class={twMerge(
+                  `flex cursor-pointer flex-row items-center space-x-6 p-6`,
+                  this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500',
+                )}
+              >
+                <div
+                  class={twMerge(
+                    `-ml-2 mr-[-2px] flex justify-center`,
+                    this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500',
+                  )}
+                >
+                  <div class="relative w-[12px] text-inherit">
+                    <span class="bi-triangle-fill absolute bottom-[-6px] text-[12px] font-[4px] text-inherit" />
+                  </div>
+                  <span class="bi-vinyl-fill -mx-0.5 text-[36px] font-[5px] text-inherit" />
+                  <div class="relative w-[12px] text-inherit">
+                    <span class="bi-triangle-fill absolute bottom-[-6px] text-[12px] font-[4px] text-inherit" />
+                  </div>
+                </div>
+                <h1 class="shrink-0 text-2xl font-medium text-inherit">{t('Ground.Services.WheelChocks')}</h1>
+              </div>
+            }
+          />
+          <SwitchOn
+            condition={this.conesEnabled}
+            on={
+              <div
+                class={twMerge(
+                  `flex cursor-pointer flex-row items-center space-x-6 p-6`,
+                  this.conesVisible ? 'text-green-500' : 'text-gray-500',
+                )}
+              >
+                <span class="bi-cone-striped mr-2 text-[38px] font-[1.5px] text-inherit" />
+                <h1 class="shrink-0 text-2xl font-medium text-inherit">{t('Ground.Services.Cones')}</h1>
+              </div>
+            }
+          />
         </ServiceButtons>
+
+        <ServiceButtons
+          xl="900px"
+          y="24px"
+          buttons={[
+            {
+              icon: 'door-closed-fill',
+              name: t('Ground.Services.DoorFwd'),
+              state: this.props.groundState.boardingDoor2ButtonState,
+              id: ServiceButtonType.CabinRightDoor,
+            },
+            {
+              icon: 'plug-fill',
+              name: t('Ground.Services.ExternalPower'),
+              state: this.props.groundState.gpuButtonState,
+              id: ServiceButtonType.Gpu,
+            },
+            {
+              icon: 'door-closed-fill',
+              name: t('Ground.Services.DoorCargo'),
+              state: this.props.groundState.cargoDoor1ButtonState,
+              id: ServiceButtonType.CargoDoor,
+            },
+            {
+              icon: 'handbag-fill',
+              name: t('Ground.Services.BaggageTruck'),
+              state: this.props.groundState.baggageButtonState,
+              id: ServiceButtonType.BaggageTruck,
+            },
+          ]}
+          groundState={this.props.groundState}
+        />
+
+        <ServiceButtons
+          xl="900px"
+          y="600px"
+          buttons={[
+            {
+              icon: 'door-closed-fill',
+              name: t('Ground.Services.DoorAft'),
+              state: this.props.groundState.boardingDoor4ButtonState,
+              id: ServiceButtonType.AftRightDoor,
+            },
+            {
+              icon: 'archive-fill',
+              name: t('Ground.Services.CateringTruck'),
+              state: this.props.groundState.cateringButtonState,
+              id: ServiceButtonType.CateringTruck,
+            },
+          ]}
+          groundState={this.props.groundState}
+        />
       </div>
     );
   }
@@ -120,7 +204,8 @@ interface ServiceButtonsProps {
   xl?: string;
   xr?: string;
   y: string;
-  buttons: { icon: string; name: string | VNode; state: Subscribable<ServiceButtonState>; handler: () => void }[];
+  buttons: { icon: string; name: string | VNode; state: Subscribable<ServiceButtonState>; id: ServiceButtonType }[];
+  groundState: GroundState;
 }
 
 export class ServiceButtons extends DisplayComponent<ServiceButtonsProps> {
@@ -139,7 +224,13 @@ export class ServiceButtons extends DisplayComponent<ServiceButtonsProps> {
         }}
       >
         {this.props.buttons.map((button) => (
-          <ServiceButton icon={button.icon} name={button.name} handler={button.handler} state={button.state} />
+          <ServiceButton
+            icon={button.icon}
+            name={button.name}
+            id={button.id}
+            state={button.state}
+            groundState={this.props.groundState}
+          />
         ))}
         {this.props.children}
       </div>
@@ -151,7 +242,8 @@ interface ServiceButtonProps {
   icon: string;
   name: string | VNode;
   state: Subscribable<ServiceButtonState>;
-  handler: () => void;
+  id: ServiceButtonType;
+  groundState: GroundState;
 }
 
 const buttonsStyles: Record<ServiceButtonState, string> = {
@@ -172,19 +264,16 @@ export class ServiceButton extends DisplayComponent<ServiceButtonProps> {
     );
   });
 
-  private handlerWrapper() {
+  private handlerWrapper = () => {
+    // debugger;
     if (this.props.state.get() !== ServiceButtonState.DISABLED) {
-      this.props.handler();
+      this.props.groundState.handleButton(this.props.id);
     }
-  }
+  };
 
   render(): VNode | null {
     return (
-      <Button
-        unstyled
-        class={this.buttonStyle}
-        onClick={this.props.state.get() === ServiceButtonState.DISABLED ? () => {} : this.handlerWrapper}
-      >
+      <Button unstyled class={this.buttonStyle} onClick={this.handlerWrapper}>
         <span class={twMerge(`bi-${this.props.icon}`, 'text-[34px] text-inherit')} />
         <h1 class="shrink-0 text-2xl font-medium text-current">{this.props.name}</h1>
       </Button>

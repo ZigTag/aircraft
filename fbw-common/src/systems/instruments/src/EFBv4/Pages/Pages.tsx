@@ -1,12 +1,10 @@
 import {
-  ArraySubject,
   ComponentProps,
   DisplayComponent,
   FSComponent,
   MappedSubject,
   Subject,
   Subscribable,
-  SubscribableArray,
   SubscribableUtils,
   UserSetting,
   UserSettingManager,
@@ -25,12 +23,10 @@ import { Presets } from './Presets/Presets';
 import { Settings } from './Settings/Settings';
 import { AbstractUIView, UIVIew, UIVIewUtils } from '../Shared/UIView';
 import { twMerge } from 'tailwind-merge';
-import { ISimbriefData, simbriefDataParser } from '../../EFB/Apis/Simbrief';
 import { FlypadClient } from '@shared/flypad-server/FlypadClient';
-import { DeviceFlowParams, User } from 'navigraph/auth';
-import { navigraphAuth } from '../../navigraph';
 import { FbwUserSettingsDefs } from '../FbwUserSettings';
-import { FlypadChart } from './Navigation/ChartProvider';
+import { GroundState } from '../State/GroundState';
+import { NavigationState, NavigraphAuthState, SimbriefState } from '../State/NavigationState';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -42,74 +38,12 @@ interface MainPageProps extends ComponentProps {
   renderAutomaticCalloutsPage: (returnHome: () => any, autoCallOuts: UserSetting<number>) => VNode;
 }
 
-export class SimbriefState {
-  constructor(private readonly client: FlypadClient) {}
-  private readonly _ofp = Subject.create<ISimbriefData | null>(null);
-
-  public readonly ofpScroll = Subject.create(0);
-
-  public readonly ofp: Subscribable<ISimbriefData | null> = this._ofp;
-
-  public readonly simbriefOfpLoaded = this.ofp.map((value) => !!value);
-
-  public importOfp(username: string) {
-    this.client.getSimbriefOfp(username).then((r) => this._ofp.set(simbriefDataParser(r)));
-  }
-}
-
-export class NavigationState {
-  private readonly _selectedChart = Subject.create<FlypadChart | null>(null);
-
-  public readonly selectedChart: Subscribable<FlypadChart | null> = this._selectedChart;
-
-  private readonly _pinnedCharts = ArraySubject.create<FlypadChart>([]);
-
-  public readonly pinnedCharts: SubscribableArray<FlypadChart> = this._pinnedCharts;
-
-  public setSelectedChart(chart: FlypadChart): void {
-    this._selectedChart.set(chart);
-  }
-
-  public toggleChartPinned(chart: FlypadChart): void {
-    const pinnedIndex = this._pinnedCharts.getArray().findIndex((it) => it.id === chart.id);
-
-    if (pinnedIndex !== -1) {
-      this._pinnedCharts.removeAt(pinnedIndex);
-    } else {
-      this._pinnedCharts.insert(chart);
-    }
-  }
-}
-
-export class NavigraphAuthState {
-  private readonly _initialized = Subject.create(false);
-
-  public readonly initialized: Subscribable<boolean> = this._initialized;
-
-  private readonly _user = Subject.create<User | null>(null);
-
-  public readonly user: Subscribable<User | null> = this._user;
-
-  constructor() {
-    navigraphAuth.onAuthStateChanged((user) => {
-      this._initialized.set(true);
-      this._user.set(user);
-    });
-  }
-
-  public async login(deviceFlowParamsCallback: (params: DeviceFlowParams) => void): Promise<User> {
-    return navigraphAuth.signInWithDeviceFlow(deviceFlowParamsCallback);
-  }
-
-  public async logout(): Promise<void> {
-    return navigraphAuth.signOut();
-  }
-}
-
 export class MainPage extends DisplayComponent<MainPageProps> {
   private navigationState = new NavigationState();
 
   private simbriefState = new SimbriefState(this.props.flypadClient);
+
+  private groundState = new GroundState();
 
   private readonly navigraphAuthState = new NavigraphAuthState();
 
@@ -123,7 +57,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
       />,
     ],
     [PageEnum.MainPage.Dispatch, <Dispatch settings={this.props.settings} simbriefState={this.simbriefState} />],
-    [PageEnum.MainPage.Ground, <Ground />],
+    [PageEnum.MainPage.Ground, <Ground groundState={this.groundState} />],
     [PageEnum.MainPage.Performance, <Performance />],
     [
       PageEnum.MainPage.Navigation,
