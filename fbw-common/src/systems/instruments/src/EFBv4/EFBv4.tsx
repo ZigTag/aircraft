@@ -36,6 +36,9 @@ import { NotificationContainer } from './Components/Notification';
 
 interface EfbProps extends ComponentProps {}
 
+// Disables power state for dev stuff
+const disableStartup = process.env.DISABLE_STARTUP ?? false;
+
 export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
   public override contextType = [busContext] as const;
 
@@ -139,7 +142,11 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
     powerManager.power.sub((powerState) => {
       this.renderRoot2.instance.innerHTML = '';
 
-      FSComponent.render(getComponentFromPowerState(powerState), this.renderRoot2.instance, RenderPosition.In);
+      FSComponent.render(
+        disableStartup ? getComponentFromPowerState(PowerStates.LOADED) : getComponentFromPowerState(powerState),
+        this.renderRoot2.instance,
+        RenderPosition.In,
+      );
     }, true);
   }
 

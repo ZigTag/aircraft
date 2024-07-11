@@ -31,13 +31,20 @@ export class A320Services extends DisplayComponent<any> {
   private readonly aftLeftStatus = Subject.create(false);
   private readonly aftRightStatus = Subject.create(false);
 
-  private readonly boarding1DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boarding2DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boarding3DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
-  private readonly boarding4DoorButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly boardingDoor1ButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly boardingDoor2ButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly boardingDoor3ButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly boardingDoor4ButtonState = Subject.create(ServiceButtonState.INACTIVE);
   private readonly jetwayButtonState = Subject.create(ServiceButtonState.INACTIVE);
   private readonly fuelTruckButtonState = Subject.create(ServiceButtonState.INACTIVE);
   private readonly asuButtonState = Subject.create(ServiceButtonState.INACTIVE);
+
+  private readonly cargoDoor1State = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly cargoDoor2State = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly gpuButtonState = Subject.create(ServiceButtonState.INACTIVE);
+  private readonly baggageButtonState = Subject.create(ServiceButtonState.INACTIVE);
+
+  private readonly cateringButtonState = Subject.create(ServiceButtonState.INACTIVE);
 
   render(): VNode | null {
     return (
@@ -56,7 +63,7 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
-              state: this.boarding1DoorButtonState,
+              state: this.boardingDoor1ButtonState,
               handler: () => {},
             },
             {
@@ -87,7 +94,7 @@ export class A320Services extends DisplayComponent<any> {
             {
               icon: 'door-closed-fill',
               name: t('Ground.Services.DoorFwd'),
-              state: this.boarding3DoorButtonState,
+              state: this.boardingDoor3ButtonState,
               handler: () => {},
             },
           ]}
@@ -110,6 +117,56 @@ export class A320Services extends DisplayComponent<any> {
           {/*  }*/}
           {/*/>*/}
         </ServiceButtons>
+
+        <ServiceButtons
+          xl="900px"
+          y="24px"
+          buttons={[
+            {
+              icon: 'door-closed-fill',
+              name: t('Ground.Services.DoorFwd'),
+              state: this.boardingDoor2ButtonState,
+              handler: () => {},
+            },
+            {
+              icon: 'plug-fill',
+              name: t('Ground.Services.ExternalPower'),
+              state: this.gpuButtonState,
+              handler: () => {},
+            },
+            {
+              icon: 'door-closed-fill',
+              name: t('Ground.Services.DoorCargo'),
+              state: this.cargoDoor1State,
+              handler: () => {},
+            },
+            {
+              icon: 'handbag-fill',
+              name: t('Ground.Services.BaggageTruck'),
+              state: this.baggageButtonState,
+              handler: () => {},
+            },
+          ]}
+        />
+
+        <ServiceButtons
+          xl="900px"
+          y="600px"
+          buttons={[
+            {
+              icon: 'door-closed-fill',
+              name: t('Ground.Services.DoorAft'),
+              state: this.boardingDoor4ButtonState,
+              handler: () => {},
+            },
+            {
+              icon: 'archive-fill',
+              name: t('Ground.Services.CateringTruck'),
+              state: this.cateringButtonState,
+              handler: () => {},
+            },
+          ]}
+        />
       </div>
     );
   }
