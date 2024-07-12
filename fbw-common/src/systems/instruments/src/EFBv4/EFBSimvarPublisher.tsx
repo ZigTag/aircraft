@@ -24,6 +24,8 @@ export interface EFBSimvars {
   aftLeftDoorOpen: number;
   aftRightDoorOpen: number;
   cargoDoorOpen: number;
+  gpuActive: number;
+  fuelingActive: number;
 }
 
 export enum EFBVars {
@@ -51,6 +53,8 @@ export enum EFBVars {
   aftLeftDoorOpen = 'A:INTERACTIVE POINT OPEN:2',
   aftRightDoorOpen = 'A:INTERACTIVE POINT OPEN:3',
   cargoDoorOpen = 'A:INTERACTIVE POINT OPEN:5',
+  gpuActive = 'A:INTERACTIVE POINT OPEN:8',
+  fuelingActive = 'A:INTERACTIVE POINT OPEN:9',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -79,6 +83,8 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['aftLeftDoorOpen', { name: EFBVars.aftLeftDoorOpen, type: SimVarValueType.PercentOver100 }],
     ['aftRightDoorOpen', { name: EFBVars.aftRightDoorOpen, type: SimVarValueType.PercentOver100 }],
     ['cargoDoorOpen', { name: EFBVars.cargoDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['gpuActive', { name: EFBVars.gpuActive, type: SimVarValueType.PercentOver100 }],
+    ['fuelingActive', { name: EFBVars.fuelingActive, type: SimVarValueType.PercentOver100 }],
   ]);
 
   public constructor(bus: EventBus) {

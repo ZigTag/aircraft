@@ -1,4 +1,4 @@
-import { ConsumerSubject, MappedSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { ServiceButtonState, ServiceButtonType } from '../Pages/Ground/Pages/Services';
 import { EFBSimvars } from '../EFBSimvarPublisher';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
@@ -27,6 +27,8 @@ export class GroundState {
     this.bus.getSubscriber<EFBSimvars>().on('cargoDoorOpen'),
     SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100'),
   );
+  private readonly _gpuActive = ConsumerSubject.create(this.bus.getSubscriber<EFBSimvars>().on('gpuActive'), 0);
+  private readonly _fuelingActive = ConsumerSubject.create(this.bus.getSubscriber<EFBSimvars>().on('fuelingActive'), 0);
 
   public readonly cabinLeftStatus: Subscribable<boolean> = this._cabinLeftDoorOpen.map((val) => val >= 1.0);
   public readonly cabinRightStatus: Subscribable<boolean> = this._cabinRightDoorOpen.map((val) => val >= 1.0);
@@ -113,6 +115,24 @@ export class GroundState {
     }
   }
 
+  private newSimpleServiceState(button: ServiceButtonType, buttonState: ServiceButtonState): ServiceButtonState {
+    // Toggle called/released
+    if (buttonState === ServiceButtonState.INACTIVE) {
+      return ServiceButtonState.CALLED;
+    } else if (buttonState === ServiceButtonState.CALLED) {
+      return ServiceButtonState.INACTIVE;
+    } else {
+      console.assert(
+        buttonState === ServiceButtonState.ACTIVE,
+        'Expected %s to be in state %s but was in state %s',
+        ServiceButtonType[button],
+        ServiceButtonState[ServiceButtonState.ACTIVE],
+        ServiceButtonState[buttonState],
+      );
+      return ServiceButtonState.RELEASED;
+    }
+  }
+
   public handleButton(id: ServiceButtonType) {
     switch (id) {
       case ServiceButtonType.CabinLeftDoor:
@@ -137,10 +157,18 @@ export class GroundState {
         this._cargoDoor1ButtonState.set(this.newDoorState(this.cargoDoor1ButtonState.get()));
         this.toggleCargoDoor();
         break;
+      case ServiceButtonType.FuelTruck:
+        this._fuelTruckButtonState.set(
+          this.newSimpleServiceState(ServiceButtonType.FuelTruck, this.fuelTruckButtonState.get()),
+        );
+        this.toggleFuelTruck();
+        break;
+      case ServiceButtonType.Gpu:
+        this._gpuButtonState.set(this.newSimpleServiceState(ServiceButtonType.Gpu, this.gpuButtonState.get()));
+        this.toggleGpu();
+        break;
     }
   }
-
-  // DO NOT DELETE, this is the complete code regarding the button updating based off of door position.
 
   public simpleServiceListenerHandling = (state: ServiceButtonState, doorState: number): ServiceButtonState => {
     if (state <= ServiceButtonState.DISABLED) {
@@ -190,5 +218,13 @@ export class GroundState {
     this._cargoDoor1ButtonState.set(
       this.simpleServiceListenerHandling(this.cargoDoor1ButtonState.get(), cargoDoorOpen),
     );
+  });
+
+  private _gpuActiveEffect = this._gpuActive.sub((gpuActive) => {
+    this._gpuButtonState.set(this.simpleServiceListenerHandling(this.gpuButtonState.get(), gpuActive));
+  });
+
+  private _fuelingActiveEffect = this._fuelingActive.sub((fuelingActive) => {
+    this._fuelTruckButtonState.set(this.simpleServiceListenerHandling(this.fuelTruckButtonState.get(), fuelingActive));
   });
 }
