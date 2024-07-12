@@ -5,7 +5,6 @@ import {
   UserSettingSaveManager,
   UserSettingValue,
 } from '@microsoft/msfs-sdk';
-import { A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS } from '@a32nx/shared/AutoCallOuts';
 
 const CURRENT_SETTINGS_VERSION = 1;
 
@@ -87,229 +86,228 @@ export enum TafSource {
   NOAA,
 }
 
-const fbwUserSettings = [
-  {
-    name: 'fbwSettingsVersion',
-    defaultValue: 0 as number,
-  },
-  {
-    name: 'fbwAircraftThrustReductionHeight',
-    defaultValue: 1500 as number,
-  },
-  {
-    name: 'fbwAircraftAccelerationHeight',
-    defaultValue: 1500 as number,
-  },
-  {
-    name: 'fbwAircraftEngineOutAccelerationHeight',
-    defaultValue: 1500 as number,
-  },
-  {
-    name: 'fbwAircraftIsisBaroUnit',
-    defaultValue: IsisBaroUnit.Hpa as IsisBaroUnit,
-  },
-  {
-    name: 'fbwAircraftIsisIsMetricAltitude',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwAudioPtuInCockpit',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwAircraftPaxSigns',
-    defaultValue: PaxSigns.NoSmoking as PaxSigns,
-  },
-  {
-    name: 'fbwAircraftVhfSpacing',
-    defaultValue: VhfSpacing.EightPointThirtyThreeKHz as VhfSpacing,
-  },
-  {
-    name: 'fbwAircraftLatLonExtendedFormat',
-    defaultValue: LatLonExtendedFormat.LLnn as LatLonExtendedFormat,
-  },
-  {
-    name: 'fbwAircraftWeightUnit',
-    defaultValue: WeightUnit.Kg as WeightUnit,
-  },
-  {
-    name: 'fbwAircraftSatcomEnabled',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwAircraftFwcRadioAutoCallOutPins',
-    defaultValue: A32NX_DEFAULT_RADIO_AUTO_CALL_OUTS,
-  },
-  {
-    name: 'fbwAutomaticallyImportSimbriefData',
-    defaultValue: false as boolean,
-  },
-
-  {
-    name: 'fbwAtsuAocAtisSource',
-    defaultValue: AtisSource.FAA as AtisSource,
-  },
-  {
-    name: 'fbwAtsuAocMetarSource',
-    defaultValue: MetarSource.MSFS as MetarSource,
-  },
-  {
-    name: 'fbwAtsuAocTafSource',
-    defaultValue: TafSource.NOAA as TafSource,
-  },
-  {
-    name: 'fbwAtsuAocOnlineFeaturesEnabled',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwAtsuAocHoppieEnabled',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwAtsuAocHoppieUserId',
-    defaultValue: '',
-  },
-
-  {
-    name: 'fbwAudioLevelExteriorMaster',
-    defaultValue: 0 as number,
-  },
-  {
-    name: 'fbwAudioLevelInteriorEngine',
-    defaultValue: 0 as number,
-  },
-  {
-    name: 'fbwAudioLevelInteriorWind',
-    defaultValue: 0 as number,
-  },
-  {
-    name: 'fbwAudioPassengerAmbienceEnabled',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwAudioAnnouncementsEnabled',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwAudioBoardingMusicEnabled',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwTelexEnabled',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwInitBaroUnit',
-    defaultValue: InitBaroUnit.Auto as InitBaroUnit,
-  },
-  {
-    name: 'fbwSimbriefOverrideUserID',
-    defaultValue: -1 as number,
-  },
-  {
-    name: 'fbwDynamicRegistrationDecal',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwFpSync',
-    defaultValue: FpSyncMode.Load as FpSyncMode,
-  },
-  {
-    name: 'fbwSimBridgeEnabled',
-    defaultValue: SimBridgeMode.AutoOn as SimBridgeMode,
-  },
-  {
-    name: 'fbwSimbridgeRemote',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwSimBridgeIP',
-    defaultValue: 'localhost' as string,
-  },
-  {
-    name: 'fbwSimBridgePort',
-    defaultValue: 8380 as number,
-  },
-  {
-    name: 'fbwRadioReceiverUsageEnabled',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwModelWheelChocksEnabled',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwModelConesEnabled',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwGsxFuelSyncEnabled',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwGsxPayloadSyncEnabled',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwEfbLanguage',
-    defaultValue: 'en' as string,
-  },
-  {
-    name: 'fbwEfbOskLanguage',
-    defaultValue: 'english' as string,
-  },
-  {
-    name: 'fbwEfbAutoOsk',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwEfbRemindersOrder',
-    defaultValue: ['Weather', 'Pinned Charts', 'Maintenance', 'Checklists'].toString(),
-  },
-  {
-    name: 'fbwEfbBrightness',
-    defaultValue: 0 as number,
-  },
-  {
-    name: 'fbwEfbAutoBrightness',
-    defaultValue: false as boolean,
-  },
-  {
-    name: 'fbwEfbBatteryLifeEnabled',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwEfbFlightProgressbar',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwEfbColoredMetar',
-    defaultValue: true as boolean,
-  },
-  {
-    name: 'fbwEfbTimeDisplay',
-    defaultValue: FlypadTimeDisplay.Utc as FlypadTimeDisplay,
-  },
-  {
-    name: 'fbwEfbTimeFormat',
-    defaultValue: FlypadTimeFormat.TwentyFour as FlypadTimeFormat,
-  },
-  {
-    name: 'fbwEfbTheme',
-    defaultValue: FlypadTheme.Blue as FlypadTheme,
-  },
-  {
-    name: 'fbwEfbOfpFontSize',
-    defaultValue: 14 as number,
-  },
-  {
-    name: 'fbwEfbOfpImageSize',
-    defaultValue: 60 as number,
-  },
-] as const;
+const fbwUserSettings = (defaultAutoCallouts: number) =>
+  [
+    {
+      name: 'fbwSettingsVersion',
+      defaultValue: 0 as number,
+    },
+    {
+      name: 'fbwAircraftThrustReductionHeight',
+      defaultValue: 1500 as number,
+    },
+    {
+      name: 'fbwAircraftAccelerationHeight',
+      defaultValue: 1500 as number,
+    },
+    {
+      name: 'fbwAircraftEngineOutAccelerationHeight',
+      defaultValue: 1500 as number,
+    },
+    {
+      name: 'fbwAircraftIsisBaroUnit',
+      defaultValue: IsisBaroUnit.Hpa as IsisBaroUnit,
+    },
+    {
+      name: 'fbwAircraftIsisIsMetricAltitude',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwAudioPtuInCockpit',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwAircraftPaxSigns',
+      defaultValue: PaxSigns.NoSmoking as PaxSigns,
+    },
+    {
+      name: 'fbwAircraftVhfSpacing',
+      defaultValue: VhfSpacing.EightPointThirtyThreeKHz as VhfSpacing,
+    },
+    {
+      name: 'fbwAircraftLatLonExtendedFormat',
+      defaultValue: LatLonExtendedFormat.LLnn as LatLonExtendedFormat,
+    },
+    {
+      name: 'fbwAircraftWeightUnit',
+      defaultValue: WeightUnit.Kg as WeightUnit,
+    },
+    {
+      name: 'fbwAircraftSatcomEnabled',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwAircraftFwcRadioAutoCallOutPins',
+      defaultValue: defaultAutoCallouts,
+    },
+    {
+      name: 'fbwAutomaticallyImportSimbriefData',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwAtsuAocAtisSource',
+      defaultValue: AtisSource.FAA as AtisSource,
+    },
+    {
+      name: 'fbwAtsuAocMetarSource',
+      defaultValue: MetarSource.MSFS as MetarSource,
+    },
+    {
+      name: 'fbwAtsuAocTafSource',
+      defaultValue: TafSource.NOAA as TafSource,
+    },
+    {
+      name: 'fbwAtsuAocOnlineFeaturesEnabled',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwAtsuAocHoppieEnabled',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwAtsuAocHoppieUserId',
+      defaultValue: '',
+    },
+    {
+      name: 'fbwAudioLevelExteriorMaster',
+      defaultValue: 0 as number,
+    },
+    {
+      name: 'fbwAudioLevelInteriorEngine',
+      defaultValue: 0 as number,
+    },
+    {
+      name: 'fbwAudioLevelInteriorWind',
+      defaultValue: 0 as number,
+    },
+    {
+      name: 'fbwAudioPassengerAmbienceEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwAudioAnnouncementsEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwAudioBoardingMusicEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwTelexEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwInitBaroUnit',
+      defaultValue: InitBaroUnit.Auto as InitBaroUnit,
+    },
+    {
+      name: 'fbwSimbriefOverrideUserID',
+      defaultValue: -1 as number,
+    },
+    {
+      name: 'fbwDynamicRegistrationDecal',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwFpSync',
+      defaultValue: FpSyncMode.Load as FpSyncMode,
+    },
+    {
+      name: 'fbwSimBridgeEnabled',
+      defaultValue: SimBridgeMode.AutoOn as SimBridgeMode,
+    },
+    {
+      name: 'fbwSimbridgeRemote',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwSimBridgeIP',
+      defaultValue: 'localhost' as string,
+    },
+    {
+      name: 'fbwSimBridgePort',
+      defaultValue: 8380 as number,
+    },
+    {
+      name: 'fbwRadioReceiverUsageEnabled',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwModelWheelChocksEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwModelConesEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwGsxFuelSyncEnabled',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwGsxPayloadSyncEnabled',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwEfbLanguage',
+      defaultValue: 'en' as string,
+    },
+    {
+      name: 'fbwEfbOskLanguage',
+      defaultValue: 'english' as string,
+    },
+    {
+      name: 'fbwEfbAutoOsk',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwEfbRemindersOrder',
+      defaultValue: ['Weather', 'Pinned Charts', 'Maintenance', 'Checklists'].toString(),
+    },
+    {
+      name: 'fbwEfbBrightness',
+      defaultValue: 0 as number,
+    },
+    {
+      name: 'fbwEfbAutoBrightness',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwEfbBatteryLifeEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwEfbFlightProgressbar',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwEfbColoredMetar',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwEfbTimeDisplay',
+      defaultValue: FlypadTimeDisplay.Utc as FlypadTimeDisplay,
+    },
+    {
+      name: 'fbwEfbTimeFormat',
+      defaultValue: FlypadTimeFormat.TwentyFour as FlypadTimeFormat,
+    },
+    {
+      name: 'fbwEfbTheme',
+      defaultValue: FlypadTheme.Blue as FlypadTheme,
+    },
+    {
+      name: 'fbwEfbOfpFontSize',
+      defaultValue: 14 as number,
+    },
+    {
+      name: 'fbwEfbOfpImageSize',
+      defaultValue: 60 as number,
+    },
+  ] as const;
 
 export type FbwUserSettingsDefs = {
-  readonly [Item in (typeof fbwUserSettings)[number] as Item['name']]: Item['defaultValue'];
+  readonly [Item in ReturnType<typeof fbwUserSettings>[number] as Item['name']]: Item['defaultValue'];
 };
 
 type LegacySettingMapping = {
@@ -320,9 +318,22 @@ type LegacySettingMapping = {
 export class FbwUserSettings {
   private static INSTANCE: DefaultUserSettingManager<FbwUserSettingsDefs> | undefined;
 
-  public static getManager(bus: EventBus): UserSettingManager<FbwUserSettingsDefs> {
+  public static getExistingManager(): UserSettingManager<FbwUserSettingsDefs> {
+    if (!FbwUserSettings.INSTANCE) {
+      throw new Error(
+        '[FbwUserSettings](getExistingManager) Called before an instance existed. Make sure FbwUserSettings::getManager is called before this method is called.',
+      );
+    }
+
+    return FbwUserSettings.INSTANCE;
+  }
+
+  public static getManager(bus: EventBus, defaultAutoCallouts: number): UserSettingManager<FbwUserSettingsDefs> {
     if (FbwUserSettings.INSTANCE === undefined) {
-      FbwUserSettings.INSTANCE = new DefaultUserSettingManager<FbwUserSettingsDefs>(bus, fbwUserSettings);
+      FbwUserSettings.INSTANCE = new DefaultUserSettingManager<FbwUserSettingsDefs>(
+        bus,
+        fbwUserSettings(defaultAutoCallouts),
+      );
     }
 
     return FbwUserSettings.INSTANCE;
@@ -562,16 +573,17 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     },
   };
 
-  constructor(private bus: EventBus) {
-    const FbwUserSettingsManager = FbwUserSettings.getManager(bus);
-
-    const settings = [...FbwUserSettingsManager.getAllSettings()];
+  constructor(
+    bus: EventBus,
+    private readonly settingsManager: UserSettingManager<FbwUserSettingsDefs>,
+  ) {
+    const settings = [...settingsManager.getAllSettings()];
 
     super(settings, bus);
   }
 
   public tryPortLegacyA32NXSettings(): void {
-    const settingsVersion = FbwUserSettings.getManager(this.bus).getSetting('fbwSettingsVersion');
+    const settingsVersion = this.settingsManager.getSetting('fbwSettingsVersion');
     const version = settingsVersion.get();
 
     if (version !== 0) {
@@ -613,7 +625,7 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
         `[FbwUserSettingsSaveManager](portLegacyA32NXSettings) newSetting: ${newSetting.newSettingName}, mappedValue = ${mappedValue}`,
       );
 
-      FbwUserSettings.getManager(this.bus).getSetting(newSetting.newSettingName).set(mappedValue);
+      this.settingsManager.getSetting(newSetting.newSettingName).set(mappedValue);
     }
 
     settingsVersion.set(CURRENT_SETTINGS_VERSION);
