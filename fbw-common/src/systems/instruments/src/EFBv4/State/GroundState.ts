@@ -5,15 +5,6 @@ import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 export class GroundState {
   constructor(private readonly bus: typeof EFB_EVENT_BUS) {}
-  private readonly _cabinLeftStatus = Subject.create(false);
-  private readonly _cabinRightStatus = Subject.create(false);
-  private readonly _aftLeftStatus = Subject.create(false);
-  private readonly _aftRightStatus = Subject.create(false);
-
-  public readonly cabinLeftStatus: Subscribable<boolean> = this._cabinLeftStatus;
-  public readonly cabinRightStatus: Subscribable<boolean> = this._cabinRightStatus;
-  public readonly aftLeftStatus: Subscribable<boolean> = this._aftLeftStatus;
-  public readonly aftRightStatus: Subscribable<boolean> = this._aftRightStatus;
 
   // SimVar Consumer
   private readonly _cabinLeftDoorOpen = ConsumerSubject.create(
@@ -36,6 +27,11 @@ export class GroundState {
     this.bus.getSubscriber<EFBSimvars>().on('cargoDoorOpen'),
     SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100'),
   );
+
+  public readonly cabinLeftStatus: Subscribable<boolean> = this._cabinLeftDoorOpen.map((val) => val >= 1.0);
+  public readonly cabinRightStatus: Subscribable<boolean> = this._cabinRightDoorOpen.map((val) => val >= 1.0);
+  public readonly aftLeftStatus: Subscribable<boolean> = this._aftLeftDoorOpen.map((val) => val >= 1.0);
+  public readonly aftRightStatus: Subscribable<boolean> = this._aftRightDoorOpen.map((val) => val >= 1.0);
 
   private readonly _boardingDoor1ButtonState = Subject.create(
     SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0
