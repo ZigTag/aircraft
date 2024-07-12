@@ -18,6 +18,12 @@ export interface EFBSimvars {
 
   dc2BusIsPowered: boolean;
   absoluteTime: number;
+
+  cabinLeftDoorOpen: number;
+  cabinRightDoorOpen: number;
+  aftLeftDoorOpen: number;
+  aftRightDoorOpen: number;
+  cargoDoorOpen: number;
 }
 
 export enum EFBVars {
@@ -39,6 +45,12 @@ export enum EFBVars {
 
   dc2BusIsPowered = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
   absoluteTime = 'E:ABSOLUTE TIME',
+
+  cabinLeftDoorOpen = 'A:INTERACTIVE POINT OPEN:0',
+  cabinRightDoorOpen = 'A:INTERACTIVE POINT OPEN:1',
+  aftLeftDoorOpen = 'A:INTERACTIVE POINT OPEN:2',
+  aftRightDoorOpen = 'A:INTERACTIVE POINT OPEN:3',
+  cargoDoorOpen = 'A:INTERACTIVE POINT OPEN:5',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -61,6 +73,12 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
 
     ['dc2BusIsPowered', { name: EFBVars.dc2BusIsPowered, type: SimVarValueType.Bool }],
     ['absoluteTime', { name: EFBVars.absoluteTime, type: SimVarValueType.Seconds }],
+
+    ['cabinLeftDoorOpen', { name: EFBVars.cabinLeftDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['cabinRightDoorOpen', { name: EFBVars.cabinRightDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['aftLeftDoorOpen', { name: EFBVars.aftLeftDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['aftRightDoorOpen', { name: EFBVars.aftRightDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['cargoDoorOpen', { name: EFBVars.cargoDoorOpen, type: SimVarValueType.PercentOver100 }],
   ]);
 
   public constructor(bus: EventBus) {

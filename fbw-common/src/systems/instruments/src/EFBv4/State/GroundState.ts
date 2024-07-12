@@ -1,7 +1,10 @@
-import { Subject, Subscribable } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, MappedSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { ServiceButtonState, ServiceButtonType } from '../Pages/Ground/Pages/Services';
+import { EFBSimvars } from '../EFBSimvarPublisher';
+import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 export class GroundState {
+  constructor(private readonly bus: typeof EFB_EVENT_BUS) {}
   private readonly _cabinLeftStatus = Subject.create(false);
   private readonly _cabinRightStatus = Subject.create(false);
   private readonly _aftLeftStatus = Subject.create(false);
@@ -12,12 +15,27 @@ export class GroundState {
   public readonly aftLeftStatus: Subscribable<boolean> = this._aftLeftStatus;
   public readonly aftRightStatus: Subscribable<boolean> = this._aftRightStatus;
 
-  // SimVars not yet implemented
-  private readonly _cabinLeftDoorOpen = Subject.create(1);
-  private readonly _cabinRightDoorOpen = Subject.create(1);
-  private readonly _aftLeftDoorOpen = Subject.create(1);
-  private readonly _aftRightDoorOpen = Subject.create(1);
-  private readonly _cargoDoorOpen = Subject.create(1);
+  // SimVar Consumer
+  private readonly _cabinLeftDoorOpen = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('cabinLeftDoorOpen'),
+    SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100'),
+  );
+  private readonly _cabinRightDoorOpen = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('cabinRightDoorOpen'),
+    SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:1', 'Percent over 100'),
+  );
+  private readonly _aftLeftDoorOpen = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('aftLeftDoorOpen'),
+    SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:2', 'Percent over 100'),
+  );
+  private readonly _aftRightDoorOpen = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('aftRightDoorOpen'),
+    SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100'),
+  );
+  private readonly _cargoDoorOpen = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('cargoDoorOpen'),
+    SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100'),
+  );
 
   private readonly _boardingDoor1ButtonState = Subject.create(
     SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0
@@ -141,63 +159,45 @@ export class GroundState {
 
   // DO NOT DELETE, this is the complete code regarding the button updating based off of door position.
 
-  // public simpleServiceListenerHandling = (
-  //   state: ServiceButtonState,
-  //   setter: (value: ServiceButtonState) => void,
-  //   doorState: number,
-  // ) => {
-  //   if (state <= ServiceButtonState.DISABLED) {
-  //     return;
-  //   }
-  //   switch (doorState) {
-  //     case 0: // closed
-  //       if (state !== ServiceButtonState.CALLED) {
-  //         setter(ServiceButtonState.INACTIVE);
-  //       }
-  //       break;
-  //     case 1: // open
-  //       setter(ServiceButtonState.ACTIVE);
-  //       break;
-  //     default: // in between
-  //       if (state === ServiceButtonState.ACTIVE) {
-  //         setter(ServiceButtonState.RELEASED);
-  //       }
-  //       break;
-  //   }
-  // };
-  //
-  // private _doorEffect = MappedSubject.create(
-  //   ([cabinLeftDoorOpen, cabinRightDoorOpen, aftLeftDoorOpen, aftRightDoorOpen, cargoDoorOpen]) => {
-  //     this.simpleServiceListenerHandling(
-  //       this.boardingDoor1ButtonState.get(),
-  //       (value: ServiceButtonState) => this._boardingDoor1ButtonState.set(value),
-  //       cabinLeftDoorOpen,
-  //     );
-  //     this.simpleServiceListenerHandling(
-  //       this.boardingDoor2ButtonState.get(),
-  //       (value: ServiceButtonState) => this._boardingDoor1ButtonState.set(value),
-  //       cabinRightDoorOpen,
-  //     );
-  //     this.simpleServiceListenerHandling(
-  //       this.boardingDoor3ButtonState.get(),
-  //       (value: ServiceButtonState) => this._boardingDoor1ButtonState.set(value),
-  //       aftLeftDoorOpen,
-  //     );
-  //     this.simpleServiceListenerHandling(
-  //       this.boardingDoor4ButtonState.get(),
-  //       (value: ServiceButtonState) => this._boardingDoor1ButtonState.set(value),
-  //       aftRightDoorOpen,
-  //     );
-  //     this.simpleServiceListenerHandling(
-  //       this.cargoDoor1ButtonState.get(),
-  //       (value: ServiceButtonState) => this._boardingDoor1ButtonState.set(value),
-  //       cargoDoorOpen,
-  //     );
-  //   },
-  //   this._cabinLeftDoorOpen,
-  //   this._cabinRightDoorOpen,
-  //   this._aftLeftDoorOpen,
-  //   this._aftRightDoorOpen,
-  //   this._cargoDoorOpen,
-  // );
+  public simpleServiceListenerHandling = (state: ServiceButtonState, doorState: number): ServiceButtonState => {
+    if (state <= ServiceButtonState.DISABLED) {
+      return state;
+    }
+    switch (doorState) {
+      case 0: // closed
+        if (state !== ServiceButtonState.CALLED) {
+          return ServiceButtonState.INACTIVE;
+        }
+        return state;
+      case 1: // open
+        return ServiceButtonState.ACTIVE;
+      default: // in between
+        if (state === ServiceButtonState.ACTIVE) {
+          return ServiceButtonState.RELEASED;
+        }
+        return state;
+    }
+  };
+
+  private _cabinLeftDoorOpenEffect = this._cabinLeftDoorOpen.sub((cabinLeftDoorOpen) => {
+    this._boardingDoor1ButtonState.set(
+      this.simpleServiceListenerHandling(this.boardingDoor1ButtonState.get(), cabinLeftDoorOpen),
+    );
+  });
+
+  private _cabinRightDoorOpenEffect = this._cabinRightDoorOpen.sub((cabinRightDoorOpen) => {
+    this.simpleServiceListenerHandling(this.boardingDoor2ButtonState.get(), cabinRightDoorOpen);
+  });
+
+  private _aftLeftDoorOpenEffect = this._aftLeftDoorOpen.sub((aftLeftDoorOpen) => {
+    this.simpleServiceListenerHandling(this.boardingDoor3ButtonState.get(), aftLeftDoorOpen);
+  });
+
+  private _aftRightDoorOpenEffect = this._aftRightDoorOpen.sub((aftRightDoorOpen) => {
+    this.simpleServiceListenerHandling(this.boardingDoor4ButtonState.get(), aftRightDoorOpen);
+  });
+
+  private _cargoDoorOpenEffect = this._cargoDoorOpen.sub((cargoDoorOpen) => {
+    this.simpleServiceListenerHandling(this.cargoDoor1ButtonState.get(), cargoDoorOpen);
+  });
 }
