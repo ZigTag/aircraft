@@ -1,4 +1,4 @@
-import { EventSubscriber, MathUtils, Subject, Subscribable, UserSetting } from '@microsoft/msfs-sdk';
+import { EventSubscriber, MappedSubject, MathUtils, Subject, Subscribable, UserSetting } from '@microsoft/msfs-sdk';
 import { ModalKind, showModal } from 'instruments/src/EFBv4/Components/Modal';
 import { EFBSimvars } from 'instruments/src/EFBv4/EFBSimvarPublisher';
 
@@ -37,6 +37,11 @@ class Battery {
 
     return newCharge;
   }
+
+  /** This method updates the battery's last recorded change timestamp so that large depletions do not happen when power is suddenly restored after being shut off for prolonged periods of time */
+  onChargeStopStart(absoluteTime: number) {
+    this.lastChangeTimestamp = absoluteTime;
+  }
 }
 
 export enum PowerStates {
@@ -51,25 +56,38 @@ export enum PowerStates {
 export class PowerManager {
   private battery: Battery;
 
-  private batteryLifeEnabled: boolean;
+  private isBatteryChargeDischargeBeingSimulated: Subscribable<boolean>;
 
   private powerState: Subject<PowerStates>;
   private isCharging: Subject<boolean>;
   private charge: Subject<number>;
 
   constructor(efbSimvarSubscriber: EventSubscriber<EFBSimvars>, batteryLifeEnabled: UserSetting<boolean>) {
-    this.batteryLifeEnabled = batteryLifeEnabled.get();
     this.isCharging = Subject.create(SimVar.GetSimVarValue('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool'));
 
     this.battery = new Battery(100, SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds'));
     this.powerState = Subject.create(PowerStates.SHUTOFF as PowerStates);
     this.charge = Subject.create(100);
 
-    batteryLifeEnabled.sub((enabled) => (this.batteryLifeEnabled = enabled));
-    efbSimvarSubscriber.on('dc2BusIsPowered').handle((isPowered) => this.isCharging.set(isPowered));
+    efbSimvarSubscriber.on('dc2BusIsPowered').handle((isPowered) => {
+      this.isCharging.set(isPowered);
+      this.battery.onChargeStopStart(SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds'));
+    });
     efbSimvarSubscriber.on('absoluteTime').handle((time) => {
       this.updateCharge(time);
     });
+
+    this.isBatteryChargeDischargeBeingSimulated = MappedSubject.create(
+      ([batteryLifeEnabled, powerState]) => {
+        return powerState === PowerStates.LOADED && batteryLifeEnabled;
+      },
+      batteryLifeEnabled,
+      this.powerState,
+    );
+
+    this.isBatteryChargeDischargeBeingSimulated.sub(() =>
+      this.battery.onChargeStopStart(SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds')),
+    );
   }
 
   get power(): Subscribable<PowerStates> {
@@ -85,7 +103,7 @@ export class PowerManager {
   }
 
   updateCharge(absoluteTime: number) {
-    if (this.powerState.get() !== PowerStates.LOADED || !this.batteryLifeEnabled) return;
+    if (!this.isBatteryChargeDischargeBeingSimulated.get()) return;
 
     const newCharge = this.battery.update(absoluteTime, this.isCharging.get());
     this.charge.set(newCharge);
