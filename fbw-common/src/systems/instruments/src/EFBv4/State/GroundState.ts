@@ -134,11 +134,11 @@ export class GroundState {
         this.toggleAftLeftDoor();
         break;
       case ServiceButtonType.AftRightDoor:
-        this._boardingDoor1ButtonState.set(this.newDoorState(this.boardingDoor4ButtonState.get()));
+        this._boardingDoor4ButtonState.set(this.newDoorState(this.boardingDoor4ButtonState.get()));
         this.toggleAftRightDoor();
         break;
       case ServiceButtonType.CargoDoor:
-        this._boardingDoor1ButtonState.set(this.newDoorState(this.cargoDoor1ButtonState.get()));
+        this._cargoDoor1ButtonState.set(this.newDoorState(this.cargoDoor1ButtonState.get()));
         this.toggleCargoDoor();
         break;
     }
@@ -173,18 +173,26 @@ export class GroundState {
   });
 
   private _cabinRightDoorOpenEffect = this._cabinRightDoorOpen.sub((cabinRightDoorOpen) => {
-    this.simpleServiceListenerHandling(this.boardingDoor2ButtonState.get(), cabinRightDoorOpen);
+    this._boardingDoor2ButtonState.set(
+      this.simpleServiceListenerHandling(this.boardingDoor2ButtonState.get(), cabinRightDoorOpen),
+    );
   });
 
   private _aftLeftDoorOpenEffect = this._aftLeftDoorOpen.sub((aftLeftDoorOpen) => {
-    this.simpleServiceListenerHandling(this.boardingDoor3ButtonState.get(), aftLeftDoorOpen);
+    this._boardingDoor3ButtonState.set(
+      this.simpleServiceListenerHandling(this.boardingDoor3ButtonState.get(), aftLeftDoorOpen),
+    );
   });
 
   private _aftRightDoorOpenEffect = this._aftRightDoorOpen.sub((aftRightDoorOpen) => {
-    this.simpleServiceListenerHandling(this.boardingDoor4ButtonState.get(), aftRightDoorOpen);
+    this._boardingDoor4ButtonState.set(
+      this.simpleServiceListenerHandling(this.boardingDoor4ButtonState.get(), aftRightDoorOpen),
+    );
   });
 
   private _cargoDoorOpenEffect = this._cargoDoorOpen.sub((cargoDoorOpen) => {
-    this.simpleServiceListenerHandling(this.cargoDoor1ButtonState.get(), cargoDoorOpen);
+    this._cargoDoor1ButtonState.set(
+      this.simpleServiceListenerHandling(this.cargoDoor1ButtonState.get(), cargoDoorOpen),
+    );
   });
 }
