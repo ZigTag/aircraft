@@ -103,20 +103,17 @@ export class GroundState {
   private toggleFuelTruck = () => SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
   private toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
 
-  private handleDoors(buttonState: ServiceButtonState, setter: (value: ServiceButtonState) => void) {
+  private newDoorState(buttonState: ServiceButtonState): ServiceButtonState {
     switch (buttonState) {
       case ServiceButtonState.INACTIVE:
-        setter(ServiceButtonState.CALLED);
-        break;
+        return ServiceButtonState.CALLED;
       case ServiceButtonState.CALLED:
       case ServiceButtonState.ACTIVE:
-        setter(ServiceButtonState.RELEASED);
-        break;
+        return ServiceButtonState.RELEASED;
       case ServiceButtonState.RELEASED:
-        setter(ServiceButtonState.CALLED);
-        break;
+        return ServiceButtonState.CALLED;
       default:
-        break;
+        return buttonState;
     }
   }
 
@@ -125,33 +122,23 @@ export class GroundState {
       case ServiceButtonType.CabinLeftDoor:
         // I know this looks absolutely insane, it's because it doesn't like when 'this' gets thrown around,
         // so it has to be executed right here, right now.
-        this.handleDoors(this.boardingDoor1ButtonState.get(), (value: ServiceButtonState) =>
-          this._boardingDoor1ButtonState.set(value),
-        );
+        this._boardingDoor1ButtonState.set(this.newDoorState(this.boardingDoor1ButtonState.get()));
         this.toggleCabinLeftDoor();
         break;
       case ServiceButtonType.CabinRightDoor:
-        this.handleDoors(this.boardingDoor2ButtonState.get(), (value: ServiceButtonState) =>
-          this._boardingDoor2ButtonState.set(value),
-        );
+        this._boardingDoor2ButtonState.set(this.newDoorState(this.boardingDoor2ButtonState.get()));
         this.toggleCabinRightDoor();
         break;
       case ServiceButtonType.AftLeftDoor:
-        this.handleDoors(this.boardingDoor3ButtonState.get(), (value: ServiceButtonState) =>
-          this._boardingDoor3ButtonState.set(value),
-        );
+        this._boardingDoor3ButtonState.set(this.newDoorState(this.boardingDoor3ButtonState.get()));
         this.toggleAftLeftDoor();
         break;
       case ServiceButtonType.AftRightDoor:
-        this.handleDoors(this.boardingDoor4ButtonState.get(), (value: ServiceButtonState) =>
-          this._boardingDoor4ButtonState.set(value),
-        );
+        this._boardingDoor1ButtonState.set(this.newDoorState(this.boardingDoor4ButtonState.get()));
         this.toggleAftRightDoor();
         break;
       case ServiceButtonType.CargoDoor:
-        this.handleDoors(this.cargoDoor1ButtonState.get(), (value: ServiceButtonState) =>
-          this._cargoDoor1ButtonState.set(value),
-        );
+        this._boardingDoor1ButtonState.set(this.newDoorState(this.cargoDoor1ButtonState.get()));
         this.toggleCargoDoor();
         break;
     }
