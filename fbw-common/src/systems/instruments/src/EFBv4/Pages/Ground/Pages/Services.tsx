@@ -3,7 +3,8 @@ import { A320GroundOutline } from './Widgets/GroundOutlines';
 import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { twMerge } from 'tailwind-merge';
 import { t } from '@localization/translation';
-import { GroundState, SwitchOn } from '../../Pages';
+import { SwitchOn } from '../../Pages';
+import { GroundState } from '../../../State/GroundState';
 
 export interface ServicesProps {
   groundState: GroundState;
@@ -39,11 +40,23 @@ export class Services extends DisplayComponent<ServicesProps> {
 }
 
 export class A320Services extends DisplayComponent<ServicesProps> {
-  private readonly wheelChocksEnabled = Subject.create(true);
-  private readonly wheelChocksVisible = Subject.create(false);
+  private readonly chocksClassOuter = this.props.groundState.wheelChocksVisible.map((value) => {
+    return twMerge(
+      `flex cursor-pointer flex-row items-center space-x-6 p-6`,
+      value ? 'text-green-500' : 'text-gray-500',
+    );
+  });
 
-  private readonly conesEnabled = Subject.create(true);
-  private readonly conesVisible = Subject.create(false);
+  private readonly chocksClassInner = this.props.groundState.wheelChocksVisible.map((value) => {
+    return twMerge(`-ml-2 mr-[-2px] flex justify-center`, value ? 'text-green-500' : 'text-gray-500');
+  });
+
+  private readonly conesClass = this.props.groundState.conesVisible.map((value) => {
+    return twMerge(
+      `flex cursor-pointer flex-row items-center space-x-6 p-6`,
+      value ? 'text-green-500' : 'text-gray-500',
+    );
+  });
 
   render(): VNode | null {
     return (
@@ -101,20 +114,10 @@ export class A320Services extends DisplayComponent<ServicesProps> {
           groundState={this.props.groundState}
         >
           <SwitchOn
-            condition={this.wheelChocksEnabled}
+            condition={this.props.groundState.wheelChocksEnabled}
             on={
-              <div
-                class={twMerge(
-                  `flex cursor-pointer flex-row items-center space-x-6 p-6`,
-                  this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500',
-                )}
-              >
-                <div
-                  class={twMerge(
-                    `-ml-2 mr-[-2px] flex justify-center`,
-                    this.wheelChocksVisible ? 'text-green-500' : 'text-gray-500',
-                  )}
-                >
+              <div class={this.chocksClassOuter}>
+                <div class={this.chocksClassInner}>
                   <div class="relative w-[12px] text-inherit">
                     <span class="bi-triangle-fill absolute bottom-[-6px] text-[12px] font-[4px] text-inherit" />
                   </div>
@@ -128,14 +131,9 @@ export class A320Services extends DisplayComponent<ServicesProps> {
             }
           />
           <SwitchOn
-            condition={this.conesEnabled}
+            condition={this.props.groundState.conesEnabled}
             on={
-              <div
-                class={twMerge(
-                  `flex cursor-pointer flex-row items-center space-x-6 p-6`,
-                  this.conesVisible ? 'text-green-500' : 'text-gray-500',
-                )}
-              >
+              <div class={this.conesClass}>
                 <span class="bi-cone-striped mr-2 text-[38px] font-[1.5px] text-inherit" />
                 <h1 class="shrink-0 text-2xl font-medium text-inherit">{t('Ground.Services.Cones')}</h1>
               </div>

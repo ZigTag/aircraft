@@ -26,6 +26,13 @@ export interface EFBSimvars {
   cargoDoorOpen: number;
   gpuActive: number;
   fuelingActive: number;
+  simOnGround: boolean;
+  aircraftIsStationary: boolean;
+  pushbackAttached: number;
+  isGroundEquipmentAvailable: boolean;
+  wheelChocksEnabled: boolean;
+  conesEnabled: boolean;
+  asuActive: boolean;
 }
 
 export enum EFBVars {
@@ -55,6 +62,13 @@ export enum EFBVars {
   cargoDoorOpen = 'A:INTERACTIVE POINT OPEN:5',
   gpuActive = 'A:INTERACTIVE POINT OPEN:8',
   fuelingActive = 'A:INTERACTIVE POINT OPEN:9',
+  simOnGround = 'SIM ON GROUND',
+  aircraftIsStationary = 'L:A32NX_IS_STATIONARY',
+  pushbackAttached = 'Pushback Attached',
+  isGroundEquipmentAvailable = 'L:A32NX_GND_EQP_IS_VISIBLE',
+  wheelChocksEnabled = 'L:A32NX_MODEL_WHEELCHOCKS_ENABLED',
+  conesEnabled = 'L:A32NX_MODEL_CONES_ENABLED',
+  asuActive = 'L:A32NX_ASU_TURNED_ON',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -85,6 +99,13 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['cargoDoorOpen', { name: EFBVars.cargoDoorOpen, type: SimVarValueType.PercentOver100 }],
     ['gpuActive', { name: EFBVars.gpuActive, type: SimVarValueType.PercentOver100 }],
     ['fuelingActive', { name: EFBVars.fuelingActive, type: SimVarValueType.PercentOver100 }],
+    ['simOnGround', { name: EFBVars.simOnGround, type: SimVarValueType.Bool }],
+    ['aircraftIsStationary', { name: EFBVars.aircraftIsStationary, type: SimVarValueType.Bool }],
+    ['pushbackAttached', { name: EFBVars.pushbackAttached, type: SimVarValueType.Enum }],
+    ['isGroundEquipmentAvailable', { name: EFBVars.isGroundEquipmentAvailable, type: SimVarValueType.Bool }],
+    ['wheelChocksEnabled', { name: EFBVars.wheelChocksEnabled, type: SimVarValueType.Bool }],
+    ['conesEnabled', { name: EFBVars.conesEnabled, type: SimVarValueType.Bool }],
+    ['asuActive', { name: EFBVars.asuActive, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {
