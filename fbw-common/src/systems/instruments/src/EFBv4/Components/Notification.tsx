@@ -5,7 +5,7 @@ import { FlypadControlEvents } from 'instruments/src/EFBv4/FlypadControlEvents';
 import { List } from 'instruments/src/EFBv4/Components/List';
 import { v4 } from 'uuid';
 
-enum NotificationLifetimeKind {
+export enum NotificationLifetimeKind {
   Indefinite,
   Definite,
 }
