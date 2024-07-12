@@ -1,7 +1,7 @@
 import { ConsumerSubject, MappedSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { ServiceButton, ServiceButtonState, ServiceButtonType, Services } from '../Pages/Ground/Pages/Services';
 import { EFBSimvars } from '../EFBSimvarPublisher';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
+import { ServiceButtonState, ServiceButtonType } from '../Pages/Ground/Pages/Services/Widgets/ServiceButtons';
 
 export class GroundState {
   constructor(private readonly bus: typeof EFB_EVENT_BUS) {}

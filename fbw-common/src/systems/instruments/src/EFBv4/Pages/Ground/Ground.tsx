@@ -1,13 +1,17 @@
 import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { PageTitle } from '../../Components/PageTitle';
-import { t } from '../../Components/LocalizedText';
-import { GroundState, Switch } from '../Pages';
-import { PageEnum } from '../../shared/common';
-import { Services } from './Pages/Services';
-import { Selector } from '../../Components/Selector';
+import { PageTitle } from '../../Components';
+import { t } from '../../Components';
+import { Switch } from '../Pages';
+import { GroundState } from '../../State/GroundState';
+import { PageEnum } from '../../Shared';
+import { Services } from './Pages/Services/Services';
+import { Selector } from '../../Components';
+import { Fuel } from './Pages/Fuel/Fuel';
+import { SimbriefState } from '../../State/NavigationState';
 
 export interface GroundProps {
   groundState: GroundState;
+  simbriefState: SimbriefState;
 }
 
 export class Ground extends DisplayComponent<GroundProps> {
@@ -33,7 +37,7 @@ export class Ground extends DisplayComponent<GroundProps> {
           activePage={this.activePage}
           pages={[
             [PageEnum.GroundPage.Services, <Services groundState={this.props.groundState} />],
-            [PageEnum.GroundPage.Fuel, <></>],
+            [PageEnum.GroundPage.Fuel, <Fuel simbriefState={this.props.simbriefState} />],
             [PageEnum.GroundPage.Payload, <></>],
             [PageEnum.GroundPage.Pushback, <></>],
           ]}
