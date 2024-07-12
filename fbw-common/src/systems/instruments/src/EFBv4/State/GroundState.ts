@@ -1,10 +1,62 @@
 import { ConsumerSubject, MappedSubject, Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { EFBSimvars } from '../EFBSimvarPublisher';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
-import { ServiceButtonState, ServiceButtonType } from '../Pages/Ground/Pages/Services/Widgets/ServiceButtons';
+import { ServiceButtonState, ServiceButtonType } from '../Pages/Ground/Pages/Widgets/ServiceButtons';
 
 export class GroundState {
   constructor(private readonly bus: typeof EFB_EVENT_BUS) {}
+  // FUEL STUFF ------------------------------------------------
+  public readonly TOTAL_FUEL_GALLONS = 6267;
+  public readonly OUTER_CELL_GALLONS = 228;
+  public readonly INNER_CELL_GALLONS = 1816;
+  public readonly CENTER_TANK_GALLONS = 2179;
+  public readonly wingTotalRefuelTimeSeconds = 1020;
+  public readonly CenterTotalRefuelTimeSeconds = 1200;
+
+  // SimVar Consumer
+  private readonly _centerCurrent = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('centerCurrent'),
+    SimVar.GetSimVarValue('FUEL TANK CENTER QUANTITY', 'Gallons'),
+  );
+  private readonly _LInnCurrent = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('LInnCurrent'),
+    SimVar.GetSimVarValue('FUEL TANK LEFT MAIN QUANTITY', 'Gallons'),
+  );
+  private readonly _LOutCurrent = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('LOutCurrent'),
+    SimVar.GetSimVarValue('FUEL TANK LEFT AUX QUANTITY', 'Gallons'),
+  );
+  private readonly _RInnCurrent = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('RInnCurrent'),
+    SimVar.GetSimVarValue('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons'),
+  );
+  private readonly _ROutCurrent = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('ROutCurrent'),
+    SimVar.GetSimVarValue('FUEL TANK RIGHT AUX QUANTITY', 'Gallons'),
+  );
+  private readonly _refuelTarget = ConsumerSubject.create(
+    this.bus.getSubscriber<EFBSimvars>().on('refuelTarget'),
+    SimVar.GetSimVarValue('L:A32NX_FUEL_DESIRED_PERCENT', 'Number'),
+  );
+
+  public readonly centerCurrent: Subscribable<number> = this._centerCurrent;
+  public readonly LInnCurrent: Subscribable<number> = this._LInnCurrent;
+  public readonly LOutCurrent: Subscribable<number> = this._LOutCurrent;
+  public readonly RInnCurrent: Subscribable<number> = this._RInnCurrent;
+  public readonly ROutCurrent: Subscribable<number> = this._ROutCurrent;
+  public readonly refuelTarget: Subscribable<number> = this._refuelTarget;
+
+  public setRefuelTarget = (value: number) => SimVar.SetSimVarValue('L:A32NX_FUEL_DESIRED_PERCENT', 'Number', value);
+
+  private readonly _refuelStartedByUser = Subject.create(false);
+
+  public readonly refuelStartedByUser: Subscribable<boolean> = this._refuelStartedByUser;
+
+  public fillPercent(curr: number, max: number) {
+    return (Math.max(curr, 0) / max) * 100;
+  }
+
+  // SERVICES STUFF -------------------------------------------
 
   // SimVar Consumer
   private readonly _cabinLeftDoorOpen = ConsumerSubject.create(

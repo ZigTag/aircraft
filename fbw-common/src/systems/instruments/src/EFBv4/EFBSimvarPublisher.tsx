@@ -33,6 +33,13 @@ export interface EFBSimvars {
   wheelChocksEnabled: boolean;
   conesEnabled: boolean;
   asuActive: boolean;
+
+  centerCurrent: number;
+  LInnCurrent: number;
+  LOutCurrent: number;
+  RInnCurrent: number;
+  ROutCurrent: number;
+  refuelTarget: number;
 }
 
 export enum EFBVars {
@@ -69,6 +76,13 @@ export enum EFBVars {
   wheelChocksEnabled = 'L:A32NX_MODEL_WHEELCHOCKS_ENABLED',
   conesEnabled = 'L:A32NX_MODEL_CONES_ENABLED',
   asuActive = 'L:A32NX_ASU_TURNED_ON',
+
+  centerCurrent = 'FUEL TANK CENTER QUANTITY',
+  LInnCurrent = 'FUEL TANK LEFT MAIN QUANTITY',
+  LOutCurrent = 'FUEL TANK LEFT AUX QUANTITY',
+  RInnCurrent = 'FUEL TANK RIGHT MAIN QUANTITY',
+  ROutCurrent = 'FUEL TANK RIGHT AUX QUANTITY',
+  refuelTarget = 'L:A32NX_FUEL_DESIRED_PERCENT',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -106,6 +120,13 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['wheelChocksEnabled', { name: EFBVars.wheelChocksEnabled, type: SimVarValueType.Bool }],
     ['conesEnabled', { name: EFBVars.conesEnabled, type: SimVarValueType.Bool }],
     ['asuActive', { name: EFBVars.asuActive, type: SimVarValueType.Bool }],
+
+    ['centerCurrent', { name: EFBVars.centerCurrent, type: SimVarValueType.GAL }],
+    ['LInnCurrent', { name: EFBVars.LInnCurrent, type: SimVarValueType.GAL }],
+    ['LOutCurrent', { name: EFBVars.LOutCurrent, type: SimVarValueType.GAL }],
+    ['RInnCurrent', { name: EFBVars.RInnCurrent, type: SimVarValueType.GAL }],
+    ['ROutCurrent', { name: EFBVars.ROutCurrent, type: SimVarValueType.GAL }],
+    ['refuelTarget', { name: EFBVars.refuelTarget, type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {

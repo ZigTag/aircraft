@@ -9,6 +9,8 @@ export interface SliderProps {
   max: number;
 
   onChange: (newValue: number) => void;
+
+  class?: string;
 }
 
 export class Slider extends DisplayComponent<SliderProps> {
@@ -90,7 +92,7 @@ export class Slider extends DisplayComponent<SliderProps> {
 
   render(): VNode | null {
     return (
-      <span class="flex h-3 w-60 flex-col justify-center">
+      <span class={twMerge('flex h-3 w-60 flex-col justify-center', this.props.class ?? '')}>
         <span ref={this.trackRef} class="h-2.5 w-full rounded-[6px] bg-theme-accent"></span>
 
         <span

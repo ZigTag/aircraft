@@ -4,7 +4,7 @@ import { t } from '@localization/translation';
 import { ServicesProps } from '../Services';
 import { SwitchOn } from 'instruments/src/EFBv4/Pages/Pages';
 import { A320GroundOutline } from '../../Widgets/GroundOutlines';
-import { ServiceButtons, ServiceButtonType } from '../Widgets/ServiceButtons';
+import { ServiceButtons, ServiceButtonType } from '../../Widgets/ServiceButtons';
 
 export class A320Services extends DisplayComponent<ServicesProps> {
   private readonly chocksClassOuter = this.props.groundState.wheelChocksVisible.map((value) => {

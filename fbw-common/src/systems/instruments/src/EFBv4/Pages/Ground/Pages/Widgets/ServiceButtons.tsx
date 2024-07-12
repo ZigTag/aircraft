@@ -1,7 +1,7 @@
 import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { GroundState } from '../../../../../State/GroundState';
+import { GroundState } from '../../../../State/GroundState';
 import { twMerge } from 'tailwind-merge';
-import { Button } from '../../../../../Components';
+import { Button } from '../../../../Components';
 
 export enum ServiceButtonState {
   HIDDEN,

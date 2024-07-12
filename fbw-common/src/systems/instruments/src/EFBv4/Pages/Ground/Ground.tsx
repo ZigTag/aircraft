@@ -37,7 +37,10 @@ export class Ground extends DisplayComponent<GroundProps> {
           activePage={this.activePage}
           pages={[
             [PageEnum.GroundPage.Services, <Services groundState={this.props.groundState} />],
-            [PageEnum.GroundPage.Fuel, <Fuel simbriefState={this.props.simbriefState} />],
+            [
+              PageEnum.GroundPage.Fuel,
+              <Fuel groundState={this.props.groundState} simbriefState={this.props.simbriefState} />,
+            ],
             [PageEnum.GroundPage.Payload, <></>],
             [PageEnum.GroundPage.Pushback, <></>],
           ]}
