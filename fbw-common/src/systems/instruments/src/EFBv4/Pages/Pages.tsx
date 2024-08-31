@@ -27,6 +27,7 @@ import { FlypadClient } from '@shared/flypad-server/FlypadClient';
 import { FbwUserSettingsDefs } from '../FbwUserSettings';
 import { GroundState } from '../State/GroundState';
 import { NavigationState, NavigraphAuthState, SimbriefState } from '../State/NavigationState';
+import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -43,7 +44,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
 
   private simbriefState = new SimbriefState(this.props.flypadClient);
 
-  private groundState = new GroundState();
+  private groundState = new GroundState(EFB_EVENT_BUS);
 
   private readonly navigraphAuthState = new NavigraphAuthState();
 
@@ -57,7 +58,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
       />,
     ],
     [PageEnum.MainPage.Dispatch, <Dispatch settings={this.props.settings} simbriefState={this.simbriefState} />],
-    [PageEnum.MainPage.Ground, <Ground groundState={this.groundState} />],
+    [PageEnum.MainPage.Ground, <Ground groundState={this.groundState} simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Performance, <Performance />],
     [
       PageEnum.MainPage.Navigation,

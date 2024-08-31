@@ -210,7 +210,7 @@ export const A320Fuel: React.FC<FuelProps> = ({
 
   const formatFuelFilling = (curr: number, max: number) => {
     const percent = (Math.max(curr, 0) / max) * 100;
-    return `linear-gradient(to top, var(--color-highlight) ${percent}%,#ffffff00 0%)`;
+    return `linear-gradient(to top, rgb(var(--color-highlight)) ${percent}%,#ffffff00 0%)`;
   };
 
   const convertFuelValue = (curr: number) => round(round(Math.max(curr, 0)) * getFuelMultiplier());

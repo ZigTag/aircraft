@@ -18,6 +18,28 @@ export interface EFBSimvars {
 
   dc2BusIsPowered: boolean;
   absoluteTime: number;
+
+  cabinLeftDoorOpen: number;
+  cabinRightDoorOpen: number;
+  aftLeftDoorOpen: number;
+  aftRightDoorOpen: number;
+  cargoDoorOpen: number;
+  gpuActive: number;
+  fuelingActive: number;
+  simOnGround: boolean;
+  aircraftIsStationary: boolean;
+  pushbackAttached: number;
+  isGroundEquipmentAvailable: boolean;
+  wheelChocksEnabled: boolean;
+  conesEnabled: boolean;
+  asuActive: boolean;
+
+  centerCurrent: number;
+  LInnCurrent: number;
+  LOutCurrent: number;
+  RInnCurrent: number;
+  ROutCurrent: number;
+  refuelTarget: number;
 }
 
 export enum EFBVars {
@@ -39,6 +61,28 @@ export enum EFBVars {
 
   dc2BusIsPowered = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
   absoluteTime = 'E:ABSOLUTE TIME',
+
+  cabinLeftDoorOpen = 'A:INTERACTIVE POINT OPEN:0',
+  cabinRightDoorOpen = 'A:INTERACTIVE POINT OPEN:1',
+  aftLeftDoorOpen = 'A:INTERACTIVE POINT OPEN:2',
+  aftRightDoorOpen = 'A:INTERACTIVE POINT OPEN:3',
+  cargoDoorOpen = 'A:INTERACTIVE POINT OPEN:5',
+  gpuActive = 'A:INTERACTIVE POINT OPEN:8',
+  fuelingActive = 'A:INTERACTIVE POINT OPEN:9',
+  simOnGround = 'SIM ON GROUND',
+  aircraftIsStationary = 'L:A32NX_IS_STATIONARY',
+  pushbackAttached = 'Pushback Attached',
+  isGroundEquipmentAvailable = 'L:A32NX_GND_EQP_IS_VISIBLE',
+  wheelChocksEnabled = 'L:A32NX_MODEL_WHEELCHOCKS_ENABLED',
+  conesEnabled = 'L:A32NX_MODEL_CONES_ENABLED',
+  asuActive = 'L:A32NX_ASU_TURNED_ON',
+
+  centerCurrent = 'FUEL TANK CENTER QUANTITY',
+  LInnCurrent = 'FUEL TANK LEFT MAIN QUANTITY',
+  LOutCurrent = 'FUEL TANK LEFT AUX QUANTITY',
+  RInnCurrent = 'FUEL TANK RIGHT MAIN QUANTITY',
+  ROutCurrent = 'FUEL TANK RIGHT AUX QUANTITY',
+  refuelTarget = 'L:A32NX_FUEL_DESIRED_PERCENT',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -61,6 +105,28 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
 
     ['dc2BusIsPowered', { name: EFBVars.dc2BusIsPowered, type: SimVarValueType.Bool }],
     ['absoluteTime', { name: EFBVars.absoluteTime, type: SimVarValueType.Seconds }],
+
+    ['cabinLeftDoorOpen', { name: EFBVars.cabinLeftDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['cabinRightDoorOpen', { name: EFBVars.cabinRightDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['aftLeftDoorOpen', { name: EFBVars.aftLeftDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['aftRightDoorOpen', { name: EFBVars.aftRightDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['cargoDoorOpen', { name: EFBVars.cargoDoorOpen, type: SimVarValueType.PercentOver100 }],
+    ['gpuActive', { name: EFBVars.gpuActive, type: SimVarValueType.PercentOver100 }],
+    ['fuelingActive', { name: EFBVars.fuelingActive, type: SimVarValueType.PercentOver100 }],
+    ['simOnGround', { name: EFBVars.simOnGround, type: SimVarValueType.Bool }],
+    ['aircraftIsStationary', { name: EFBVars.aircraftIsStationary, type: SimVarValueType.Bool }],
+    ['pushbackAttached', { name: EFBVars.pushbackAttached, type: SimVarValueType.Enum }],
+    ['isGroundEquipmentAvailable', { name: EFBVars.isGroundEquipmentAvailable, type: SimVarValueType.Bool }],
+    ['wheelChocksEnabled', { name: EFBVars.wheelChocksEnabled, type: SimVarValueType.Bool }],
+    ['conesEnabled', { name: EFBVars.conesEnabled, type: SimVarValueType.Bool }],
+    ['asuActive', { name: EFBVars.asuActive, type: SimVarValueType.Bool }],
+
+    ['centerCurrent', { name: EFBVars.centerCurrent, type: SimVarValueType.GAL }],
+    ['LInnCurrent', { name: EFBVars.LInnCurrent, type: SimVarValueType.GAL }],
+    ['LOutCurrent', { name: EFBVars.LOutCurrent, type: SimVarValueType.GAL }],
+    ['RInnCurrent', { name: EFBVars.RInnCurrent, type: SimVarValueType.GAL }],
+    ['ROutCurrent', { name: EFBVars.ROutCurrent, type: SimVarValueType.GAL }],
+    ['refuelTarget', { name: EFBVars.refuelTarget, type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {

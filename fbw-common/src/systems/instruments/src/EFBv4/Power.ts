@@ -73,9 +73,6 @@ export class PowerManager {
       this.isCharging.set(isPowered);
       this.battery.onChargeStopStart(SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds'));
     });
-    efbSimvarSubscriber.on('absoluteTime').handle((time) => {
-      this.updateCharge(time);
-    });
 
     this.isBatteryChargeDischargeBeingSimulated = MappedSubject.create(
       ([batteryLifeEnabled, powerState]) => {
@@ -84,6 +81,10 @@ export class PowerManager {
       batteryLifeEnabled,
       this.powerState,
     );
+
+    efbSimvarSubscriber.on('absoluteTime').handle((time) => {
+      this.updateCharge(time);
+    });
 
     this.isBatteryChargeDischargeBeingSimulated.sub(() =>
       this.battery.onChargeStopStart(SimVar.GetSimVarValue('E:ABSOLUTE TIME', 'seconds')),
