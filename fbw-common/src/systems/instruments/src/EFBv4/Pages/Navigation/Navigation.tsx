@@ -2,19 +2,19 @@ import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VN
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { Selector } from '../../Components/Selector';
-import { NavigationState, NavigraphAuthState, Pages, SimbriefState, Switch, SwitchIf, SwitchOn } from '../Pages';
+import { Pages, Switch, SwitchIf, SwitchOn } from '../Pages';
 import { PageEnum } from '../../Shared/common';
 import { NavigraphKeys } from '@shared/navigraph';
 import { SimpleInput } from '../../Components/SimpleInput';
 import { ScrollableContainer } from '../../Components/ScrollableContainer';
 import { twMerge } from 'tailwind-merge';
 import { List } from '../../Components/List';
-import { Chart, ChartCategory } from 'navigraph/charts';
-import { navigraphCharts } from '../../../navigraph';
+import { ChartCategory } from 'navigraph/charts';
 import { ChartViewer } from './Components/ChartViewer';
 import { NavigraphChartProvider } from './Providers/NavigraphChartProvider';
 import { ChartProvider, FlypadChart } from './ChartProvider';
 import { Button } from '../../Components/Button';
+import { NavigationState, NavigraphAuthState, SimbriefState } from '../../State/NavigationState';
 
 export interface NavigationProps {
   simbriefState: SimbriefState;
@@ -328,7 +328,7 @@ class ChartCard extends DisplayComponent<ChartCardProps> {
           <div class={this.className} />
           <Button
             unstyled
-            class="flex h-full items-center px-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+            class="flex h-full items-center bg-transparent px-2 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
             onClick={this.props.onPinnedToggle}
           >
             <SwitchIf
