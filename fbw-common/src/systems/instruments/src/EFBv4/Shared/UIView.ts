@@ -54,7 +54,7 @@ export class UIVIewUtils {
 }
 
 export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [EventBus, FlypadClient]> implements UIVIew {
-  public readonly rootRef = FSComponent.createRef<HTMLElement>();
+  public readonly rootRef = FSComponent.createRef<HTMLElement | AbstractUIView>();
 
   public override contextType = [busContext, flypadClientContext] as const;
 
@@ -81,6 +81,12 @@ export abstract class AbstractUIView<T = any> extends DisplayComponent<T, [Event
     super.onAfterRender(node);
 
     this.vnode = node;
+
+    if (!this.rootRef.getOrDefault()) {
+      console.warn(
+        `[AbstractUIVIew](onAfterRender) rootRef had no instance in ${this.constructor.name} - make sure you pass rootRef as a ref in your render function`,
+      );
+    }
   }
 
   hide() {

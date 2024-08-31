@@ -10,8 +10,9 @@ import {
   VNode,
 } from '@microsoft/msfs-sdk';
 import { AbstractUIView, UIVIew } from '../Shared/UIView';
+import { ComponentProps } from 'react';
 
-export interface ListProps<T> {
+export interface ListProps<T> extends ComponentProps<any> {
   items: SubscribableArray<T> | Subscribable<T[]>;
 
   render: (item: T, index: number, subscriptionsForItem: Subscription[]) => VNode;

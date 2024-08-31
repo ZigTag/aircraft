@@ -1,9 +1,10 @@
 import { FlypadClient } from '@shared/flypad-server';
 import { ArraySubject, Subject, Subscribable, SubscribableArray } from '@microsoft/msfs-sdk';
 import { ISimbriefData, simbriefDataParser } from '../../EFB/Apis/Simbrief';
-import { FlypadChart } from '../Pages/Navigation/ChartProvider';
+import { ChartProvider, ChartsError, FlypadAirportCharts, FlypadChart } from '../Pages/Navigation/ChartProvider';
 import { DeviceFlowParams, User } from 'navigraph/auth';
 import { navigraphAuth } from '../../navigraph';
+import { NotificationKind, showNotification } from '../Components';
 
 export class SimbriefState {
   constructor(private readonly client: FlypadClient) {}
@@ -21,6 +22,14 @@ export class SimbriefState {
 }
 
 export class NavigationState {
+  private readonly _chartsLoading = Subject.create(false);
+
+  public readonly chartsLoading: Subscribable<boolean> = this._chartsLoading;
+
+  private readonly _displayedCharts = Subject.create<Record<any, FlypadChart[]>>({});
+
+  public readonly displayedCharts: Subscribable<Record<any, FlypadChart[]>> = this._displayedCharts;
+
   private readonly _selectedChart = Subject.create<FlypadChart | null>(null);
 
   public readonly selectedChart: Subscribable<FlypadChart | null> = this._selectedChart;
@@ -28,6 +37,40 @@ export class NavigationState {
   private readonly _pinnedCharts = ArraySubject.create<FlypadChart>([]);
 
   public readonly pinnedCharts: SubscribableArray<FlypadChart> = this._pinnedCharts;
+
+  public async displayChartsForAirport(provider: ChartProvider<any>, icao: string): Promise<void> {
+    const validatedIcao = icao.match(/[A-Za-z][A-Za-z][A-Za-z][A-Za-z]?/);
+
+    if (!validatedIcao) {
+      return;
+    }
+
+    let charts: FlypadAirportCharts<any> | null = null;
+
+    this._chartsLoading.set(true);
+
+    try {
+      charts = await provider.getChartsForAirport(validatedIcao[0]);
+    } catch (e) {
+      switch (e as ChartsError) {
+        case ChartsError.NotAuthenticated:
+          showNotification({ kind: NotificationKind.Error, text: 'Not authenticated to Navigraph' });
+          break;
+        case ChartsError.ServerError:
+          showNotification({ kind: NotificationKind.Error, text: 'Server error while requesting charts' });
+          break;
+        case ChartsError.Unknown:
+          showNotification({ kind: NotificationKind.Error, text: 'Unknown error while request charts' });
+          break;
+      }
+    } finally {
+      this._chartsLoading.set(false);
+    }
+
+    if (charts) {
+      this._displayedCharts.set(charts.charts);
+    }
+  }
 
   public setSelectedChart(chart: FlypadChart): void {
     this._selectedChart.set(chart);

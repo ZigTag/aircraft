@@ -2,19 +2,16 @@ import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VN
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { Selector } from '../../Components/Selector';
-import { Pages, Switch, SwitchIf, SwitchOn } from '../Pages';
+import { Pages, Switch, SwitchIf } from '../Pages';
 import { PageEnum } from '../../Shared/common';
 import { NavigraphKeys } from '@shared/navigraph';
-import { SimpleInput } from '../../Components/SimpleInput';
-import { ScrollableContainer } from '../../Components/ScrollableContainer';
 import { twMerge } from 'tailwind-merge';
 import { List } from '../../Components/List';
-import { ChartCategory } from 'navigraph/charts';
-import { ChartViewer } from './Components/ChartViewer';
-import { NavigraphChartProvider } from './Providers/NavigraphChartProvider';
 import { ChartProvider, FlypadChart } from './ChartProvider';
 import { Button } from '../../Components/Button';
 import { NavigationState, NavigraphAuthState, SimbriefState } from '../../State/NavigationState';
+import { AbstractUIView } from '../../Shared';
+import { NavigraphUI } from './Providers/Navigraph';
 
 export interface NavigationProps {
   simbriefState: SimbriefState;
@@ -102,132 +99,6 @@ export interface NavigraphUIProps {
   navigraphState: NavigraphAuthState;
 }
 
-export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
-  private readonly isFullscreen = Subject.create(false);
-
-  private readonly selectedAirport = Subject.create('');
-
-  private readonly selectedCategory = Subject.create(PageEnum.ChartCategory.Star);
-
-  private readonly selectedCategoryAsNavigraphChartCategory: Subscribable<ChartCategory> = this.selectedCategory.map(
-    (it) => {
-      switch (it) {
-        case PageEnum.ChartCategory.Star:
-          return 'ARR';
-        case PageEnum.ChartCategory.App:
-          return 'APP';
-        case PageEnum.ChartCategory.Sid:
-          return 'DEP';
-        case PageEnum.ChartCategory.Taxi:
-          return 'APT';
-        case PageEnum.ChartCategory.Ref:
-          return 'REF';
-      }
-    },
-  );
-
-  private provider = new NavigraphChartProvider(this.props.navigraphState);
-
-  private handleIcaoChange = () => {};
-
-  private readonly class = MappedSubject.create(([simbriefDataLoaded]) => {
-    let rounding = '';
-    if (simbriefDataLoaded) {
-      rounding = 'rounded-r-none';
-    }
-
-    return twMerge(`w-full shrink uppercase`, rounding);
-  }, this.props.simbriefState.simbriefOfpLoaded);
-
-  render(): VNode | null {
-    return (
-      <div class="flex h-full items-stretch">
-        <div class="w-0"></div>
-
-        <SwitchOn
-          condition={this.isFullscreen.map((value) => !value)}
-          on={
-            <div class="shrink-0" style={{ width: '450px' }}>
-              <div class="flex flex-row items-center justify-center">
-                <SimpleInput
-                  containerClass="w-full"
-                  placeholder="ICAO"
-                  value={this.selectedAirport}
-                  maxLength={4}
-                  class={this.class}
-                  onChange={this.handleIcaoChange}
-                />
-
-                <SwitchOn
-                  condition={this.props.simbriefState.simbriefOfpLoaded}
-                  on={
-                    <Selector
-                      innerClass="rounded-l-none"
-                      activeClass="bg-theme-highlight text-theme-body"
-                      tabs={[
-                        [
-                          PageEnum.SimbriefAirport.From,
-                          <p class="uppercase text-inherit">{t('NavigationAndCharts.From')}</p>,
-                        ],
-                        [
-                          PageEnum.SimbriefAirport.To,
-                          <p class="uppercase text-inherit">{t('NavigationAndCharts.To')}</p>,
-                        ],
-                        [
-                          PageEnum.SimbriefAirport.Alternate,
-                          <p class="uppercase text-inherit">{t('NavigationAndCharts.Altn')}</p>,
-                        ],
-                      ]}
-                      activePage={Subject.create(0)}
-                    />
-                  }
-                />
-              </div>
-
-              <div class="flex h-11 w-full flex-row items-center">
-                <i class="bi-arrow-return-right text-[26px] text-inherit" />
-                <div class="block w-full overflow-hidden whitespace-nowrap px-4" style={{ textOverflow: 'ellipsis' }}>
-                  {/*getStatusBarText()*/}
-                </div>
-              </div>
-
-              <div class="mt-6">
-                <Selector
-                  activeClass="bg-theme-highlight text-theme-body"
-                  tabs={[
-                    // TODO those should somehow be dynamically generated
-                    [PageEnum.ChartCategory.Star, <p class="text-inherit">STAR</p>],
-                    [PageEnum.ChartCategory.App, <p class="text-inherit">APP</p>],
-                    [PageEnum.ChartCategory.Taxi, <p class="text-inherit">TAXI</p>],
-                    [PageEnum.ChartCategory.Sid, <p class="text-inherit">SID</p>],
-                    [PageEnum.ChartCategory.Ref, <p class="text-inherit">REF</p>],
-                  ]}
-                  activePage={this.selectedCategory}
-                />
-                <ScrollableContainer class="mt-5" height={42.75}>
-                  <ChartSelector
-                    provider={this.provider}
-                    navigraphState={this.props.navigraphState}
-                    navigationState={this.props.navigationState}
-                    selectedCategory={this.selectedCategoryAsNavigraphChartCategory}
-                  />
-                </ScrollableContainer>
-              </div>
-            </div>
-          }
-        />
-
-        <ChartViewer
-          provider={this.provider}
-          shownChartID={this.props.navigationState.selectedChart.map((it) => it?.id ?? null)}
-          isFullscreen={this.isFullscreen}
-          onToggleFullscreen={() => this.isFullscreen.set(!this.isFullscreen.get())}
-        />
-      </div>
-    );
-  }
-}
-
 interface ChartSelectorProps<C extends string | number> {
   provider: ChartProvider<C>;
 
@@ -238,33 +109,37 @@ interface ChartSelectorProps<C extends string | number> {
   selectedCategory: Subscribable<C>;
 }
 
-class ChartSelector<C extends string | number> extends DisplayComponent<ChartSelectorProps<C>> {
+export class ChartSelector<C extends string | number> extends AbstractUIView<ChartSelectorProps<C>> {
   private readonly charts = Subject.create<FlypadChart[]>([]);
 
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
-    MappedSubject.create(
-      async ([user, selectedCategory]) => {
-        if (!user) {
-          this.charts.set([]);
-          return;
-        }
+    this.subscriptions.push(
+      MappedSubject.create(
+        async ([user, selectedCategory]) => {
+          if (!user) {
+            this.charts.set([]);
+            return;
+          }
 
-        const airportCharts = await this.props.provider.getChartsForAirport('RKSI');
+          const filteredCharts = this.props.navigationState.displayedCharts.get()[selectedCategory];
 
-        const filteredCharts = airportCharts.charts[selectedCategory];
-
-        this.charts.set(filteredCharts);
-      },
-      this.props.navigraphState.user,
-      this.props.selectedCategory,
+          if (filteredCharts) {
+            this.charts.set(filteredCharts);
+          }
+        },
+        this.props.navigraphState.user,
+        this.props.selectedCategory,
+        this.props.navigationState.displayedCharts,
+      ),
     );
   }
 
   render(): VNode | null {
     return (
       <List
+        ref={this.rootRef}
         class="space-y-4"
         items={this.charts}
         render={(chart, index, subscriptionsForItem) => {
@@ -304,7 +179,7 @@ interface ChartCardProps {
   onSelected: () => void;
 }
 
-class ChartCard extends DisplayComponent<ChartCardProps> {
+class ChartCard extends AbstractUIView<ChartCardProps> {
   private ref = FSComponent.createRef<HTMLDivElement>();
 
   private readonly className = this.props.isSelected.map((selected) => {
@@ -314,16 +189,14 @@ class ChartCard extends DisplayComponent<ChartCardProps> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
+    this.subscriptions.push(this.className);
+
     this.ref.instance.addEventListener('click', () => this.props.onSelected());
   }
 
   render(): VNode | null {
     return (
-      <div
-        ref={this.ref}
-        class="flex w-full flex-row overflow-hidden rounded-md bg-theme-accent"
-        // onClick={() => handleChartClick(chart)}
-      >
+      <div ref={this.ref} class="flex w-full flex-row overflow-hidden rounded-md bg-theme-accent">
         <div class="flex flex-row items-center">
           <div class={this.className} />
           <Button

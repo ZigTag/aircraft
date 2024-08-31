@@ -13,6 +13,7 @@ import { Button } from 'instruments/src/EFBv4/Components/Button';
 import { TooltipWrapper } from '../../../Components/Tooltip';
 import { ChartProvider, ChartTheme } from '../ChartProvider';
 import { twMerge } from 'tailwind-merge';
+import { LoadingSpinner } from '../../../Components/LoadingSpinner';
 
 export interface ChartViewerProps {
   provider: ChartProvider<string | number>;
@@ -373,7 +374,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
             'pointer-events': this.showLoadingOverlay.map((it) => (it ? 'auto' : 'none')),
           }}
         >
-          <i class="bi-arrow-repeat animate-spin text-[50px]" />
+          <LoadingSpinner />
         </div>
 
         <div class="absolute inset-y-6 right-6 z-20 flex cursor-pointer flex-col justify-between overflow-hidden rounded-md">

@@ -1,7 +1,7 @@
 // Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
 import { AbstractUIView } from '../Shared/UIView';
 
 interface LogoProps {
@@ -10,7 +10,7 @@ interface LogoProps {
   class?: string;
 }
 
-export class FbwLogo extends AbstractUIView<LogoProps> {
+export class FbwLogo extends DisplayComponent<LogoProps> {
   render(): VNode | null {
     return (
       <svg

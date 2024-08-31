@@ -7,8 +7,8 @@ import {
   ChartSemanticColor,
 } from '../ChartProvider';
 import { navigraphCharts } from '../../../../navigraph';
-import { NavigraphAuthState } from '../../Pages';
 import { Chart, ChartCategory } from 'navigraph/charts';
+import { NavigraphAuthState } from '../../../State/NavigationState';
 
 export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
   public canGetChartsForAirport = true;
