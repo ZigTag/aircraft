@@ -367,7 +367,7 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
         </div>
 
         <div
-          class="size-full absolute flex items-center justify-center bg-theme-secondary"
+          class="absolute flex size-full items-center justify-center bg-theme-secondary"
           style={{
             visibility: this.showLoadingOverlay.map((it) => (it ? 'visible' : 'hidden')),
             'pointer-events': this.showLoadingOverlay.map((it) => (it ? 'auto' : 'none')),

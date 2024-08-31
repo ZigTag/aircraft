@@ -187,7 +187,7 @@ class AtaChapterCard extends DisplayComponent<AtaChapterCardProps> {
         <div class="flex h-full w-1/5 items-center justify-center rounded-md bg-theme-accent font-title text-5xl font-bold">
           {`ATA ${this.props.ataNumber}`}
 
-          <div class="size-0 relative -right-7 bottom-16 inline-block fill-current text-utility-red">
+          <div class="relative -right-7 bottom-16 inline-block size-0 fill-current text-utility-red">
             <svg
               style={{
                 width: '30px',

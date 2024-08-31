@@ -2,7 +2,8 @@ import { AbstractUIView } from '../../Shared/UIView';
 import { DisplayComponent, FSComponent, MappedSubject, Subject, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { SettingsPage } from './Settings';
 import { t } from '../../Components/LocalizedText';
-import { NavigraphAuthState, Pages, Switch } from '../Pages';
+import { Pages, Switch } from '../Pages';
+import { NavigraphAuthState } from '../../State/NavigationState';
 import { PageEnum } from '../../Shared/common';
 import { SettingsItem, ToggleSettingsItem } from './Components/SettingItem';
 import { Button, ButtonTheme } from '../../Components/Button';
@@ -196,7 +197,7 @@ class NavigraphAccountLinkSettingsItem extends AbstractUIView<NavigraphAccountLi
             style={{ visibility: this.props.navigraphAuthState.user.map((it) => (it ? 'visible' : 'hidden')) }}
           >
             <span>{this.props.navigraphAuthState.user.map((it) => it?.preferred_username ?? '')}</span>
-            <img src={navigraphLogo} class="size-6 mt-px" />
+            <img src={navigraphLogo} class="mt-px size-6" />
             <span>{this.subscriptionText}</span>
           </span>
 
