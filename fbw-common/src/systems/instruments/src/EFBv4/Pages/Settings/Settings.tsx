@@ -3,7 +3,7 @@ import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../Shared/common';
 import { AbstractUIView } from '../../Shared/UIView';
-import { NavigraphAuthState, Pages, Switch } from '../Pages';
+import { Pages, Switch } from '../Pages';
 import { Button } from '../../Components/Button';
 import { SettingsAboutPage } from './SettingsAboutPage';
 import { SettingsAudioPage } from './SettingsAudioPage';
@@ -15,6 +15,7 @@ import { SettingsRealismPage } from './SettingsRealismPage';
 import { SettingsThirdPartyOptionsPage } from './SettingsThirdPartyOptionsPage';
 import { SettingsAtsuAocPage } from './SettingsAtsuAocPage';
 import { SettingsFlyPadPage } from './SettingsFlyPadPage';
+import { NavigraphAuthState } from '../../State/NavigationState';
 
 export interface SettingsProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
@@ -139,7 +140,7 @@ class SettingsIndex extends AbstractUIView<SettingsIndexProps> {
 export interface SettingsPageProps {
   returnHome: () => any;
   title: VNode;
-  ref: NodeReference<HTMLElement>;
+  ref: NodeReference<any>;
 }
 
 export class SettingsPage extends AbstractUIView<SettingsPageProps> {

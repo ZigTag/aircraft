@@ -59,7 +59,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
     ],
     [PageEnum.MainPage.Dispatch, <Dispatch settings={this.props.settings} simbriefState={this.simbriefState} />],
     [PageEnum.MainPage.Ground, <Ground groundState={this.groundState} simbriefState={this.simbriefState} />],
-    [PageEnum.MainPage.Performance, <Performance />],
+    [PageEnum.MainPage.Performance, <Performance settings={this.props.settings} simbriefState={this.simbriefState} />],
     [
       PageEnum.MainPage.Navigation,
       <Navigation

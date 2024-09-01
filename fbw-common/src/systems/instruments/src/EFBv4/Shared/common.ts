@@ -36,6 +36,10 @@ export namespace PageEnum {
     Pushback,
   }
 
+  export enum PerformancePage {
+    Takeoff,
+  }
+
   export enum NavigationPage {
     Navigraph,
     LocalFiles,

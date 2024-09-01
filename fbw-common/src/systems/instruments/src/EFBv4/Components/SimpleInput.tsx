@@ -1,4 +1,5 @@
 import {
+  Accessible,
   ConsumerSubject,
   FSComponent,
   MappedSubject,
@@ -14,12 +15,12 @@ import { v4 } from 'uuid';
 
 interface SimpleInputProps {
   placeholder?: string | Subscribable<string>;
-  value?: Subscribable<string | null>;
+  value?: Subscribable<string | number | null>;
   onChange?: (value: string) => void;
   onFocus?: (value: string) => void;
   onBlur?: (value: string) => void;
-  min?: number;
-  max?: number;
+  min?: number | Accessible<number>;
+  max?: number | Accessible<number>;
   number?: boolean;
   padding?: number;
   decimalPrecision?: number;
@@ -59,18 +60,23 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
     return split.join('.');
   };
 
-  private readonly getConstrainedValue = (value: string): string => {
+  private readonly getAccessible = <T,>(value: T | Accessible<T>): T => {
+    return value !== null && typeof value === 'object' && 'get' in value ? value.get() : value;
+  };
+
+  private readonly getConstrainedValue = (value: string | number): string => {
     if (!this.props.number) {
-      return value;
+      return value.toString();
     }
+
     let constrainedValue = value;
-    let numericValue = parseFloat(value);
+    let numericValue = typeof value !== 'number' ? parseFloat(value) : value;
 
     if (!Number.isNaN(numericValue)) {
-      if (this.props.min !== undefined && numericValue < this.props.min) {
-        numericValue = this.props.min;
-      } else if (this.props.max !== undefined && numericValue > this.props.max) {
-        numericValue = this.props.max;
+      if (this.props.min !== undefined && numericValue < this.getAccessible(this.props.min)) {
+        numericValue = this.getAccessible(this.props.min);
+      } else if (this.props.max !== undefined && numericValue > this.getAccessible(this.props.max)) {
+        numericValue = this.getAccessible(this.props.max);
       }
 
       if (this.props.decimalPrecision !== undefined) {
@@ -81,7 +87,8 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
       }
       constrainedValue = this.pad(constrainedValue);
     }
-    return constrainedValue;
+
+    return constrainedValue.toString();
   };
 
   private readonly onFocus = (event: FocusEvent): void => {
@@ -160,7 +167,7 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
     }
   };
 
-  private readonly onValueExternallyChanged = (value: string) => {
+  private readonly onValueExternallyChanged = (value: string | number) => {
     const constrainedValue = this.getConstrainedValue(value);
 
     this.displayValue.set(constrainedValue);

@@ -1,4 +1,12 @@
-import { DisplayComponent, ComponentProps, FSComponent, Subject, VNode, Subscribable } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  ComponentProps,
+  FSComponent,
+  Subject,
+  VNode,
+  Accessible,
+  Subscribable,
+} from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
 import { AbstractUIView, UIVIew } from '../Shared/UIView';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
@@ -8,7 +16,7 @@ import { v4 } from 'uuid';
 import { LocalizedString } from '../Shared/translation';
 
 export interface TooltipWrapperProps extends ComponentProps {
-  text: string;
+  text: string | undefined | Accessible<string | undefined>;
 }
 
 export class TooltipWrapper extends AbstractUIView<TooltipWrapperProps> {
@@ -56,11 +64,16 @@ export class TooltipWrapper extends AbstractUIView<TooltipWrapperProps> {
   private readonly handleMouseDown = () => {
     this.hiddenLocked = true;
 
-    EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('set_tooltip', {
-      id: this.id,
-      shown: false,
-      text: this.props.text,
-    });
+    const text =
+      typeof this.props.text === 'object' && 'get' in this.props.text ? this.props.text.get() : this.props.text;
+
+    if (text !== undefined) {
+      EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('set_tooltip', {
+        id: this.id,
+        shown: false,
+        text,
+      });
+    }
 
     if (this.timeout) {
       clearTimeout(this.timeout);
@@ -71,11 +84,16 @@ export class TooltipWrapper extends AbstractUIView<TooltipWrapperProps> {
   private readonly handleMouseEnter = () => {
     if (this.timeout === null && !this.hiddenLocked) {
       this.timeout = setTimeout(() => {
-        EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('set_tooltip', {
-          id: this.id,
-          shown: true,
-          text: this.props.text,
-        });
+        const text =
+          typeof this.props.text === 'object' && 'get' in this.props.text ? this.props.text.get() : this.props.text;
+
+        if (text !== undefined) {
+          EFB_EVENT_BUS.getPublisher<FlypadControlEvents>().pub('set_tooltip', {
+            id: this.id,
+            shown: true,
+            text,
+          });
+        }
       }, this.TOOLTIP_SHOW_DELAY);
     }
 

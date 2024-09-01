@@ -137,7 +137,6 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
                   }
                   off={
                     <ScrollableContainer class="mt-5" height={42.75}>
-                      {' '}
                       <ChartSelector
                         provider={this.provider}
                         navigraphState={this.props.navigraphState}
