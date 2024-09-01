@@ -45,13 +45,17 @@ class TakeoffCalculatorStore {
 
    */
 
-  public readonly temperatureUnit = this.usingMetricPinProg.map((it) => (it ? 'C' : 'F'));
+  // TODO persist those
 
-  public readonly pressureUnit = this.usingMetricPinProg.map((it) => (it ? 'hPa' : 'inHg'));
+  public readonly temperatureUnit = Subject.create<'C' | 'F'>(this.usingMetricPinProg.get() ? 'C' : 'F');
 
-  public readonly distanceUnit = this.usingMetricPinProg.map((it) => (it ? 'm' : 'ft'));
+  public readonly pressureUnit = Subject.create<'hPa' | 'inHg'>(this.usingMetricPinProg.get() ? 'hPa' : 'inHg');
 
-  public readonly weightUnit = this.usingMetricPinProg.map((it) => (it ? 'kg' : 'lb'));
+  public readonly distanceUnit = Subject.create<'m' | 'ft'>(this.usingMetricPinProg.get() ? 'm' : 'ft');
+
+  public readonly weightUnit = Subject.create<'kg' | 'lb'>(this.usingMetricPinProg.get() ? 'kg' : 'lb');
+
+  // end TODO
 
   public readonly icao = Subject.create('RKSI');
 
@@ -281,8 +285,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                           ['ft', t('Performance.Takeoff.RunwayLengthUnitFt')],
                           ['m', t('Performance.Takeoff.RunwayLengthUnitMeter')],
                         ]}
-                        onChange={() => {}}
-                        // onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
+                        onChange={(newValue: 'ft' | 'm') => this.store.distanceUnit.set(newValue)}
                       />
                     </div>
                   </Label>
