@@ -242,6 +242,20 @@ export class LocalizedString implements MutableSubscribable<string>, Subscriptio
     return new LocalizedString(locKey);
   }
 
+  public static translate(locKey: string, replacements?: Record<string, string>): string | null {
+    const msg = allLanguagesMap
+      .get(FbwUserSettings.getExistingManager().getSetting('fbwEfbLanguage').get())!
+      .get(locKey);
+
+    if (msg === undefined) {
+      return null;
+    }
+
+    return replacements
+      ? msg.replace(/\{([a-z_]+)\}/g, (m) => replacements[m.substring(1, m.length - 1)] ?? m[1])
+      : msg;
+  }
+
   get(): string {
     return this.value.get();
   }

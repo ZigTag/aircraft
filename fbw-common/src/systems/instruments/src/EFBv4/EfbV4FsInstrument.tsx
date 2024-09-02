@@ -12,6 +12,7 @@ import {
 import { EFBv4 } from './EFBv4';
 import { busContext, initializeEventBusContext } from './Contexts';
 import { EFBSimvarPublisher } from './EFBSimvarPublisher';
+import { PerformanceCalculators } from '@shared/performance';
 
 export const EFB_EVENT_BUS = new EventBus();
 
@@ -19,6 +20,8 @@ export interface EfbV4FsInstrumentAircraftSpecificData {
   renderAutomaticCalloutsPage: (returnHome: () => any, autoCallOuts: UserSetting<number>) => VNode;
 
   defaultAutoCalloutsSettingValue: number;
+
+  performanceCalculators: PerformanceCalculators;
 }
 
 export class EfbV4FsInstrument implements FsInstrument {

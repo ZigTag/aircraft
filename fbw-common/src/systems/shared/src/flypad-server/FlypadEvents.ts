@@ -15,6 +15,8 @@ export interface FlypadClientEvents {
 
   fpc_GetMetar: string;
 
+  fpc_GetMagvar: string;
+
   fpc_GetAirportRunways: string;
 
   fpc_GetSimbriefOfp: string;
@@ -33,6 +35,8 @@ export interface FlypadServerEvents {
   fps_HelloWorld: string;
 
   fps_SendMetar: MetarParserType;
+
+  fps_SendMagvar: number;
 
   fps_SendAirportRunways: Runway[];
 

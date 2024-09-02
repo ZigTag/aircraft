@@ -16,6 +16,7 @@ interface ButtonProps extends ComponentProps {
   class?: string | Subscribable<string>;
   unstyled?: boolean;
   key?: string;
+  disabled?: boolean | Subscribable<boolean>;
 }
 
 export enum ButtonTheme {
@@ -27,7 +28,15 @@ export class Button extends DisplayComponent<ButtonProps> {
   private readonly root = FSComponent.createRef<HTMLSpanElement>();
 
   onAfterRender() {
-    this.root.instance.addEventListener('click', this.props.onClick);
+    this.root.instance.addEventListener('click', (event) => {
+      const disabled = SubscribableUtils.isSubscribable(this.props.disabled)
+        ? this.props.disabled.get()
+        : this.props.disabled;
+
+      if (!disabled) {
+        this.props.onClick(event);
+      }
+    });
   }
 
   private readonly className = MappedSubject.create(

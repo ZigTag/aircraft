@@ -1,5 +1,5 @@
 import { Subject, VNode } from '@microsoft/msfs-sdk';
-import { AbstractUIView } from 'instruments/src/EFBv4/shared/UIView';
+import { AbstractUIView } from '../Shared/UIView';
 import { FSComponent } from '@microsoft/msfs-sdk';
 import { EFB_EVENT_BUS } from 'instruments/src/EFBv4/EfbV4FsInstrument';
 import { FlypadControlEvents } from 'instruments/src/EFBv4/FlypadControlEvents';

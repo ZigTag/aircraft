@@ -25,6 +25,7 @@ export class FlypadServer {
     // TODO Need to forward any errors thrown to the clients
     this.eventSub.on('fpc_HelloWorld').handle(() => this.handleHelloWorld());
     this.eventSub.on('fpc_GetMetar').handle((icao) => this.handleGetMetar(icao));
+    this.eventSub.on('fpc_GetMagvar').handle((icao) => this.handleGetMagvar(icao));
     this.eventSub.on('fpc_GetAirportRunways').handle((icao) => this.handleGetAirportRunways(icao));
     this.eventSub.on('fpc_GetSimbriefOfp').handle((username) => this.handleGetSimbriefOfp(username));
     this.eventSub.on('fpc_ActivateFailure').handle((id) => this.handleActivateFailure(id));
@@ -88,6 +89,12 @@ export class FlypadServer {
     }
 
     this.eventPub.pub('fps_SendMetar', metar, true);
+  }
+
+  private async handleGetMagvar(icao: string): Promise<void> {
+    const airport = await this.getAirport(icao);
+
+    this.eventPub.pub('fps_SendMagvar', Facilities.getMagVar(airport.lat, airport.lon), true);
   }
 
   private getAirport(icao: string): Promise<RawAirport> {

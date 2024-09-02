@@ -76,10 +76,10 @@ export enum AtisSource {
 }
 
 export enum MetarSource {
-  MSFS,
-  PILOT_EDGE,
-  NOAA,
-  VATSIM,
+  MSFS = 'MSFS',
+  PILOTEDGE = 'PILOTEDGE',
+  NOAA = 'NOAA',
+  VATSIM = 'VATSIM',
 }
 
 export enum TafSource {
@@ -414,7 +414,7 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
           case 'MSFS':
             return MetarSource.MSFS;
           case 'PILOTEDGE':
-            return MetarSource.PILOT_EDGE;
+            return MetarSource.PILOTEDGE;
           case 'NOAA':
             return MetarSource.NOAA;
           case 'VATSIM':

@@ -3,15 +3,24 @@ import { AbstractUIView, LocalizedString } from '../../../Shared';
 import { Units } from '@shared/units';
 import { TooltipWrapper } from '../../../Components/Tooltip';
 import { SimbriefState } from '../../../State/NavigationState';
-import { SimpleInput, t } from '../../../Components';
+import { Button, ModalKind, NotificationKind, showModal, showNotification, SimpleInput, t } from '../../../Components';
 import { Label } from '../../../Components/Label';
-import { Runway } from '../../../../EFB/Performance/Data/Runways';
-import { LineupAngle, RunwayCondition, TakeoffAntiIceSetting, TakeoffPerformanceResult } from '@shared/performance';
+import { getAirportMagVar, getRunways, Runway } from '../../../../EFB/Performance/Data/Runways';
+import {
+  LineupAngle,
+  PerformanceCalculators,
+  RunwayCondition,
+  TakeoffAntiIceSetting,
+  TakeoffPerfomanceError,
+  TakeoffPerformanceResult,
+} from '@shared/performance';
 import { SwitchIf } from '../../Pages';
 import { FbwUserSettingsDefs } from '../../../FbwUserSettings';
 import { twMerge } from 'tailwind-merge';
 import { SelectInput } from '../../../Components/SelectInput';
 import { TakeoffCoGPositions } from '../../../../EFB/Store/features/performance';
+import { MathUtils, parseMetar } from '@flybywiresim/fbw-sdk';
+import { toast } from 'react-toastify';
 
 class TakeoffCalculatorStore {
   constructor(private readonly settings: UserSettingManager<FbwUserSettingsDefs>) {}
@@ -58,9 +67,15 @@ class TakeoffCalculatorStore {
 
   public readonly availableRunways = Subject.create<Runway[]>([]);
 
-  public readonly selectedRunway = Subject.create<Runway | null>(null);
-
   public readonly selectedRunwayIndex = Subject.create<number>(-1);
+
+  public readonly selectedRunway = MappedSubject.create(
+    ([availableRunways, selectedRunwayIndex]) => {
+      return availableRunways[selectedRunwayIndex] ?? null;
+    },
+    this.availableRunways,
+    this.selectedRunwayIndex,
+  );
 
   public readonly runwayLength = Subject.create<number | null>(null);
 
@@ -104,9 +119,50 @@ class TakeoffCalculatorStore {
     this.runwayLength,
   );
 
-  public readonly areInputsValid = Subject.create(false);
+  public readonly areInputsValid = MappedSubject.create(
+    ([windMagnitude, weight, runwayBearing, elevation, runwaySlope, oat, qnh, runwayLength]) =>
+      windMagnitude !== null &&
+      weight !== null &&
+      runwayBearing !== null &&
+      elevation !== null &&
+      runwaySlope !== null &&
+      oat !== null &&
+      qnh !== null &&
+      runwayLength !== null,
+    this.windMagnitude,
+    this.weight,
+    this.runwayBearing,
+    this.elevation,
+    this.runwaySlope,
+    this.oat,
+    this.qnh,
+    this.runwayLength,
+  );
 
   public readonly result = Subject.create<TakeoffPerformanceResult | null>(null);
+
+  public resetInitialValues(): void {
+    this.runwayBearing.set(null);
+    this.autoFillSource.set('OFP');
+    this.availableRunways.set([]);
+    this.selectedRunwayIndex.set(-1);
+    this.runwayLength.set(null);
+    this.lineupAngle.set(90);
+    this.elevation.set(null);
+    this.runwaySlope.set(null);
+    this.runwayCondition.set(RunwayCondition.Dry);
+    this.windDirection.set(null);
+    this.windMagnitude.set(null);
+    this.windEntry.set(null);
+    this.oat.set(null);
+    this.qnh.set(null);
+    this.weight.set(null);
+    this.takeoffCg.set(TakeoffCoGPositions.Standard);
+    this.config.set(1);
+    this.forceToga.set(false);
+    this.antiIce.set(TakeoffAntiIceSetting.Off);
+    this.packs.set(true);
+  }
 }
 
 const isValidIcao = (icao: string): boolean => icao?.length === 4;
@@ -147,6 +203,8 @@ export interface TakeoffProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
 
   simbriefState: SimbriefState;
+
+  calculators: PerformanceCalculators;
 }
 
 export class Takeoff extends AbstractUIView<TakeoffProps> {
@@ -242,6 +300,14 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
 
   private readonly temperaturePlaceholder = this.store.temperatureUnit.map((it) => `°${it}`);
 
+  private readonly clearResult = () => {
+    if (this.store.result.get() === null) {
+      return;
+    }
+
+    this.store.result.set(null);
+  };
+
   private readonly clearAirportRunways = () => {
     this.store.availableRunways.set([]);
     this.store.selectedRunwayIndex.set(-1);
@@ -251,8 +317,243 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     this.store.elevation.set(null);
   };
 
+  private readonly syncValuesWithApiMetar = async (icao: string): Promise<void> => {
+    if (!isValidIcao(icao)) {
+      return;
+    }
+
+    const parsedMetar = await this.client.getMetar(icao);
+
+    try {
+      const magvar = await this.client.getMagvar(icao);
+
+      const windDirection = MathUtils.normalise360(parsedMetar.wind.degrees - (magvar ?? 0));
+      const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+
+      this.store.windDirection.set(windDirection);
+      this.store.windMagnitude.set(parsedMetar.wind.speed_kts);
+      this.store.windEntry.set(windEntry);
+      this.store.oat.set(parsedMetar.temperature.celsius);
+      this.store.qnh.set(parsedMetar.barometer.mb);
+    } catch (err) {
+      toast.error('Could not fetch airport');
+    }
+  };
+
+  private readonly syncValuesWithOfp = async () => {
+    const ofpDepartingAirport = this.props.simbriefState.ofp.get()?.origin.icao;
+    const ofpDepartingRunway = this.props.simbriefState.ofp.get()?.origin.runway;
+    const ofpOriginMetar = this.props.simbriefState.ofp.get()?.origin.metar;
+    const ofpWeights = this.props.simbriefState.ofp.get()?.weights;
+    const ofpUnits = this.props.simbriefState.ofp.get()?.units;
+
+    if (!ofpDepartingAirport || !ofpOriginMetar || !ofpWeights) {
+      return;
+    }
+
+    const parsedMetar = parseMetar(ofpOriginMetar);
+
+    const ofpTow = parseInt(ofpWeights.estTakeOffWeight);
+    const weightKgs = ofpUnits === 'lbs' ? Math.round(Units.poundToKilogram(ofpTow)) : ofpTow;
+
+    if (!isValidIcao(ofpDepartingAirport)) {
+      toast.error('OFP airport is invalid');
+      return;
+    }
+
+    try {
+      const runways = await getRunways(ofpDepartingAirport);
+      const magvar = await getAirportMagVar(ofpDepartingAirport);
+
+      const runwayIndex = runways.findIndex((r) => r.ident === ofpDepartingRunway);
+
+      if (runwayIndex >= 0) {
+        const newRunway = runways[runwayIndex];
+        const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+        const windDirection = Math.round(MathUtils.normalise360(parsedMetar.wind.degrees - (magvar ?? 0)));
+        const windEntry = `${windDirection.toFixed(0).padStart(3, '0')}/${parsedMetar.wind.speed_kts}`;
+
+        this.store.icao.set(ofpDepartingAirport);
+        this.store.availableRunways.set(runways);
+        this.store.selectedRunwayIndex.set(runwayIndex);
+        this.store.runwayBearing.set(newRunway.magneticBearing);
+        this.store.runwayLength.set(newRunway.length);
+        this.store.runwaySlope.set(runwaySlope);
+        this.store.elevation.set(newRunway.elevation);
+        this.store.weight.set(weightKgs);
+        this.store.windDirection.set(windDirection);
+        this.store.windMagnitude.set(parsedMetar.wind.speed_kts);
+        this.store.windEntry.set(windEntry);
+        this.store.oat.set(parsedMetar.temperature.celsius);
+        this.store.qnh.set(parsedMetar.barometer.mb);
+      } else {
+        throw new Error('Failed to import OFP');
+      }
+    } catch (e) {
+      toast.error(e);
+    }
+  };
+
+  private readonly handleAutoFill = () => {
+    this.clearResult();
+
+    if (this.store.autoFillSource.get() === 'METAR') {
+      this.syncValuesWithApiMetar(this.store.icao.get());
+    } else {
+      this.syncValuesWithOfp();
+    }
+  };
+
+  private readonly performCalculateTakeoff = (headwind: number): void => {
+    if (!this.props.calculators.takeoff) {
+      return;
+    }
+
+    const weight = this.store.weight.get();
+    const runwayLength = this.store.runwayLength.get();
+    const runwaySlope = this.store.runwaySlope.get();
+    const elevation = this.store.elevation.get();
+    const qnh = this.store.qnh.get();
+    const oat = this.store.oat.get();
+
+    if (
+      weight === null ||
+      runwayLength === null ||
+      runwaySlope == null ||
+      elevation == null ||
+      qnh === null ||
+      oat === null
+    ) {
+      return;
+    }
+
+    const perf =
+      this.store.config.get() > 0
+        ? this.props.calculators.takeoff.calculateTakeoffPerformance(
+            weight,
+            this.store.takeoffCg.get() === TakeoffCoGPositions.Forward,
+            this.store.config.get(),
+            runwayLength,
+            runwaySlope,
+            this.store.lineupAngle.get(),
+            headwind,
+            elevation,
+            qnh,
+            oat,
+            this.store.antiIce.get(),
+            this.store.packs.get(),
+            this.store.forceToga.get(),
+            this.store.runwayCondition.get(),
+            undefined,
+          )
+        : this.props.calculators.takeoff.calculateTakeoffPerformanceOptConf(
+            weight,
+            this.store.takeoffCg.get() === TakeoffCoGPositions.Forward,
+            runwayLength,
+            runwaySlope,
+            this.store.lineupAngle.get(),
+            headwind,
+            elevation,
+            qnh,
+            oat,
+            this.store.antiIce.get(),
+            this.store.packs.get(),
+            this.store.forceToga.get(),
+            this.store.runwayCondition.get(),
+            undefined,
+          );
+
+    const formatWeight = (kg: number | undefined): string => {
+      return kg !== undefined
+        ? Math.floor(this.store.weightUnit.get() === 'lb' ? Units.kilogramToPound(kg) : kg).toFixed(0)
+        : '-';
+    };
+
+    const replacements = {
+      mtow: formatWeight(perf.mtow),
+      weight_unit: this.store.weightUnit.get(),
+      oew: formatWeight(this.props.calculators.takeoff.oew),
+      structural_mtow: formatWeight(this.props.calculators.takeoff.structuralMtow),
+      max_zp: this.props.calculators.takeoff.maxPressureAlt.toFixed(0),
+      max_headwind: this.props.calculators.takeoff.maxHeadwind.toFixed(0),
+      max_tailwind: this.props.calculators.takeoff.maxTailwind.toFixed(0),
+      tmax: perf.params?.tMax?.toFixed(0) ?? '-',
+    };
+
+    if (perf.error === TakeoffPerfomanceError.None) {
+      this.store.result.set(perf);
+
+      if (!this.store.forceToga.get() && perf.flex === undefined) {
+        showNotification({
+          kind: NotificationKind.Info,
+          text: LocalizedString.translate('Performance.Takeoff.Messages.FlexNotPossible') ?? '',
+        });
+      } else if (perf.params.headwind < perf.inputs.wind) {
+        showNotification({
+          kind: NotificationKind.Info,
+          text: LocalizedString.translate('Performance.Takeoff.Messages.FlexNotPossible', replacements) ?? '',
+        });
+      }
+    } else {
+      this.store.result.set(null);
+
+      showNotification({
+        kind: NotificationKind.Error,
+        text: LocalizedString.translate(`Performance.Takeoff.Messages.${perf.error}`, replacements) ?? '',
+      });
+    }
+  };
+
+  private readonly handleCalculateTakeoff = (): void => {
+    if (!this.store.areInputsValid.get() || !this.props.calculators.takeoff) {
+      return;
+    }
+
+    const runwayBearing = this.store.runwayBearing.get();
+    const windDirection = this.store.windDirection.get();
+    const windMagnitude = this.store.windMagnitude.get();
+    const oat = this.store.oat.get();
+
+    if (runwayBearing === null || windMagnitude === null || oat === null) {
+      return;
+    }
+
+    const headwind =
+      windDirection === null
+        ? windMagnitude
+        : windMagnitude *
+          Math.cos(Math.abs(Avionics.Utils.diffAngle(runwayBearing, windDirection)) * Avionics.Utils.DEG2RAD);
+    const crosswind =
+      windDirection === null
+        ? 0
+        : windMagnitude *
+          Math.sin(Math.abs(Avionics.Utils.diffAngle(runwayBearing, windDirection)) * Avionics.Utils.DEG2RAD);
+
+    if (crosswind > this.props.calculators.takeoff.getCrosswindLimit(this.store.runwayCondition.get(), oat)) {
+      const replacements = {
+        max_crosswind: this.props.calculators.takeoff
+          .getCrosswindLimit(this.store.runwayCondition.get(), oat)
+          .toFixed(0),
+        actual_crosswind: crosswind.toFixed(0),
+      };
+
+      showModal({
+        kind: ModalKind.Prompt,
+        title: LocalizedString.translate('Performance.Takeoff.CrosswindAboveLimitTitle', replacements) ?? '',
+        bodyText: LocalizedString.translate('Performance.Takeoff.CrosswindAboveLimitMessage', replacements) ?? '',
+        declineText: 'No', // TODO i18n
+        confirmText: 'Yes', // TODO i18n
+        onConfirm: () => {
+          this.performCalculateTakeoff(headwind);
+        },
+      });
+    } else {
+      this.performCalculateTakeoff(headwind);
+    }
+  };
+
   private readonly handleICAOChange = (icao: string) => {
-    // dispatch(clearTakeoffValues());
+    this.store.resetInitialValues();
 
     this.store.icao.set(icao);
 
@@ -277,7 +578,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleRunwayChange = (runwayIndex: number | undefined): void => {
-    // clearResult();
+    this.clearResult();
 
     const newRunway =
       runwayIndex !== undefined && runwayIndex >= 0 ? this.store.availableRunways.get()[runwayIndex] : undefined;
@@ -300,7 +601,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleRunwayBearingChange = (value: string): void => {
-    // clearResult();
+    this.clearResult();
 
     let runwayBearing: number | null = parseInt(value);
 
@@ -312,7 +613,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleRunwayLengthChange = (value: string): void => {
-    // clearResult();
+    this.clearResult();
 
     let runwayLength: number | null = parseInt(value);
 
@@ -326,13 +627,13 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleLineupAngle = (lineupAngle: LineupAngle): void => {
-    // clearResult();
+    this.clearResult();
 
     this.store.lineupAngle.set(lineupAngle);
   };
 
   private readonly handleElevationChange = (value: string): void => {
-    // clearResult();
+    this.clearResult();
 
     let elevation: number | null = parseInt(value);
 
@@ -344,7 +645,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleRunwaySlopeChange = (value: string): void => {
-    // clearResult();
+    this.clearResult();
 
     let runwaySlope: number | null = parseFloat(value);
 
@@ -356,17 +657,17 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleRunwayConditionChange = (runwayCondition: RunwayCondition): void => {
-    // clearResult();
+    this.clearResult();
 
     if (isContaminated(runwayCondition)) {
-      // this.store.forceToga.set(true);
+      this.store.forceToga.set(true);
     }
 
     this.store.runwayCondition.set(runwayCondition);
   };
 
   private readonly handleWindChange = (input: string): void => {
-    // clearResult();
+    this.clearResult();
 
     if (input === '0') {
       this.store.windMagnitude.set(0);
@@ -410,7 +711,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleTemperatureChange = (value: string): void => {
-    // clearResult();
+    this.clearResult();
 
     let oat: number | null = parseFloat(value);
 
@@ -424,7 +725,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handlePressureChange = (value: string): void => {
-    // clearResult();
+    this.clearResult();
 
     let qnh: number | null = parseFloat(value);
 
@@ -438,7 +739,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleWeightChange = (value: string): void => {
-    // clearResult();
+    this.clearResult();
 
     let weight: number | null = parseInt(value);
 
@@ -452,13 +753,13 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleCoG = (takeoffCg: TakeoffCoGPositions): void => {
-    // clearResult();
+    this.clearResult();
 
     this.store.takeoffCg.set(takeoffCg);
   };
 
   private readonly handleConfigChange = (newValue: number | string): void => {
-    // clearResult();
+    this.clearResult();
 
     let config = parseInt(newValue.toString());
 
@@ -470,19 +771,19 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   };
 
   private readonly handleThrustChange = (newValue: boolean | string): void => {
-    // clearResult();
+    this.clearResult();
 
     this.store.forceToga.set(!!newValue);
   };
 
   private readonly handleAntiIce = (antiIce: TakeoffAntiIceSetting): void => {
-    // clearResult();
+    this.clearResult();
 
     this.store.antiIce.set(antiIce);
   };
 
   private readonly handlePacks = (packs: boolean): void => {
-    // clearResult();
+    this.clearResult();
 
     this.store.packs.set(packs);
   };
@@ -501,14 +802,14 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                   <div class="flex flex-row">
                     <TooltipWrapper text={this.fillDataTooltip}>
                       {/* TODO replace with EFBv4 button component */}
-                      <button
-                        // onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
+                      <Button
+                        onClick={() => this.isAutoFillIcaoValid.get() && this.handleAutoFill()}
                         class={this.fillDataButtonClass}
-                        type="button"
+                        unstyled
                       >
                         <i class="bi-cloud-arrow-down text-[26px] text-inherit" />
                         <p class="text-current">{t('Performance.Landing.FillDataFrom')}</p>
-                      </button>
+                      </Button>
                     </TooltipWrapper>
                     <SelectInput<'OFP' | 'METAR'>
                       value={this.store.autoFillSource}
@@ -533,6 +834,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                       placeholder="ICAO"
                       onChange={this.handleICAOChange}
                       maxLength={4}
+                      uppercase
                     />
                   </Label>
                   <Label text={t('Performance.Takeoff.Runway')}>
@@ -813,19 +1115,19 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
               <div class="mt-14 flex flex-row space-x-8">
                 {/* TODO replace with EFBv4 button component */}
 
-                <button
-                  // onClick={handleCalculateTakeoff}
+                <Button
                   class={this.calculateClass}
-                  type="button"
-                  // disabled={!areInputsValid()}
+                  onClick={this.handleCalculateTakeoff}
+                  disabled={this.store.areInputsValid.map((it) => !it)}
+                  unstyled
                 >
                   <i className="bi-calculator text-[26px] text-inherit" />
                   <p class="font-bold text-current">{t('Performance.Takeoff.Calculate')}</p>
-                </button>
+                </Button>
                 {/* TODO replace with EFBv4 button component */}
                 <button
                   // onClick={handleClearInputs}
-                  class="flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-utility-red bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red"
+                  class="w-ful lflex-row flex items-center justify-center space-x-4 rounded-md border-2 border-utility-red bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red"
                   type="button"
                 >
                   <i className="bi-trash text-[26px] text-inherit" />

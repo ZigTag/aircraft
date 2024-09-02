@@ -2,13 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { createContext } from 'react';
-import { LandingPerformanceCalculator } from '../../../shared/src/performance/landing';
-import { TakeoffPerformanceCalculator } from '../../../shared/src/performance/takeoff';
-
-interface PerformanceCalculators {
-  takeoff: TakeoffPerformanceCalculator | null;
-  landing: LandingPerformanceCalculator | null;
-}
+import { PerformanceCalculators } from '@flybywiresim/fbw-sdk';
 
 interface SettingsPages {
   autoCalloutsPage: React.ComponentType<any>;

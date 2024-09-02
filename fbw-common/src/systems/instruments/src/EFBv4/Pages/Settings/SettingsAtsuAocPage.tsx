@@ -30,7 +30,7 @@ export class SettingsAtsuAocPage extends AbstractUIView<SettingsAtsuAocPageProps
           choices={{
             [MetarSource.MSFS]: <>MSFS</>,
             [MetarSource.NOAA]: <>NOAA</>,
-            [MetarSource.PILOT_EDGE]: <>PilotEdge</>,
+            [MetarSource.PILOTEDGE]: <>PilotEdge</>,
             [MetarSource.VATSIM]: <>VATSIM</>,
           }}
         />

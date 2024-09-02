@@ -127,6 +127,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
                   activePage={this.currentPage}
                   flypadClient={flypadClient}
                   renderAutomaticCalloutsPage={this.props.aircraftSpecificData.renderAutomaticCalloutsPage}
+                  performanceCalculators={this.props.aircraftSpecificData.performanceCalculators}
                 />
               </div>
               <TooltipContainer />
