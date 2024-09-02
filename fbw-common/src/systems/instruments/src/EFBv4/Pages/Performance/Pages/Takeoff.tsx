@@ -11,7 +11,16 @@ import { AbstractUIView, LocalizedString } from '../../../Shared';
 import { Units } from '@shared/units';
 import { TooltipWrapper } from '../../../Components/Tooltip';
 import { SimbriefState } from '../../../State/NavigationState';
-import { Button, ModalKind, NotificationKind, showModal, showNotification, SimpleInput, t } from '../../../Components';
+import {
+  Button,
+  ButtonTheme,
+  ModalKind,
+  NotificationKind,
+  showModal,
+  showNotification,
+  SimpleInput,
+  t,
+} from '../../../Components';
 import { Label } from '../../../Components/Label';
 import { getAirportMagVar, getRunways, Runway } from '../../../../EFB/Performance/Data/Runways';
 import {
@@ -24,7 +33,6 @@ import {
 } from '@shared/performance';
 import { SwitchIf } from '../../Pages';
 import { FbwUserSettingsDefs } from '../../../FbwUserSettings';
-import { twMerge } from 'tailwind-merge';
 import { SelectInput } from '../../../Components/SelectInput';
 import { TakeoffCoGPositions } from '../../../../EFB/Store/features/performance';
 import { MathUtils, parseMetar } from '@flybywiresim/fbw-sdk';
@@ -257,20 +265,6 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     this.isAutoFillIcaoValid,
   );
 
-  private readonly fillDataButtonClass = this.isAutoFillIcaoValid.map((it) =>
-    twMerge(
-      `flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none border-2 border-theme-highlight bg-theme-highlight px-8 py-2 text-theme-body outline-none transition duration-100`,
-      !it ? 'opacity-50' : 'hover:bg-theme-body hover:text-theme-highlight',
-    ),
-  );
-
-  private readonly calculateClass = this.store.areInputsValid.map((it) =>
-    twMerge(
-      `flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 border-theme-highlight bg-theme-highlight py-2 text-theme-body outline-none hover:bg-theme-body hover:text-theme-highlight`,
-      !it && 'pointer-events-none cursor-not-allowed opacity-50',
-    ),
-  );
-
   private readonly runwayChoices = this.store.availableRunways.map((it) => [
     [-1, LocalizedString.create('Performance.Takeoff.EnterManually')] as const,
     ...it.map((r, i) => [i, r.ident] as const),
@@ -318,7 +312,6 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     this.subscriptions.push(
       this.isAutoFillIcaoValid,
       this.fillDataTooltip,
-      this.fillDataButtonClass,
       this.runwayChoices,
       this.tora,
       this.temperature,
@@ -581,6 +574,11 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     }
   };
 
+  private readonly handleClearInputs = (): void => {
+    this.store.resetInitialValues();
+    this.clearResult();
+  };
+
   private readonly handleICAOChange = (icao: string) => {
     this.store.resetInitialValues();
 
@@ -830,11 +828,10 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                 <div class="mt-4 flex flex-row justify-end">
                   <div class="flex flex-row">
                     <TooltipWrapper text={this.fillDataTooltip}>
-                      {/* TODO replace with EFBv4 button component */}
                       <Button
-                        onClick={() => this.isAutoFillIcaoValid.get() && this.handleAutoFill()}
-                        class={this.fillDataButtonClass}
-                        unstyled
+                        class="rounded-r-none"
+                        onClick={this.handleAutoFill}
+                        disabled={this.isAutoFillIcaoValid.map((it) => !it)}
                       >
                         <i class="bi-cloud-arrow-down text-[26px] text-inherit" />
                         <p class="text-current">{t('Performance.Landing.FillDataFrom')}</p>
@@ -1142,26 +1139,20 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                 <McduPreview store={this.store} />
               </div>
               <div class="mt-14 flex flex-row space-x-8">
-                {/* TODO replace with EFBv4 button component */}
-
                 <Button
-                  class={this.calculateClass}
+                  class="grow"
                   onClick={this.handleCalculateTakeoff}
                   disabled={this.store.areInputsValid.map((it) => !it)}
-                  unstyled
+                  theme={ButtonTheme.Highlight}
                 >
-                  <i className="bi-calculator text-[26px] text-inherit" />
+                  <i class="bi-calculator text-[26px] text-inherit" />
                   <p class="font-bold text-current">{t('Performance.Takeoff.Calculate')}</p>
                 </Button>
-                {/* TODO replace with EFBv4 button component */}
-                <button
-                  // onClick={handleClearInputs}
-                  class="w-ful lflex-row flex items-center justify-center space-x-4 rounded-md border-2 border-utility-red bg-utility-red py-2 text-theme-body outline-none hover:bg-theme-body hover:text-utility-red"
-                  type="button"
-                >
-                  <i className="bi-trash text-[26px] text-inherit" />
+
+                <Button class="grow" onClick={this.handleClearInputs} theme={ButtonTheme.Danger}>
+                  <i class="bi-trash text-[26px] text-inherit" />
                   <p class="font-bold text-current">{t('Performance.Takeoff.Clear')}</p>
-                </button>
+                </Button>
               </div>
             </div>
           </div>
