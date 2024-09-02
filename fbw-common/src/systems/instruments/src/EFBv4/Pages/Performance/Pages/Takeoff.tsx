@@ -6,7 +6,7 @@ import { SimbriefState } from '../../../State/NavigationState';
 import { SimpleInput, t } from '../../../Components';
 import { Label } from '../../../Components/Label';
 import { Runway } from '../../../../EFB/Performance/Data/Runways';
-import { TakeoffPerformanceResult } from '@shared/performance';
+import { LineupAngle, RunwayCondition, TakeoffPerformanceResult } from '@shared/performance';
 import { SwitchIf } from '../../Pages';
 import { FbwUserSettingsDefs } from '../../../FbwUserSettings';
 import { twMerge } from 'tailwind-merge';
@@ -63,6 +63,20 @@ class TakeoffCalculatorStore {
 
   public readonly runwayLength = Subject.create<number | null>(null);
 
+  public readonly lineupAngle = Subject.create<LineupAngle>(90);
+
+  public readonly elevation = Subject.create<number | null>(null);
+
+  public readonly runwaySlope = Subject.create<number | null>(null);
+
+  public readonly runwayCondition = Subject.create<RunwayCondition>(RunwayCondition.Dry);
+
+  public readonly windDirection = Subject.create<number | null>(null);
+
+  public readonly windMagnitude = Subject.create<number | null>(null);
+
+  public readonly windEntry = Subject.create<string | null>(null);
+
   public readonly takeoffShift = MappedSubject.create(
     ([selectedRunway, runwayLength]) => {
       return selectedRunway !== null && runwayLength !== null && selectedRunway.length > runwayLength
@@ -93,6 +107,23 @@ const getVariableUnitDisplayValue = <T,>(
     return value;
   }
   return null;
+};
+
+const isContaminated = (runwayCondition: RunwayCondition): boolean => {
+  return runwayCondition !== RunwayCondition.Dry && runwayCondition !== RunwayCondition.Wet;
+};
+
+const WIND_MAGNITUDE_ONLY_REGEX = /^(TL|HD|\+|-)?(\d{1,2}(?:\.\d)?)$/;
+const WIND_MAGNITUDE_AND_DIR_REGEX = /^(\d{1,3})\/(\d{1,2}(?:\.\d)?)$/;
+
+const isWindMagnitudeOnly = (input: string): boolean => {
+  const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_ONLY_REGEX);
+  return magnitudeOnlyMatch !== null && (magnitudeOnlyMatch[1] !== '' || input === '0');
+};
+
+const isWindMagnitudeAndDirection = (input: string): boolean => {
+  const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX);
+  return magnitudeOnlyMatch !== null;
 };
 
 export interface TakeoffProps {
@@ -166,16 +197,12 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   ]);
 
   private readonly clearAirportRunways = () => {
-    // dispatch(
-    //   setTakeoffValues({
-    //     availableRunways: [],
-    //     selectedRunwayIndex: -1,
-    //     runwayBearing: undefined,
-    //     runwayLength: undefined,
-    //     runwaySlope: undefined,
-    //     elevation: undefined,
-    //   }),
-    // );
+    this.store.availableRunways.set([]);
+    this.store.selectedRunwayIndex.set(-1);
+    this.store.runwayBearing.set(null);
+    this.store.runwayLength.set(null);
+    this.store.runwaySlope.set(null);
+    this.store.elevation.set(null);
   };
 
   private readonly handleICAOChange = (icao: string) => {
@@ -210,59 +237,130 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
       runwayIndex !== undefined && runwayIndex >= 0 ? this.store.availableRunways.get()[runwayIndex] : undefined;
 
     if (runwayIndex !== undefined && newRunway !== undefined) {
-      // const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+      const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+
       this.store.selectedRunwayIndex.set(runwayIndex);
       this.store.runwayBearing.set(newRunway.magneticBearing);
       this.store.runwayLength.set(newRunway.length);
-      // dispatch(
-      //   setTakeoffValues({
-      //     selectedRunwayIndex: runwayIndex,
-      //     runwayBearing: newRunway.magneticBearing,
-      //     runwayLength: newRunway.length,
-      //     runwaySlope,
-      //     elevation: newRunway.elevation,
-      //   }),
-      // );
+      this.store.runwaySlope.set(runwaySlope);
+      this.store.elevation.set(newRunway.elevation);
     } else {
       this.store.selectedRunwayIndex.set(-1);
       this.store.runwayBearing.set(null);
       this.store.runwayLength.set(null);
-      // dispatch(
-      //   setTakeoffValues({
-      //     selectedRunwayIndex: -1,
-      //     runwayBearing: undefined,
-      //     runwayLength: undefined,
-      //     runwaySlope: undefined,
-      //     elevation: undefined,
-      //   }),
-      // );
+      this.store.runwaySlope.set(null);
+      this.store.elevation.set(null);
     }
   };
 
   private readonly handleRunwayBearingChange = (value: string): void => {
     // clearResult();
 
-    let runwayBearing: number | undefined = parseInt(value);
+    let runwayBearing: number | null = parseInt(value);
 
     if (Number.isNaN(runwayBearing)) {
-      runwayBearing = undefined;
+      runwayBearing = null;
     }
 
-    // dispatch(setTakeoffValues({ runwayBearing }));
+    this.store.runwayBearing.set(runwayBearing);
   };
 
   private readonly handleRunwayLengthChange = (value: string): void => {
     // clearResult();
 
-    let runwayLength: number | undefined = parseInt(value);
+    let runwayLength: number | null = parseInt(value);
 
     if (Number.isNaN(runwayLength)) {
-      runwayLength = undefined;
+      runwayLength = null;
     } else if (this.store.distanceUnit.get() === 'ft') {
       runwayLength = Units.footToMetre(runwayLength);
     }
 
-    // dispatch(setTakeoffValues({ runwayLength }));
+    this.store.runwayLength.set(runwayLength);
+  };
+
+  private readonly handleLineupAngle = (lineupAngle: LineupAngle): void => {
+    // clearResult();
+
+    this.store.lineupAngle.set(lineupAngle);
+  };
+
+  private readonly handleElevationChange = (value: string): void => {
+    // clearResult();
+
+    let elevation: number | null = parseInt(value);
+
+    if (Number.isNaN(elevation)) {
+      elevation = null;
+    }
+
+    this.store.elevation.set(elevation);
+  };
+
+  private readonly handleRunwaySlopeChange = (value: string): void => {
+    // clearResult();
+
+    let runwaySlope: number | null = parseFloat(value);
+
+    if (Number.isNaN(runwaySlope)) {
+      runwaySlope = null;
+    }
+
+    this.store.runwaySlope.set(runwaySlope);
+  };
+
+  private readonly handleRunwayConditionChange = (runwayCondition: RunwayCondition): void => {
+    // clearResult();
+
+    if (isContaminated(runwayCondition)) {
+      // this.store.forceToga.set(true);
+    }
+
+    this.store.runwayCondition.set(runwayCondition);
+  };
+
+  private readonly handleWindChange = (input: string): void => {
+    // clearResult();
+
+    if (input === '0') {
+      this.store.windMagnitude.set(0);
+      this.store.windDirection.set(null);
+      this.store.windEntry.set(input);
+      return;
+    }
+
+    if (isWindMagnitudeOnly(input)) {
+      const magnitudeOnlyMatch = input.match(WIND_MAGNITUDE_ONLY_REGEX)!;
+
+      const windMagnitude = parseFloat(magnitudeOnlyMatch[2]);
+
+      switch (magnitudeOnlyMatch[1]) {
+        case 'TL':
+        case '-':
+          this.store.windMagnitude.set(-windMagnitude);
+          this.store.windDirection.set(null);
+          this.store.windEntry.set(input);
+          return;
+        case 'HD':
+        case '+':
+        default:
+          this.store.windMagnitude.set(windMagnitude);
+          this.store.windDirection.set(null);
+          this.store.windEntry.set(input);
+          return;
+      }
+    } else if (isWindMagnitudeAndDirection(input)) {
+      const directionMagnitudeMatch = input.match(WIND_MAGNITUDE_AND_DIR_REGEX)!;
+
+      this.store.windMagnitude.set(parseInt(directionMagnitudeMatch[1]));
+      this.store.windDirection.set(parseFloat(directionMagnitudeMatch[2]));
+      this.store.windEntry.set(input);
+      return;
+    }
+
+    this.store.windMagnitude.set(null);
+    this.store.windDirection.set(null);
+    this.store.windEntry.set(input);
   };
 
   render(): VNode | null {
@@ -359,112 +457,101 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                     </div>
                   </Label>
                   <Label text={t('Performance.Takeoff.EntryAngle')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-48"*/}
-                    {/*  defaultValue={initialState.takeoff.lineupAngle}*/}
-                    {/*  value={lineupAngle}*/}
-                    {/*  onChange={handleLineupAngle}*/}
-                    {/*  options={[*/}
-                    {/*    {*/}
-                    {/*      value: 0,*/}
-                    {/*      displayValue: t('Performance.Takeoff.EntryAngles.0'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: 90,*/}
-                    {/*      displayValue: t('Performance.Takeoff.EntryAngles.90'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: 180,*/}
-                    {/*      displayValue: t('Performance.Takeoff.EntryAngles.180'),*/}
-                    {/*    },*/}
-                    {/*  ]}*/}
-                    {/*/>*/}
+                    <SelectInput
+                      class="w-48"
+                      value={this.store.lineupAngle}
+                      onChange={this.handleLineupAngle}
+                      choices={[
+                        [0, LocalizedString.create('Performance.Takeoff.EntryAngles.0')],
+                        [90, LocalizedString.create('Performance.Takeoff.EntryAngles.90')],
+                        [180, LocalizedString.create('Performance.Takeoff.EntryAngles.180')],
+                      ]}
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.RunwayElevation')}>
-                    {/*<SimpleInput*/}
-                    {/*  class="w-48"*/}
-                    {/*  value={elevation}*/}
-                    {/*  placeholder={t('Performance.Takeoff.RunwayElevationUnit')}*/}
-                    {/*  min={-2000}*/}
-                    {/*  max={20000}*/}
-                    {/*  decimalPrecision={0}*/}
-                    {/*  onChange={handleElevationChange}*/}
-                    {/*  number*/}
-                    {/*/>*/}
+                    <SimpleInput
+                      class="w-48"
+                      value={this.store.elevation}
+                      placeholder={LocalizedString.create('Performance.Takeoff.RunwayElevationUnit')}
+                      min={-2000}
+                      max={20000}
+                      decimalPrecision={0}
+                      onChange={this.handleElevationChange}
+                      number
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.RunwaySlope')}>
-                    {/*<SimpleInput*/}
-                    {/*  class="w-48"*/}
-                    {/*  value={runwaySlope}*/}
-                    {/*  placeholder="%"*/}
-                    {/*  decimalPrecision={2}*/}
-                    {/*  onChange={handleRunwaySlopeChange}*/}
-                    {/*  number*/}
-                    {/*  reverse*/}
-                    {/*/>*/}
+                    <SimpleInput
+                      class="w-48"
+                      value={this.store.runwaySlope}
+                      placeholder="%"
+                      decimalPrecision={2}
+                      onChange={this.handleRunwaySlopeChange}
+                      number
+                      reverse
+                    />
                   </Label>
                 </div>
                 <div class="flex flex-col space-y-4">
                   <Label text={t('Performance.Takeoff.RunwayCondition')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-60"*/}
-                    {/*  defaultValue={initialState.takeoff.runwayCondition}*/}
-                    {/*  value={runwayCondition}*/}
-                    {/*  onChange={handleRunwayConditionChange}*/}
-                    {/*  options={[*/}
-                    {/*    { value: RunwayCondition.Dry, displayValue: t('Performance.Takeoff.RunwayConditions.Dry') },*/}
-                    {/*    { value: RunwayCondition.Wet, displayValue: t('Performance.Takeoff.RunwayConditions.Wet') },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated6mmWater,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated6mmWater'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated13mmWater,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated13mmWater'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated6mmSlush,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated6mmSlush'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated13mmSlush,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated13mmSlush'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.ContaminatedCompactedSnow,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.ContaminatedCompactedSnow'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated5mmWetSnow,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated5mmWetSnow'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated15mmWetSnow,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated15mmWetSnow'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated30mmWetSnow,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated30mmWetSnow'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated10mmDrySnow,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated10mmDrySnow'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: RunwayCondition.Contaminated100mmDrySnow,*/}
-                    {/*      displayValue: t('Performance.Takeoff.RunwayConditions.Contaminated100mmDrySnow'),*/}
-                    {/*    },*/}
-                    {/*  ]}*/}
-                    {/*/>*/}
+                    <SelectInput
+                      class="w-60"
+                      value={this.store.runwayCondition}
+                      onChange={this.handleRunwayConditionChange}
+                      choices={[
+                        [RunwayCondition.Dry, LocalizedString.create('Performance.Takeoff.RunwayConditions.Dry')],
+                        [RunwayCondition.Wet, LocalizedString.create('Performance.Takeoff.RunwayConditions.Wet')],
+                        [
+                          RunwayCondition.Contaminated6mmWater,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated6mmWater'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated13mmWater,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated13mmWater'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated6mmSlush,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated6mmSlush'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated13mmSlush,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated13mmSlush'),
+                        ],
+                        [
+                          RunwayCondition.ContaminatedCompactedSnow,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.ContaminatedCompactedSnow'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated5mmWetSnow,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated5mmWetSnow'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated15mmWetSnow,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated15mmWetSnow'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated30mmWetSnow,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated30mmWetSnow'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated10mmDrySnow,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated10mmDrySnow'),
+                        ],
+                        [
+                          RunwayCondition.Contaminated100mmDrySnow,
+                          LocalizedString.create('Performance.Takeoff.RunwayConditions.Contaminated100mmDrySnow'),
+                        ],
+                      ]}
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.Wind')}>
-                    {/*<SimpleInput*/}
-                    {/*  class="w-60"*/}
-                    {/*  value={windEntry}*/}
-                    {/*  placeholder={t('Performance.Takeoff.WindMagnitudeUnit')}*/}
-                    {/*  onChange={handleWindChange}*/}
-                    {/*  uppercase*/}
-                    {/*/>*/}
+                    <SimpleInput
+                      class="w-60"
+                      value={this.store.windEntry}
+                      placeholder={LocalizedString.create('Performance.Takeoff.WindMagnitudeUnit')}
+                      onChange={this.handleWindChange}
+                      uppercase
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.Temperature')}>
                     <div class="flex w-60 flex-row">
