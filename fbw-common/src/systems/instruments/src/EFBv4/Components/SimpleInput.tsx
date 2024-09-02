@@ -22,6 +22,7 @@ interface SimpleInputProps {
   min?: number | Accessible<number>;
   max?: number | Accessible<number>;
   number?: boolean;
+  uppercase?: boolean;
   padding?: number;
   decimalPrecision?: number;
   fontSizeClassName?: string;
@@ -145,6 +146,10 @@ export class SimpleInput extends AbstractUIView<SimpleInputProps> {
 
     if (this.props.number) {
       originalValue = originalValue.replace(/[^\d.-]/g, ''); // Replace all non-numeric characters
+    }
+
+    if (this.props.uppercase) {
+      originalValue = originalValue.toUpperCase();
     }
 
     if (this.props.maxLength) {
