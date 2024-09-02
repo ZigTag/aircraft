@@ -1,12 +1,4 @@
-import {
-  ArraySubject,
-  DisplayComponent,
-  FSComponent,
-  MappedSubject,
-  Subject,
-  UserSettingManager,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, MappedSubject, Subject, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
 import { AbstractUIView, LocalizedString } from '../../../Shared';
 import { Units } from '@shared/units';
 import { TooltipWrapper } from '../../../Components/Tooltip';
@@ -63,9 +55,11 @@ class TakeoffCalculatorStore {
 
   public readonly autoFillSource = Subject.create<'METAR' | 'OFP'>('OFP');
 
-  public readonly availableRunways = ArraySubject.create<Runway>([]);
+  public readonly availableRunways = Subject.create<Runway[]>([]);
 
   public readonly selectedRunway = Subject.create<Runway | null>(null);
+
+  public readonly selectedRunwayIndex = Subject.create<number>(-1);
 
   public readonly runwayLength = Subject.create<number | null>(null);
 
@@ -166,6 +160,41 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     this.store.distanceUnit,
   );
 
+  private readonly runwayChoices = this.store.availableRunways.map((it) => [
+    [-1, LocalizedString.create('Performance.Takeoff.EnterManually')] as const,
+    ...it.map((r, i) => [i, r.ident] as const),
+  ]);
+
+  private readonly handleRunwayChange = (runwayIndex: number | undefined): void => {
+    // clearResult();
+
+    const newRunway =
+      runwayIndex !== undefined && runwayIndex >= 0 ? this.store.availableRunways.get()[runwayIndex] : undefined;
+
+    if (newRunway !== undefined) {
+      // const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+      // dispatch(
+      //   setTakeoffValues({
+      //     selectedRunwayIndex: runwayIndex,
+      //     runwayBearing: newRunway.magneticBearing,
+      //     runwayLength: newRunway.length,
+      //     runwaySlope,
+      //     elevation: newRunway.elevation,
+      //   }),
+      // );
+    } else {
+      // dispatch(
+      //   setTakeoffValues({
+      //     selectedRunwayIndex: -1,
+      //     runwayBearing: undefined,
+      //     runwayLength: undefined,
+      //     runwaySlope: undefined,
+      //     elevation: undefined,
+      //   }),
+      // );
+    }
+  };
+
   private readonly handleRunwayBearingChange = (value: string): void => {
     // clearResult();
 
@@ -241,17 +270,13 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                     />
                   </Label>
                   <Label text={t('Performance.Takeoff.Runway')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-48"*/}
-                    {/*  defaultValue={initialState.takeoff.selectedRunwayIndex}*/}
-                    {/*  value={selectedRunwayIndex}*/}
-                    {/*  onChange={handleRunwayChange}*/}
-                    {/*  options={[*/}
-                    {/*    { value: -1, displayValue: t('Performance.Takeoff.EnterManually') },*/}
-                    {/*    ...availableRunways.map((r, i) => ({ value: i, displayValue: r.ident })),*/}
-                    {/*  ]}*/}
-                    {/*  disabled={availableRunways.length === 0}*/}
-                    {/*/>*/}
+                    <SelectInput<number>
+                      class="w-48"
+                      value={this.store.selectedRunwayIndex}
+                      onChange={this.handleRunwayChange}
+                      choices={this.runwayChoices}
+                      disabled={this.store.availableRunways.map((it) => it.length === 0)}
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.RunwayBearing')}>
                     <SimpleInput
@@ -282,8 +307,8 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                         value={this.store.distanceUnit}
                         class="w-20 rounded-l-none"
                         choices={[
-                          ['ft', t('Performance.Takeoff.RunwayLengthUnitFt')],
-                          ['m', t('Performance.Takeoff.RunwayLengthUnitMeter')],
+                          ['ft', LocalizedString.create('Performance.Takeoff.RunwayLengthUnitFt')],
+                          ['m', LocalizedString.create('Performance.Takeoff.RunwayLengthUnitMeter')],
                         ]}
                         onChange={(newValue: 'ft' | 'm') => this.store.distanceUnit.set(newValue)}
                       />

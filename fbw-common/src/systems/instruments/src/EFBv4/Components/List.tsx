@@ -21,6 +21,8 @@ export interface ListProps<T> extends ComponentProps<any> {
 }
 
 export class List<T> extends AbstractUIView<ListProps<T>> {
+  public readonly rootRef = FSComponent.createRef<HTMLElement>();
+
   private subArray = ArraySubject.create<T>([]);
 
   private readonly vnodes: VNode[] = [];
@@ -33,7 +35,7 @@ export class List<T> extends AbstractUIView<ListProps<T>> {
     if (this.props.items instanceof ArraySubject) {
       this.subArray = this.props.items;
     } else if (SubscribableUtils.isSubscribable(this.props.items)) {
-      this.subscriptions.push(this.props.items.sub((it) => this.subArray.set(it)));
+      this.subscriptions.push(this.props.items.sub((it) => this.subArray.set(it), true));
     }
 
     this.subscriptions.push(

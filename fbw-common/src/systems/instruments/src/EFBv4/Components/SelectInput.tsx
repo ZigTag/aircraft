@@ -1,23 +1,34 @@
-import { Accessible, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, Subject, Subscribable, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { Button } from './Button';
 import { SwitchOn } from '../Pages/Pages';
 import { twMerge } from 'tailwind-merge';
 import { ScrollableContainer } from './ScrollableContainer';
 import { List } from './List';
+import { AbstractUIView, LocalizedString } from '../Shared';
 
-export interface SelectInputProps<T extends string> {
+export type SelectInputChoice<T extends string | number> = readonly [page: T, component: string | LocalizedString];
+
+export interface SelectInputProps<T extends string | number> {
   value: Subscribable<T>;
   onChange: (value: T) => void;
-  choices: [page: T, component: string | VNode][];
+  choices: SelectInputChoice<T>[] | Subscribable<SelectInputChoice<T>[]>;
   dropdownOnTop?: boolean;
   forceShowAll?: boolean;
   class?: string;
   height?: number;
   width?: number;
+  disabled?: boolean | Subscribable<boolean>;
 }
 
-export class SelectInput<T extends string> extends DisplayComponent<SelectInputProps<T>> {
+export class SelectInput<T extends string | number> extends AbstractUIView<SelectInputProps<T>> {
   private readonly showDropdown = Subject.create(false);
+
+  private readonly choices = SubscribableUtils.toSubscribable(this.props.choices, true);
+
+  private readonly disabled: Subscribable<boolean> = SubscribableUtils.toSubscribable(
+    this.props.disabled ?? false,
+    true,
+  );
 
   private dropdownClass = this.showDropdown.map((showDropdown) =>
     twMerge(
@@ -32,6 +43,33 @@ export class SelectInput<T extends string> extends DisplayComponent<SelectInputP
     twMerge(`bi-chevron-down inset-y-0 right-3 h-full duration-100`, showDropdown && '-rotate-180'),
   );
 
+  private valueTextSub: Subscription | null = null;
+
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.props.value.sub((value) => {
+        if (this.valueTextSub) {
+          this.valueTextSub.destroy();
+
+          // Remove the old valueTextSub from the subscriptions array so we don't destroy it twice
+          this.subscriptions.splice(this.subscriptions.indexOf(this.valueTextSub), 1);
+        }
+
+        const [, text] = this.choices.get().find(([key]) => key === value)!;
+
+        if (SubscribableUtils.isSubscribable(text)) {
+          this.valueTextSub = text.sub((value) => this.buttonText.set(value), true);
+
+          this.subscriptions.push(this.valueTextSub);
+        } else {
+          this.buttonText.set(text);
+        }
+      }, true),
+    );
+  }
+
   private handleDropdown = () => {
     this.showDropdown.set(!this.showDropdown.get());
   };
@@ -41,15 +79,20 @@ export class SelectInput<T extends string> extends DisplayComponent<SelectInputP
     this.showDropdown.set(!this.showDropdown.get());
   };
 
+  private readonly buttonClass = this.disabled.map((disabled) =>
+    twMerge(
+      'relative flex w-full justify-between bg-inherit px-3 py-1.5',
+      disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'cursor-pointer',
+    ),
+  );
+
+  private readonly buttonText = Subject.create('');
+
   render(): VNode | null {
     return (
       <div class={this.dropdownClass} style={{ width: `${this.props.width ?? 300}px` }}>
-        <Button
-          class="relative flex w-full justify-between bg-inherit px-3 py-1.5"
-          onClick={this.handleDropdown}
-          unstyled
-        >
-          <p class="text-left">{this.props.value}</p>
+        <Button class={this.buttonClass} onClick={this.handleDropdown} unstyled>
+          <p class="text-left">{this.buttonText}</p>
           <i class={this.chevronClass} size={20} />
         </Button>
         <SwitchOn
@@ -64,20 +107,28 @@ export class SelectInput<T extends string> extends DisplayComponent<SelectInputP
               )}
             >
               <ScrollableContainer height={this.props.height || 32} class="relative" nonRigidWidth>
-                {this.props.choices.map(([option, displayVal]) => {
-                  const buttonClass = this.props.value.map((it) =>
-                    twMerge(
-                      'flex w-full bg-inherit px-3 py-1.5 text-left transition duration-300 hover:bg-theme-highlight/5 hover:text-theme-body',
-                      it === option && !this.props.forceShowAll && 'view-hidden',
-                    ),
-                  );
+                <List
+                  items={this.choices}
+                  render={([option, displayVal]) => {
+                    const buttonClass = this.props.value.map((it) =>
+                      twMerge(
+                        'flex w-full bg-inherit px-3 py-1.5 text-left transition duration-300 hover:bg-theme-highlight/5 hover:text-theme-body',
+                        it === option && !this.props.forceShowAll && 'view-hidden',
+                      ),
+                    );
 
-                  return (
-                    <Button key={option} class={buttonClass} onClick={() => this.handleChoiceClicked(option)} unstyled>
-                      {displayVal}
-                    </Button>
-                  );
-                })}
+                    return (
+                      <Button
+                        key={option.toString()}
+                        class={buttonClass}
+                        onClick={() => this.handleChoiceClicked(option)}
+                        unstyled
+                      >
+                        {displayVal}
+                      </Button>
+                    );
+                  }}
+                />
               </ScrollableContainer>
             </div>
           }
