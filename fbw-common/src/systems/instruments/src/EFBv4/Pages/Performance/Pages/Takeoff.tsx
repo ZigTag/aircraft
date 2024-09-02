@@ -1,4 +1,12 @@
-import { DisplayComponent, FSComponent, MappedSubject, Subject, UserSettingManager, VNode } from '@microsoft/msfs-sdk';
+import {
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Subscription,
+  UserSettingManager,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { AbstractUIView, LocalizedString } from '../../../Shared';
 import { Units } from '@shared/units';
 import { TooltipWrapper } from '../../../Components/Tooltip';
@@ -140,6 +148,10 @@ class TakeoffCalculatorStore {
   );
 
   public readonly result = Subject.create<TakeoffPerformanceResult | null>(null);
+
+  public get subsriptions(): Subscription[] {
+    return [this.selectedRunway, this.takeoffShift, this.areInputsValid];
+  }
 
   public resetInitialValues(): void {
     this.runwayBearing.set(null);
@@ -299,6 +311,23 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
   );
 
   private readonly temperaturePlaceholder = this.store.temperatureUnit.map((it) => `°${it}`);
+
+  onAfterRender(node: VNode) {
+    super.onAfterRender(node);
+
+    this.subscriptions.push(
+      this.isAutoFillIcaoValid,
+      this.fillDataTooltip,
+      this.fillDataButtonClass,
+      this.runwayChoices,
+      this.tora,
+      this.temperature,
+      this.qnh,
+      this.weight,
+      this.temperaturePlaceholder,
+      ...this.store.subsriptions,
+    );
+  }
 
   private readonly clearResult = () => {
     if (this.store.result.get() === null) {
