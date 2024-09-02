@@ -4,6 +4,7 @@ import { FlypadClientEvents, FlypadServerEvents } from './FlypadEvents';
 import { MetarParserType } from '../../../instruments/src/metarTypes';
 import { Failure } from '../failures';
 import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
+import { Runway } from '../../../instruments/src/EFB/Performance/Data/Runways';
 
 export class FlypadClient {
   private readonly eventSub = this.bus.getSubscriber<FlypadServerEvents>();
@@ -35,6 +36,16 @@ export class FlypadClient {
     this.sendMessage('fpc_GetMetar', icao);
 
     return this.waitForMessage('fps_SendMetar');
+  }
+
+  public async getAirportRunways(icao: string): Promise<Runway[]> {
+    if (icao.length !== 4) {
+      throw new Error('Invalid ICAO: must be 4 characters in length');
+    }
+
+    this.sendMessage('fpc_GetAirportRunways', icao);
+
+    return this.waitForMessage('fps_SendAirportRunways');
   }
 
   public async getSimbriefOfp(username: string): Promise<FlypadServerEvents['fps_SendSimbriefOfp']> {

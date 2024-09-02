@@ -165,14 +165,55 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     ...it.map((r, i) => [i, r.ident] as const),
   ]);
 
+  private readonly clearAirportRunways = () => {
+    // dispatch(
+    //   setTakeoffValues({
+    //     availableRunways: [],
+    //     selectedRunwayIndex: -1,
+    //     runwayBearing: undefined,
+    //     runwayLength: undefined,
+    //     runwaySlope: undefined,
+    //     elevation: undefined,
+    //   }),
+    // );
+  };
+
+  private readonly handleICAOChange = (icao: string) => {
+    // dispatch(clearTakeoffValues());
+
+    this.store.icao.set(icao);
+
+    if (isValidIcao(icao)) {
+      this.client
+        .getAirportRunways(icao)
+        .then((runways) => {
+          this.store.availableRunways.set(runways);
+
+          if (runways.length > 0) {
+            this.handleRunwayChange(0);
+          } else {
+            this.handleRunwayChange(-1);
+          }
+        })
+        .catch(() => {
+          this.clearAirportRunways();
+        });
+    } else {
+      this.clearAirportRunways();
+    }
+  };
+
   private readonly handleRunwayChange = (runwayIndex: number | undefined): void => {
     // clearResult();
 
     const newRunway =
       runwayIndex !== undefined && runwayIndex >= 0 ? this.store.availableRunways.get()[runwayIndex] : undefined;
 
-    if (newRunway !== undefined) {
+    if (runwayIndex !== undefined && newRunway !== undefined) {
       // const runwaySlope = -Math.tan(newRunway.gradient * Avionics.Utils.DEG2RAD) * 100;
+      this.store.selectedRunwayIndex.set(runwayIndex);
+      this.store.runwayBearing.set(newRunway.magneticBearing);
+      this.store.runwayLength.set(newRunway.length);
       // dispatch(
       //   setTakeoffValues({
       //     selectedRunwayIndex: runwayIndex,
@@ -183,6 +224,9 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
       //   }),
       // );
     } else {
+      this.store.selectedRunwayIndex.set(-1);
+      this.store.runwayBearing.set(null);
+      this.store.runwayLength.set(null);
       // dispatch(
       //   setTakeoffValues({
       //     selectedRunwayIndex: -1,
@@ -265,7 +309,7 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                       class="w-48 uppercase"
                       value={this.store.icao}
                       placeholder="ICAO"
-                      // onChange={handleICAOChange}
+                      onChange={this.handleICAOChange}
                       maxLength={4}
                     />
                   </Label>

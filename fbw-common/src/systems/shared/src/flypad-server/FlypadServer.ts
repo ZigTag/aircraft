@@ -6,6 +6,8 @@ import { MetarParserType } from '../../../instruments/src';
 import { parseMetar } from '../parseMetar';
 import { FailuresOrchestrator } from '../failures';
 import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
+import { Runway } from '../../../instruments/src/EFB/Performance/Data/Runways';
+import { RunwayDesignatorChar } from '../navdata';
 
 export class FlypadServer {
   private readonly eventSub = this.bus.getSubscriber<FlypadClientEvents>();
@@ -23,6 +25,7 @@ export class FlypadServer {
     // TODO Need to forward any errors thrown to the clients
     this.eventSub.on('fpc_HelloWorld').handle(() => this.handleHelloWorld());
     this.eventSub.on('fpc_GetMetar').handle((icao) => this.handleGetMetar(icao));
+    this.eventSub.on('fpc_GetAirportRunways').handle((icao) => this.handleGetAirportRunways(icao));
     this.eventSub.on('fpc_GetSimbriefOfp').handle((username) => this.handleGetSimbriefOfp(username));
     this.eventSub.on('fpc_ActivateFailure').handle((id) => this.handleActivateFailure(id));
     this.eventSub.on('fpc_DeactivateFailure').handle((id) => this.handleDeactivateFailure(id));
@@ -85,6 +88,86 @@ export class FlypadServer {
     }
 
     this.eventPub.pub('fps_SendMetar', metar, true);
+  }
+
+  private getAirport(icao: string): Promise<RawAirport> {
+    return new Promise<RawAirport>((resolve, reject) => {
+      if (icao.length !== 4) {
+        reject();
+      }
+
+      const handler = Coherent.on('SendAirport', (data: RawAirport) => {
+        handler.clear();
+        const ident = data.icao.substring(7, 11);
+        if (ident === icao.toUpperCase()) {
+          resolve(data);
+        } else {
+          reject();
+        }
+      });
+
+      Coherent.call('LOAD_AIRPORT', `A      ${icao.toUpperCase()}`).then((ret: boolean) => {
+        if (!ret) {
+          handler.clear();
+          reject();
+        }
+      });
+    });
+  }
+
+  private mapRunwayDesignator(designatorChar: RunwayDesignatorChar) {
+    switch (designatorChar) {
+      case RunwayDesignatorChar.A:
+        return 'A';
+      case RunwayDesignatorChar.B:
+        return 'B';
+      case RunwayDesignatorChar.C:
+        return 'C';
+      case RunwayDesignatorChar.L:
+        return 'L';
+      case RunwayDesignatorChar.R:
+        return 'R';
+      case RunwayDesignatorChar.W:
+        return 'W';
+      default:
+        return '';
+    }
+  }
+
+  private async handleGetAirportRunways(icao: string): Promise<void> {
+    const airport = await this.getAirport(icao);
+
+    const runways: Runway[] = [];
+
+    const magVar = Facilities.getMagVar(airport.lat, airport.lon);
+
+    for (const rawRunway of airport.runways) {
+      for (const [i, number] of rawRunway.designation.split('-').entries()) {
+        const runwayDesignator = i === 0 ? rawRunway.designatorCharPrimary : rawRunway.designatorCharSecondary;
+        const ident = `${number.padStart(2, '0')}${this.mapRunwayDesignator(runwayDesignator)}`;
+        const bearing = i === 0 ? rawRunway.direction : (rawRunway.direction + 180) % 360;
+        const magneticBearing = (720 + bearing - magVar) % 360;
+        const gradient =
+          ((i === 0 ? 1 : -1) *
+            Math.asin(
+              (rawRunway.primaryElevation - rawRunway.secondaryElevation) /
+                (rawRunway.length - rawRunway.primaryThresholdLength - rawRunway.secondaryThresholdLength),
+            ) *
+            180) /
+          Math.PI;
+        runways.push({
+          airportIdent: icao,
+          ident,
+          bearing,
+          magneticBearing,
+          gradient,
+          length: rawRunway.length,
+          elevation: rawRunway.elevation / 0.3048,
+        });
+      }
+    }
+
+    this.eventPub.pub('fps_SendAirportRunways', runways, true);
   }
 
   private async handleGetSimbriefOfp(username: string): Promise<void> {

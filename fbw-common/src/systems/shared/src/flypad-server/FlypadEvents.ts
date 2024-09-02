@@ -3,6 +3,7 @@ import { SimbriefClient } from '@microsoft/msfs-sdk';
 import { MetarParserType } from '../../../instruments/src/metarTypes';
 import { Failure } from '../failures';
 import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
+import { Runway } from '../../../instruments/src/EFB/Performance/Data/Runways';
 
 type UnwrapPromise<T> = T extends PromiseLike<infer V> ? V : T;
 
@@ -13,6 +14,8 @@ export interface FlypadClientEvents {
   fpc_HelloWorld: void;
 
   fpc_GetMetar: string;
+
+  fpc_GetAirportRunways: string;
 
   fpc_GetSimbriefOfp: string;
 
@@ -30,6 +33,8 @@ export interface FlypadServerEvents {
   fps_HelloWorld: string;
 
   fps_SendMetar: MetarParserType;
+
+  fps_SendAirportRunways: Runway[];
 
   fps_SendSimbriefOfp: UnwrapPromise<ReturnType<(typeof SimbriefClient)['getOfp']>>;
 
