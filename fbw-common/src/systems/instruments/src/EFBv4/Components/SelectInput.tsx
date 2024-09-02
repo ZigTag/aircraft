@@ -6,9 +6,12 @@ import { ScrollableContainer } from './ScrollableContainer';
 import { List } from './List';
 import { AbstractUIView, LocalizedString } from '../Shared';
 
-export type SelectInputChoice<T extends string | number> = readonly [page: T, component: string | LocalizedString];
+export type SelectInputChoice<T extends string | number | boolean> = readonly [
+  page: T,
+  component: string | LocalizedString,
+];
 
-export interface SelectInputProps<T extends string | number> {
+export interface SelectInputProps<T extends string | number | boolean> {
   value: Subscribable<T>;
   onChange: (value: T) => void;
   choices: SelectInputChoice<T>[] | Subscribable<SelectInputChoice<T>[]>;
@@ -20,7 +23,7 @@ export interface SelectInputProps<T extends string | number> {
   disabled?: boolean | Subscribable<boolean>;
 }
 
-export class SelectInput<T extends string | number> extends AbstractUIView<SelectInputProps<T>> {
+export class SelectInput<T extends string | number | boolean> extends AbstractUIView<SelectInputProps<T>> {
   private readonly showDropdown = Subject.create(false);
 
   private readonly choices = SubscribableUtils.toSubscribable(this.props.choices, true);
@@ -32,7 +35,7 @@ export class SelectInput<T extends string | number> extends AbstractUIView<Selec
 
   private dropdownClass = this.showDropdown.map((showDropdown) =>
     twMerge(
-      `relative cursor-pointer rounded-md border-2 border-theme-accent bg-inherit`,
+      `relative w-64 cursor-pointer rounded-md border-2 border-theme-accent bg-inherit`,
       showDropdown &&
         (this.props.dropdownOnTop ? 'rounded-t-none border-t-theme-body' : 'rounded-b-none border-b-theme-body'),
       this.props.class,
@@ -90,7 +93,7 @@ export class SelectInput<T extends string | number> extends AbstractUIView<Selec
 
   render(): VNode | null {
     return (
-      <div class={this.dropdownClass} style={{ width: `${this.props.width ?? 300}px` }}>
+      <div class={this.dropdownClass}>
         <Button class={this.buttonClass} onClick={this.handleDropdown} unstyled>
           <p class="text-left">{this.buttonText}</p>
           <i class={this.chevronClass} size={20} />

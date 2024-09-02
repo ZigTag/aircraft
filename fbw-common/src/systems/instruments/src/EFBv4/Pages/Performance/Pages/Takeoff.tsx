@@ -6,11 +6,12 @@ import { SimbriefState } from '../../../State/NavigationState';
 import { SimpleInput, t } from '../../../Components';
 import { Label } from '../../../Components/Label';
 import { Runway } from '../../../../EFB/Performance/Data/Runways';
-import { LineupAngle, RunwayCondition, TakeoffPerformanceResult } from '@shared/performance';
+import { LineupAngle, RunwayCondition, TakeoffAntiIceSetting, TakeoffPerformanceResult } from '@shared/performance';
 import { SwitchIf } from '../../Pages';
 import { FbwUserSettingsDefs } from '../../../FbwUserSettings';
 import { twMerge } from 'tailwind-merge';
 import { SelectInput } from '../../../Components/SelectInput';
+import { TakeoffCoGPositions } from '../../../../EFB/Store/features/performance';
 
 class TakeoffCalculatorStore {
   constructor(private readonly settings: UserSettingManager<FbwUserSettingsDefs>) {}
@@ -76,6 +77,22 @@ class TakeoffCalculatorStore {
   public readonly windMagnitude = Subject.create<number | null>(null);
 
   public readonly windEntry = Subject.create<string | null>(null);
+
+  public readonly oat = Subject.create<number | null>(null);
+
+  public readonly qnh = Subject.create<number | null>(null);
+
+  public readonly weight = Subject.create<number | null>(null);
+
+  public readonly takeoffCg = Subject.create<TakeoffCoGPositions>(TakeoffCoGPositions.Standard);
+
+  public readonly config = Subject.create<number>(-1);
+
+  public readonly forceToga = Subject.create<boolean>(false);
+
+  public readonly antiIce = Subject.create<TakeoffAntiIceSetting>(TakeoffAntiIceSetting.Off);
+
+  public readonly packs = Subject.create<boolean>(true);
 
   public readonly takeoffShift = MappedSubject.create(
     ([selectedRunway, runwayLength]) => {
@@ -184,6 +201,11 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     ),
   );
 
+  private readonly runwayChoices = this.store.availableRunways.map((it) => [
+    [-1, LocalizedString.create('Performance.Takeoff.EnterManually')] as const,
+    ...it.map((r, i) => [i, r.ident] as const),
+  ]);
+
   private readonly tora = MappedSubject.create(
     ([runwayLength, distanceUnit]) =>
       getVariableUnitDisplayValue<'ft' | 'm'>(runwayLength, distanceUnit as 'ft' | 'm', 'ft', Units.metreToFoot),
@@ -191,10 +213,34 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     this.store.distanceUnit,
   );
 
-  private readonly runwayChoices = this.store.availableRunways.map((it) => [
-    [-1, LocalizedString.create('Performance.Takeoff.EnterManually')] as const,
-    ...it.map((r, i) => [i, r.ident] as const),
-  ]);
+  private readonly temperature = MappedSubject.create(
+    ([oat, temperatureUnit]) => {
+      return getVariableUnitDisplayValue<'C' | 'F'>(oat, temperatureUnit as 'C' | 'F', 'F', Units.celsiusToFahrenheit);
+    },
+    this.store.oat,
+    this.store.temperatureUnit,
+  );
+
+  private readonly qnh = MappedSubject.create(
+    ([qnh, pressureUnit]) =>
+      getVariableUnitDisplayValue<'hPa' | 'inHg'>(
+        qnh,
+        pressureUnit as 'hPa' | 'inHg',
+        'inHg',
+        Units.hectopascalToInchOfMercury,
+      ),
+    this.store.qnh,
+    this.store.pressureUnit,
+  );
+
+  private readonly weight = MappedSubject.create(
+    ([weight, weightUnit]) =>
+      getVariableUnitDisplayValue<'kg' | 'lb'>(weight, weightUnit as 'kg' | 'lb', 'lb', Units.kilogramToPound),
+    this.store.weight,
+    this.store.weightUnit,
+  );
+
+  private readonly temperaturePlaceholder = this.store.temperatureUnit.map((it) => `°${it}`);
 
   private readonly clearAirportRunways = () => {
     this.store.availableRunways.set([]);
@@ -361,6 +407,84 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
     this.store.windMagnitude.set(null);
     this.store.windDirection.set(null);
     this.store.windEntry.set(input);
+  };
+
+  private readonly handleTemperatureChange = (value: string): void => {
+    // clearResult();
+
+    let oat: number | null = parseFloat(value);
+
+    if (Number.isNaN(oat)) {
+      oat = null;
+    } else if (this.store.temperatureUnit.get() === 'F') {
+      oat = Units.fahrenheitToCelsius(oat);
+    }
+
+    this.store.oat.set(oat);
+  };
+
+  private readonly handlePressureChange = (value: string): void => {
+    // clearResult();
+
+    let qnh: number | null = parseFloat(value);
+
+    if (Number.isNaN(qnh)) {
+      qnh = null;
+    } else if (this.store.pressureUnit.get() === 'inHg') {
+      qnh = Units.inchOfMercuryToHectopascal(qnh);
+    }
+
+    this.store.qnh.set(qnh);
+  };
+
+  private readonly handleWeightChange = (value: string): void => {
+    // clearResult();
+
+    let weight: number | null = parseInt(value);
+
+    if (Number.isNaN(weight)) {
+      weight = null;
+    } else if (this.store.weightUnit.get() === 'lb') {
+      weight = Units.poundToKilogram(weight);
+    }
+
+    this.store.weight.set(weight);
+  };
+
+  private readonly handleCoG = (takeoffCg: TakeoffCoGPositions): void => {
+    // clearResult();
+
+    this.store.takeoffCg.set(takeoffCg);
+  };
+
+  private readonly handleConfigChange = (newValue: number | string): void => {
+    // clearResult();
+
+    let config = parseInt(newValue.toString());
+
+    if (config !== -1 && config !== 1 && config !== 2 && config !== 3) {
+      config = -1;
+    }
+
+    this.store.config.set(config);
+  };
+
+  private readonly handleThrustChange = (newValue: boolean | string): void => {
+    // clearResult();
+
+    this.store.forceToga.set(!!newValue);
+  };
+
+  private readonly handleAntiIce = (antiIce: TakeoffAntiIceSetting): void => {
+    // clearResult();
+
+    this.store.antiIce.set(antiIce);
+  };
+
+  private readonly handlePacks = (packs: boolean): void => {
+    // clearResult();
+
+    this.store.packs.set(packs);
   };
 
   render(): VNode | null {
@@ -555,153 +679,133 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
                   </Label>
                   <Label text={t('Performance.Takeoff.Temperature')}>
                     <div class="flex w-60 flex-row">
-                      {/*<SimpleInput*/}
-                      {/*  class="w-full rounded-r-none"*/}
-                      {/*  value={getVariableUnitDisplayValue<'C' | 'F'>(*/}
-                      {/*    oat,*/}
-                      {/*    temperatureUnit as 'C' | 'F',*/}
-                      {/*    'F',*/}
-                      {/*    Units.celsiusToFahrenheit,*/}
-                      {/*  )}*/}
-                      {/*  placeholder={`°${temperatureUnit}`}*/}
-                      {/*  decimalPrecision={1}*/}
-                      {/*  onChange={handleTemperatureChange}*/}
-                      {/*  number*/}
-                      {/*/>*/}
-                      {/*<SelectInput*/}
-                      {/*  value={temperatureUnit}*/}
-                      {/*  class="w-20 rounded-l-none"*/}
-                      {/*  options={[*/}
-                      {/*    { value: 'C', displayValue: 'C' },*/}
-                      {/*    { value: 'F', displayValue: 'F' },*/}
-                      {/*  ]}*/}
-                      {/*  onChange={(newValue: 'C' | 'F') => setTemperatureUnit(newValue)}*/}
-                      {/*/>*/}
+                      <SimpleInput
+                        class="w-full rounded-r-none"
+                        value={this.temperature}
+                        placeholder={this.temperaturePlaceholder}
+                        decimalPrecision={1}
+                        onChange={this.handleTemperatureChange}
+                        number
+                      />
+                      <SelectInput
+                        value={this.store.temperatureUnit}
+                        class="w-20 rounded-l-none"
+                        choices={[
+                          ['C', 'C'],
+                          ['F', 'F'],
+                        ]}
+                        onChange={(newValue: 'C' | 'F') => this.store.temperatureUnit.set(newValue)}
+                      />
                     </div>
                   </Label>
                   <Label text={t('Performance.Takeoff.Qnh')}>
                     <div class="flex w-60 flex-row">
-                      {/*<SimpleInput*/}
-                      {/*  class="w-full rounded-r-none"*/}
-                      {/*  value={getVariableUnitDisplayValue<'hPa' | 'inHg'>(*/}
-                      {/*    qnh,*/}
-                      {/*    pressureUnit as 'hPa' | 'inHg',*/}
-                      {/*    'inHg',*/}
-                      {/*    Units.hectopascalToInchOfMercury,*/}
-                      {/*  )}*/}
-                      {/*  placeholder={pressureUnit}*/}
-                      {/*  min={pressureUnit === 'hPa' ? 800 : 23.624}*/}
-                      {/*  max={pressureUnit === 'hPa' ? 1200 : 35.43598}*/}
-                      {/*  decimalPrecision={2}*/}
-                      {/*  onChange={handlePressureChange}*/}
-                      {/*  number*/}
-                      {/*/>*/}
-                      {/*<SelectInput*/}
-                      {/*  value={pressureUnit}*/}
-                      {/*  class="w-24 rounded-l-none"*/}
-                      {/*  options={[*/}
-                      {/*    { value: 'inHg', displayValue: 'inHg' },*/}
-                      {/*    { value: 'hPa', displayValue: 'hPa' },*/}
-                      {/*  ]}*/}
-                      {/*  onChange={(newValue: 'hPa' | 'inHg') => setPressureUnit(newValue)}*/}
-                      {/*/>*/}
+                      <SimpleInput
+                        class="w-full rounded-r-none"
+                        value={this.qnh}
+                        placeholder={this.store.pressureUnit}
+                        min={this.store.pressureUnit.map((pressureUnit) => (pressureUnit === 'hPa' ? 800 : 23.624))}
+                        max={this.store.pressureUnit.map((pressureUnit) => (pressureUnit === 'hPa' ? 1200 : 35.43598))}
+                        decimalPrecision={2}
+                        onChange={this.handlePressureChange}
+                        number
+                      />
+                      <SelectInput
+                        value={this.store.pressureUnit}
+                        class="w-24 rounded-l-none"
+                        choices={[
+                          ['inHg', 'inHg'],
+                          ['hPa', 'hPa'],
+                        ]}
+                        onChange={(newValue: 'hPa' | 'inHg') => this.store.pressureUnit.set(newValue)}
+                      />
                     </div>
                   </Label>
                   <Label text={t('Performance.Takeoff.Weight')}>
                     <div class="flex w-60 flex-row">
-                      {/*<SimpleInput*/}
-                      {/*  class="w-full rounded-r-none"*/}
-                      {/*  value={getVariableUnitDisplayValue<'kg' | 'lb'>(*/}
-                      {/*    weight,*/}
-                      {/*    weightUnit as 'kg' | 'lb',*/}
-                      {/*    'lb',*/}
-                      {/*    Units.kilogramToPound,*/}
-                      {/*  )}*/}
-                      {/*  placeholder={weightUnit}*/}
-                      {/*  decimalPrecision={0}*/}
-                      {/*  onChange={handleWeightChange}*/}
-                      {/*  number*/}
-                      {/*/>*/}
-                      {/*<SelectInput*/}
-                      {/*  value={weightUnit}*/}
-                      {/*  class="w-20 rounded-l-none"*/}
-                      {/*  options={[*/}
-                      {/*    { value: 'kg', displayValue: 'kg' },*/}
-                      {/*    { value: 'lb', displayValue: 'lb' },*/}
-                      {/*  ]}*/}
-                      {/*  onChange={(newValue: 'kg' | 'lb') => setWeightUnit(newValue)}*/}
-                      {/*/>*/}
+                      <SimpleInput
+                        class="w-full rounded-r-none"
+                        value={this.weight}
+                        placeholder={this.store.weightUnit}
+                        decimalPrecision={0}
+                        onChange={this.handleWeightChange}
+                        number
+                      />
+                      <SelectInput
+                        value={this.store.weightUnit}
+                        class="w-20 rounded-l-none"
+                        choices={[
+                          ['kg', 'kg'],
+                          ['lb', 'lb'],
+                        ]}
+                        onChange={(newValue: 'kg' | 'lb') => this.store.weightUnit.set(newValue)}
+                      />
                     </div>
                   </Label>
                   <Label text={t('Performance.Takeoff.CoGPosition')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-60"*/}
-                    {/*  defaultValue={initialState.takeoff.takeoffCg}*/}
-                    {/*  value={takeoffCg}*/}
-                    {/*  onChange={handleCoG}*/}
-                    {/*  options={[*/}
-                    {/*    {*/}
-                    {/*      value: TakeoffCoGPositions.Standard,*/}
-                    {/*      displayValue: t('Performance.Takeoff.CoGPositions.Standard'),*/}
-                    {/*    },*/}
-                    {/*    {*/}
-                    {/*      value: TakeoffCoGPositions.Forward,*/}
-                    {/*      displayValue: t('Performance.Takeoff.CoGPositions.Forward'),*/}
-                    {/*    },*/}
-                    {/*  ]}*/}
-                    {/*/>*/}
+                    <SelectInput
+                      class="w-60"
+                      value={this.store.takeoffCg}
+                      onChange={this.handleCoG}
+                      choices={[
+                        [
+                          TakeoffCoGPositions.Standard,
+                          LocalizedString.create('Performance.Takeoff.CoGPositions.Standard'),
+                        ],
+                        [
+                          TakeoffCoGPositions.Forward,
+                          LocalizedString.create('Performance.Takeoff.CoGPositions.Forward'),
+                        ],
+                      ]}
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.Configuration')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-60"*/}
-                    {/*  defaultValue={initialState.takeoff.config}*/}
-                    {/*  value={config}*/}
-                    {/*  onChange={handleConfigChange}*/}
-                    {/*  options={[*/}
-                    {/*    { value: -1, displayValue: 'OPT' },*/}
-                    {/*    { value: 1, displayValue: 'CONF 1+F' },*/}
-                    {/*    { value: 2, displayValue: 'CONF 2' },*/}
-                    {/*    { value: 3, displayValue: 'CONF 3' },*/}
-                    {/*  ]}*/}
-                    {/*/>*/}
+                    <SelectInput
+                      class="w-60"
+                      value={this.store.config}
+                      onChange={this.handleConfigChange}
+                      choices={[
+                        [-1, 'OPT'],
+                        [1, 'CONF 1+F'],
+                        [2, 'CONF 2'],
+                        [3, 'CONF 3'],
+                      ]}
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.Thrust')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-60"*/}
-                    {/*  defaultValue={initialState.takeoff.forceToga}*/}
-                    {/*  value={forceToga}*/}
-                    {/*  onChange={handleThrustChange}*/}
-                    {/*  options={[*/}
-                    {/*    { value: false, displayValue: 'FLEX' },*/}
-                    {/*    { value: true, displayValue: 'TOGA' },*/}
-                    {/*  ]}*/}
-                    {/*  disabled={isContaminated(runwayCondition)}*/}
-                    {/*/>*/}
+                    <SelectInput
+                      class="w-60"
+                      value={this.store.forceToga}
+                      onChange={this.handleThrustChange}
+                      choices={[
+                        [false, 'FLEX'],
+                        [true, 'TOGA'],
+                      ]}
+                      disabled={this.store.runwayCondition.map((runwayCondition) => isContaminated(runwayCondition))}
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.AntiIce')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-60"*/}
-                    {/*  defaultValue={initialState.takeoff.antiIce}*/}
-                    {/*  value={antiIce}*/}
-                    {/*  onChange={handleAntiIce}*/}
-                    {/*  options={[*/}
-                    {/*    { value: TakeoffAntiIceSetting.Off, displayValue: 'Off' },*/}
-                    {/*    { value: TakeoffAntiIceSetting.Engine, displayValue: 'Engine' },*/}
-                    {/*    { value: TakeoffAntiIceSetting.EngineWing, displayValue: 'Engine & Wing' },*/}
-                    {/*  ]}*/}
-                    {/*/>*/}
+                    <SelectInput
+                      class="w-60"
+                      value={this.store.antiIce}
+                      onChange={this.handleAntiIce}
+                      choices={[
+                        [TakeoffAntiIceSetting.Off, 'Off'],
+                        [TakeoffAntiIceSetting.Engine, 'Engine'],
+                        [TakeoffAntiIceSetting.EngineWing, 'Engine & Wing'],
+                      ]}
+                    />
                   </Label>
                   <Label text={t('Performance.Takeoff.Packs')}>
-                    {/*<SelectInput*/}
-                    {/*  class="w-60"*/}
-                    {/*  defaultValue={initialState.takeoff.antiIce}*/}
-                    {/*  value={packs}*/}
-                    {/*  onChange={handlePacks}*/}
-                    {/*  options={[*/}
-                    {/*    { value: false, displayValue: 'Off' },*/}
-                    {/*    { value: true, displayValue: 'On' },*/}
-                    {/*  ]}*/}
-                    {/*/>*/}
+                    <SelectInput
+                      class="w-60"
+                      value={this.store.packs}
+                      onChange={this.handlePacks}
+                      choices={[
+                        [false, 'Off'],
+                        [true, 'On'],
+                      ]}
+                    />
                   </Label>
                 </div>
                 <McduPreview store={this.store} />
