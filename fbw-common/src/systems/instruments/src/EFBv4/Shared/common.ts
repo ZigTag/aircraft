@@ -83,6 +83,11 @@ export namespace PageEnum {
     Raw,
   }
 
+  export enum PresetsPage {
+    InteriorLighting,
+    AircraftStates,
+  }
+
   export enum SettingsPage {
     Index,
     AircraftOptionsPinPrograms,
