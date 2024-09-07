@@ -34,6 +34,7 @@ module.exports = {
     msfsAvionicsInstrument('ND'),
     msfsAvionicsInstrument('EWD'),
     msfsAvionicsInstrument('Clock'),
+    msfsAvionicsInstrument('OANC'),
     msfsAvionicsInstrument('EFBv4'),
 
     reactInstrument('SD'),
