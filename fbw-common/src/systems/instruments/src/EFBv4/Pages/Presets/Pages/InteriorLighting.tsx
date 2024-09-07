@@ -4,7 +4,7 @@ import { AbstractUIView, LocalizedString } from '../../../Shared';
 import { TooltipWrapper } from '../../../Components/Tooltip';
 import { SimpleInput } from '../../../Components/SimpleInput';
 import { t } from '../../../Components/LocalizedText';
-import { Button } from '../../../Components/Button';
+import { Button, ButtonTheme } from '../../../Components/Button';
 import {
   ModalKind,
   NotificationKind,
@@ -13,7 +13,6 @@ import {
   showNotification,
   Toggle,
 } from '../../../Components';
-import { twMerge } from 'tailwind-merge';
 import { NXDataStore } from '@shared/persistence';
 import { SelectInput, SelectInputChoice } from '../../../Components/SelectInput';
 
@@ -50,7 +49,7 @@ export class InteriorLighting extends AbstractUIView {
     );
 
     // TODO replace with FbwUserSettings
-    NXDataStore.subscribe('LIGHT_PRESET_NAMES', (_key, value) => this.storedNames.set(value));
+    NXDataStore.getAndSubscribe('LIGHT_PRESET_NAMES', (_key, value) => this.storedNames.set(value));
   }
 
   render(): VNode | null {
@@ -106,20 +105,6 @@ class SinglePreset extends AbstractUIView<SinglePresetProps> {
     'Presets.InteriorLighting.TT.SaveTheCurrentLightingLevels',
   );
 
-  private readonly loadButtonClass = this.props.isPowered.map((isPowered) =>
-    twMerge(
-      `mx-4 flex h-16 w-full items-center justify-center rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text transition duration-100 hover:bg-theme-highlight hover:text-theme-body`,
-      !isPowered && 'opacity-50',
-    ),
-  );
-
-  private readonly saveButtonClass = this.props.isPowered.map((isPowered) =>
-    twMerge(
-      `mx-4 flex h-16 w-full items-center justify-center rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text transition duration-100 hover:bg-theme-highlight hover:text-theme-body`,
-      !isPowered && 'opacity-50',
-    ),
-  );
-
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
@@ -137,8 +122,6 @@ class SinglePreset extends AbstractUIView<SinglePresetProps> {
 
         this.presetName.set(tmp ?? LocalizedString.translate('Presets.InteriorLighting.NoName') ?? '');
       }),
-      this.loadButtonClass,
-      this.saveButtonClass,
     );
   }
 
@@ -221,9 +204,9 @@ class SinglePreset extends AbstractUIView<SinglePresetProps> {
   render(): VNode | null {
     return (
       <div ref={this.rootRef} class="my-2 flex flex-row justify-between">
-        <div class="flex w-24 items-center justify-center">{this.props.presetID}</div>
+        <div class="flex w-24 items-center justify-center">{this.props.presetID.toString()}</div>
 
-        <div class="mx-4 flex h-16 w-full items-center justify-center rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text">
+        <div class="mx-4 flex h-16 items-center justify-center rounded-md border-2 border-theme-accent bg-theme-accent text-theme-text">
           <TooltipWrapper text={LocalizedString.create('Presets.InteriorLighting.TT.ClickTextToChangeThePresetsName')}>
             <div>
               <SimpleInput
@@ -238,13 +221,23 @@ class SinglePreset extends AbstractUIView<SinglePresetProps> {
         </div>
 
         <TooltipWrapper text={this.loadPresetTooltip}>
-          <Button unstyled class={this.loadButtonClass} onClick={() => this.handleLoadPreset(this.props.presetID)}>
+          <Button
+            theme={ButtonTheme.Neutral}
+            class="mr-4 grow"
+            disabled={this.props.isPowered.map((it) => !it)}
+            onClick={() => this.handleLoadPreset(this.props.presetID)}
+          >
             {t('Presets.InteriorLighting.LoadPreset')}
           </Button>
         </TooltipWrapper>
 
         <TooltipWrapper text={this.savePresetTooltip}>
-          <Button unstyled class={this.saveButtonClass} onClick={() => this.handleSavePreset(this.props.presetID)}>
+          <Button
+            theme={ButtonTheme.Neutral}
+            class="grow"
+            disabled={this.props.isPowered.map((it) => !it)}
+            onClick={() => this.handleSavePreset(this.props.presetID)}
+          >
             {t('Presets.InteriorLighting.SavePreset')}
           </Button>
         </TooltipWrapper>
@@ -274,12 +267,14 @@ class AutoLoadConfiguration extends AbstractUIView<AutoLoadConfigurationprops> {
     super.onAfterRender(node);
 
     // TODO replace with FbwUserSettings
-    NXDataStore.subscribe('LIGHT_PRESET_AUTOLOAD', (_key, value) => this.autoLoadPreset.set(parseInt(value)));
-    NXDataStore.subscribe('LIGHT_PRESET_AUTOLOAD_DAY', (_key, value) => this.autoLoadPresetDay.set(parseInt(value)));
-    NXDataStore.subscribe('LIGHT_PRESET_AUTOLOAD_DAWNDUSK', (_key, value) =>
+    NXDataStore.getAndSubscribe('LIGHT_PRESET_AUTOLOAD', (_key, value) => this.autoLoadPreset.set(parseInt(value)));
+    NXDataStore.getAndSubscribe('LIGHT_PRESET_AUTOLOAD_DAY', (_key, value) =>
+      this.autoLoadPresetDay.set(parseInt(value)),
+    );
+    NXDataStore.getAndSubscribe('LIGHT_PRESET_AUTOLOAD_DAWNDUSK', (_key, value) =>
       this.autoLoadPresetDawnDusk.set(parseInt(value)),
     );
-    NXDataStore.subscribe('LIGHT_PRESET_AUTOLOAD_NIGHT', (_key, value) =>
+    NXDataStore.getAndSubscribe('LIGHT_PRESET_AUTOLOAD_NIGHT', (_key, value) =>
       this.autoLoadPresetNight.set(parseInt(value)),
     );
 
