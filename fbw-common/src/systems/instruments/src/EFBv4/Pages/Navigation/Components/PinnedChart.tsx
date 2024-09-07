@@ -53,7 +53,7 @@ export class PinnedChartCard extends DisplayComponent<PinnedChartCardProps> {
           <Button
             unstyled
             class={twMerge(
-              'relative flex cursor-pointer flex-col flex-wrap overflow-hidden rounded-md px-2 pb-2 pt-3 text-left',
+              'relative flex cursor-pointer flex-col flex-wrap items-stretch overflow-hidden rounded-md px-2 pb-2 pt-3 text-left',
               this.props.class,
             )}
             onClick={() => {}}
@@ -83,7 +83,7 @@ export class PinnedChartCard extends DisplayComponent<PinnedChartCardProps> {
           <Button
             unstyled
             class={twMerge(
-              'relative flex flex-col flex-wrap overflow-hidden rounded-md bg-theme-accent px-2 pb-2 pt-3 text-left',
+              'relative flex flex-col flex-wrap items-stretch overflow-hidden rounded-md bg-theme-accent px-2 pb-2 pt-3 text-left',
               this.props.showDelete && 'rounded-t-none',
               this.props.class,
             )}
