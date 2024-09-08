@@ -80,7 +80,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
     [PageEnum.MainPage.ATC, <Atc settings={this.props.settings} />],
     [PageEnum.MainPage.Failures, <Failures />],
     [PageEnum.MainPage.Checklists, <Checklists />],
-    [PageEnum.MainPage.Presets, <Presets />],
+    [PageEnum.MainPage.Presets, <Presets bus={EFB_EVENT_BUS} />],
     [
       PageEnum.MainPage.Settings,
       <Settings

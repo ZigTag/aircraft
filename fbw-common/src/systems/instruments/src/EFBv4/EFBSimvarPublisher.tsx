@@ -19,6 +19,7 @@ export interface EFBSimvars {
   dc2BusIsPowered: boolean;
   absoluteTime: number;
 
+  // Ground page (move to a32nx specific)
   cabinLeftDoorOpen: number;
   cabinRightDoorOpen: number;
   aftLeftDoorOpen: number;
@@ -34,12 +35,17 @@ export interface EFBSimvars {
   conesEnabled: boolean;
   asuActive: boolean;
 
+  // Fuel page (move to a32nx specific)
   centerCurrent: number;
   LInnCurrent: number;
   LOutCurrent: number;
   RInnCurrent: number;
   ROutCurrent: number;
   refuelTarget: number;
+
+  // Presets page
+  loadPreset: number;
+  loadPresetsExpedite: boolean;
 }
 
 export enum EFBVars {
@@ -62,6 +68,7 @@ export enum EFBVars {
   dc2BusIsPowered = 'L:A32NX_ELEC_DC_2_BUS_IS_POWERED',
   absoluteTime = 'E:ABSOLUTE TIME',
 
+  // Ground page (move to a32nx specific)
   cabinLeftDoorOpen = 'A:INTERACTIVE POINT OPEN:0',
   cabinRightDoorOpen = 'A:INTERACTIVE POINT OPEN:1',
   aftLeftDoorOpen = 'A:INTERACTIVE POINT OPEN:2',
@@ -77,12 +84,17 @@ export enum EFBVars {
   conesEnabled = 'L:A32NX_MODEL_CONES_ENABLED',
   asuActive = 'L:A32NX_ASU_TURNED_ON',
 
+  // Fuel page (move to a32nx specific)
   centerCurrent = 'FUEL TANK CENTER QUANTITY',
   LInnCurrent = 'FUEL TANK LEFT MAIN QUANTITY',
   LOutCurrent = 'FUEL TANK LEFT AUX QUANTITY',
   RInnCurrent = 'FUEL TANK RIGHT MAIN QUANTITY',
   ROutCurrent = 'FUEL TANK RIGHT AUX QUANTITY',
   refuelTarget = 'L:A32NX_FUEL_DESIRED_PERCENT',
+
+  // Presets page
+  loadPreset = 'L:A32NX_AIRCRAFT_PRESET_LOAD',
+  loadPresetsExpedite = 'L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -106,6 +118,7 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['dc2BusIsPowered', { name: EFBVars.dc2BusIsPowered, type: SimVarValueType.Bool }],
     ['absoluteTime', { name: EFBVars.absoluteTime, type: SimVarValueType.Seconds }],
 
+    // Ground page (move to a32nx specific)
     ['cabinLeftDoorOpen', { name: EFBVars.cabinLeftDoorOpen, type: SimVarValueType.PercentOver100 }],
     ['cabinRightDoorOpen', { name: EFBVars.cabinRightDoorOpen, type: SimVarValueType.PercentOver100 }],
     ['aftLeftDoorOpen', { name: EFBVars.aftLeftDoorOpen, type: SimVarValueType.PercentOver100 }],
@@ -121,12 +134,17 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     ['conesEnabled', { name: EFBVars.conesEnabled, type: SimVarValueType.Bool }],
     ['asuActive', { name: EFBVars.asuActive, type: SimVarValueType.Bool }],
 
+    // Fuel page (move to a32nx specific)
     ['centerCurrent', { name: EFBVars.centerCurrent, type: SimVarValueType.GAL }],
     ['LInnCurrent', { name: EFBVars.LInnCurrent, type: SimVarValueType.GAL }],
     ['LOutCurrent', { name: EFBVars.LOutCurrent, type: SimVarValueType.GAL }],
     ['RInnCurrent', { name: EFBVars.RInnCurrent, type: SimVarValueType.GAL }],
     ['ROutCurrent', { name: EFBVars.ROutCurrent, type: SimVarValueType.GAL }],
     ['refuelTarget', { name: EFBVars.refuelTarget, type: SimVarValueType.Number }],
+
+    // Presets
+    ['loadPreset', { name: EFBVars.loadPreset, type: SimVarValueType.Number }],
+    ['loadPresetsExpedite', { name: EFBVars.loadPresetsExpedite, type: SimVarValueType.Bool }],
   ]);
 
   public constructor(bus: EventBus) {

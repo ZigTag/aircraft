@@ -60,7 +60,14 @@ export class SelectInput<T extends string | number | boolean> extends AbstractUI
           this.subscriptions.splice(this.subscriptions.indexOf(this.valueTextSub), 1);
         }
 
-        const [, text] = this.choices.get().find(([key]) => key === value)!;
+        const matchingChoice = this.choices.get().find(([key]) => key === value)!;
+
+        if (!matchingChoice) {
+          this.buttonText.set('');
+          return;
+        }
+
+        const [, text] = matchingChoice;
 
         if (SubscribableUtils.isSubscribable(text)) {
           this.valueTextSub = text.sub((value) => this.buttonText.set(value), true);

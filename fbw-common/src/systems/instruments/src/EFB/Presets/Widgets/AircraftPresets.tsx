@@ -20,7 +20,7 @@ export const AircraftPresets = () => {
   // by skipping the delay between steps.
 
   const [simOnGround] = useSimVar('SIM ON GROUND', 'number', 200);
-  const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_AIRCRAFT_PRESET_LOAD', 'number', 200);
+  const [loadPresetVar, setLoadPresetVar] = useSimVar('', 'number', 200);
   const [loadPresetsExpedite, setLoadPresetsExpedite] = useSimVar(
     'L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE',
     'number',

@@ -1,12 +1,21 @@
-import { DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+// Copyright (c) 2024 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { Pages, Switch } from '../Pages';
 import { PageEnum } from '../../Shared';
 import { Selector } from '../../Components';
 import { InteriorLighting } from './Pages/InteriorLighting';
+import { AircraftPresets } from './Pages/AircraftPresets';
 
-export class Presets extends DisplayComponent<any> {
+export interface PresetsProps {
+  bus: EventBus;
+}
+
+export class Presets extends DisplayComponent<PresetsProps> {
   private readonly activePage = Subject.create(PageEnum.PresetsPage.InteriorLighting);
 
   private readonly tabs: Pages = [
@@ -26,7 +35,7 @@ export class Presets extends DisplayComponent<any> {
           activePage={this.activePage}
           pages={[
             [PageEnum.PresetsPage.InteriorLighting, <InteriorLighting />],
-            [PageEnum.PresetsPage.AircraftStates, <></>],
+            [PageEnum.PresetsPage.AircraftStates, <AircraftPresets bus={this.props.bus} />],
           ]}
         />
       </div>
