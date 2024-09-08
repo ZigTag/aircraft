@@ -26,6 +26,15 @@ const replacer = (_key: any, value: any[]) => {
   return value;
 };
 
+const reviver = (_key: any, value: { dataType: string; value: Iterable<readonly [unknown, unknown]> }) => {
+  if (typeof value === 'object' && value !== null) {
+    if (value.dataType === 'Map') {
+      return new Map(value.value);
+    }
+  }
+  return value;
+};
+
 export class InteriorLighting extends AbstractUIView {
   private readonly namesMap = MapSubject.create<number, string>([]);
 
@@ -46,6 +55,21 @@ export class InteriorLighting extends AbstractUIView {
           ? 'Presets.InteriorLighting.SelectAnInteriorLightingPresetToLoadOrSave'
           : 'Presets.InteriorLighting.TheAircraftMustBePoweredForInteriorLightingPresets',
       ),
+      this.storedNames.sub((storedNames) => {
+        this.namesMap.clear();
+
+        try {
+          const newValue: Map<number, string> = JSON.parse(storedNames, reviver);
+
+          for (const [key, value] of newValue.entries()) {
+            this.namesMap.setValue(key, value);
+          }
+
+          this.namesMap.set(newValue);
+        } catch {
+          // noop
+        }
+      }),
     );
 
     // TODO replace with FbwUserSettings
@@ -67,7 +91,7 @@ export class InteriorLighting extends AbstractUIView {
                 getPresetName={(presetID) => this.namesMap.getValue(presetID)}
                 storePresetName={(presetID: number, name: string) => {
                   this.namesMap.setValue(presetID, name);
-                  const tmpJson = JSON.stringify(this.namesMap, replacer);
+                  const tmpJson = JSON.stringify(this.namesMap.get(), replacer);
 
                   // TODO replace with FbwUserSettings
                   NXDataStore.set('LIGHT_PRESET_NAMES', tmpJson);
