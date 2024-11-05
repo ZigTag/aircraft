@@ -58,13 +58,7 @@ module.exports = {
     },
     react: { version: 'detect' },
   },
-  ignorePatterns: [
-    'fbw-common/src/typings/*',
-    'fbw-a380x/*',
-    'fbw-ingamepanels-checklist-fix/*',
-    '!fbw-a380x/src/systems/instruments/src/PFD/*',
-    '!fbw-a380x/src/systems/instruments/src/MFD/*',
-  ],
+  ignorePatterns: ['fbw-common/src/typings/*', 'fbw-ingamepanels-checklist-fix/*'],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
 
@@ -79,7 +73,7 @@ module.exports = {
 
     'tailwindcss/classnames-order': 'error',
     'tailwindcss/enforces-negative-arbitrary-values': 'error',
-    'tailwindcss/enforces-shorthand': 'error',
+    'tailwindcss/enforces-shorthand': 'off',
     'tailwindcss/migration-from-tailwind-2': 'error',
     'tailwindcss/no-contradicting-classname': 'error',
   },

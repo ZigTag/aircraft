@@ -81,6 +81,7 @@ clang++ \
   -D_LIBCPP_HAS_NO_THREADS \
   -D_WINDLL \
   -D_MBCS \
+  -DNOMINMAX \
   -mthread-model single \
   -fno-exceptions \
   -fms-extensions \
@@ -144,7 +145,7 @@ clang++ \
   -I "${FBW_COMMON_DIR}/src/zlib" \
   "${FBW_COMMON_DIR}/src/zlib/zfstream.cc" \
   "${DIR}/src/FlyByWireInterface.cpp" \
-  "${DIR}/src/FlightDataRecorder.cpp" \
+  "${DIR}/src/recording/FlightDataRecorder.cpp" \
   "${DIR}/src/Arinc429.cpp" \
   "${DIR}/src/Arinc429Utils.cpp" \
   "${FBW_COMMON_DIR}/src/LocalVariable.cpp" \
