@@ -12,9 +12,11 @@ import {
 import { t } from '../../Components/LocalizedText';
 import { SettingsPage } from './Settings';
 import { Button } from '../../Components/Button';
+import { SettingsPages } from '../../EfbV4FsInstrumentAircraftSpecificData';
 
 export interface SettingsAircraftOptionsPinProgramsPageProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
+  settingsPages: SettingsPages;
   returnHome: () => any;
   openAutomaticCallOutsConfigurationPage: () => any;
 }
@@ -63,32 +65,38 @@ export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<Setti
           settingName={t('Settings.AircraftOptionsPinPrograms.IsisMetricAltitude')}
         />
 
-        <ChoiceSettingsItem
-          setting={this.props.settings.getSetting('fbwAircraftPaxSigns')}
-          settingName={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}
-          choices={{
-            [PaxSigns.NoSmoking]: <>No Smoking</>,
-            [PaxSigns.NoPortableDevices]: <>No Portable Device</>,
-          }}
-        />
+        {this.props.settingsPages.pinProgram.paxSign && (
+          <ChoiceSettingsItem
+            setting={this.props.settings.getSetting('fbwAircraftPaxSigns')}
+            settingName={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}
+            choices={{
+              [PaxSigns.NoSmoking]: <>No Smoking</>,
+              [PaxSigns.NoPortableDevices]: <>No Portable Device</>,
+            }}
+          />
+        )}
 
-        <ChoiceSettingsItem
-          setting={this.props.settings.getSetting('fbwAircraftVhfSpacing')}
-          settingName={t('Settings.AircraftOptionsPinPrograms.RmpVhfSpacing')}
-          choices={{
-            [VhfSpacing.EightPointThirtyThreeKHz]: <>8.33 kHz</>,
-            [VhfSpacing.TwentyFiveKHz]: <>25 kHz</>,
-          }}
-        />
+        {this.props.settingsPages.pinProgram.rmpVhfSpacing && (
+          <ChoiceSettingsItem
+            setting={this.props.settings.getSetting('fbwAircraftVhfSpacing')}
+            settingName={t('Settings.AircraftOptionsPinPrograms.RmpVhfSpacing')}
+            choices={{
+              [VhfSpacing.EightPointThirtyThreeKHz]: <>8.33 kHz</>,
+              [VhfSpacing.TwentyFiveKHz]: <>25 kHz</>,
+            }}
+          />
+        )}
 
-        <ChoiceSettingsItem
-          setting={this.props.settings.getSetting('fbwAircraftLatLonExtendedFormat')}
-          settingName={t('Settings.AircraftOptionsPinPrograms.LatLonExtendedFormat')}
-          choices={{
-            [LatLonExtendedFormat.LLnn]: <>LLnn</>,
-            [LatLonExtendedFormat.AxxByyy]: <>AxxByyy</>,
-          }}
-        />
+        {this.props.settingsPages.pinProgram.latLonExtend && (
+          <ChoiceSettingsItem
+            setting={this.props.settings.getSetting('fbwAircraftLatLonExtendedFormat')}
+            settingName={t('Settings.AircraftOptionsPinPrograms.LatLonExtendedFormat')}
+            choices={{
+              [LatLonExtendedFormat.LLnn]: <>LLnn</>,
+              [LatLonExtendedFormat.AxxByyy]: <>AxxByyy</>,
+            }}
+          />
+        )}
 
         <ChoiceSettingsItem
           setting={this.props.settings.getSetting('fbwAircraftWeightUnit')}
@@ -99,10 +107,12 @@ export class SettingsAircraftOptionsPinProgramsPage extends AbstractUIView<Setti
           }}
         />
 
-        <ToggleSettingsItem
-          setting={this.props.settings.getSetting('fbwAircraftSatcomEnabled')}
-          settingName={t('Settings.AircraftOptionsPinPrograms.Satcom')}
-        />
+        {this.props.settingsPages.pinProgram.satcom && (
+          <ToggleSettingsItem
+            setting={this.props.settings.getSetting('fbwAircraftSatcomEnabled')}
+            settingName={t('Settings.AircraftOptionsPinPrograms.Satcom')}
+          />
+        )}
 
         <SettingsItem settingName={t('Settings.AutomaticCallOuts.Title')}>
           <Button onClick={this.props.openAutomaticCallOutsConfigurationPage}>

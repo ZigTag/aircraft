@@ -16,9 +16,12 @@ import { SettingsThirdPartyOptionsPage } from './SettingsThirdPartyOptionsPage';
 import { SettingsAtsuAocPage } from './SettingsAtsuAocPage';
 import { SettingsFlyPadPage } from './SettingsFlyPadPage';
 import { NavigraphAuthState } from '../../State/NavigationState';
+import { SettingsPages } from '../../EfbV4FsInstrumentAircraftSpecificData';
 
 export interface SettingsProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
+
+  settingsPages: SettingsPages;
 
   navigraphAuthState: NavigraphAuthState;
 
@@ -36,6 +39,7 @@ export class Settings extends AbstractUIView<SettingsProps> {
       PageEnum.SettingsPage.AircraftOptionsPinPrograms,
       <SettingsAircraftOptionsPinProgramsPage
         settings={this.props.settings}
+        settingsPages={this.props.settingsPages}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
         openAutomaticCallOutsConfigurationPage={() => this.activePageSetter(PageEnum.SettingsPage.AutomaticCallouts)}
       />,
@@ -74,6 +78,7 @@ export class Settings extends AbstractUIView<SettingsProps> {
       PageEnum.SettingsPage.Audio,
       <SettingsAudioPage
         settings={this.props.settings}
+        settingsPages={this.props.settingsPages}
         returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
       />,
     ],

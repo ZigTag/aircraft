@@ -24,7 +24,7 @@ import './Assets/Slider.scss';
 import './Assets/bi-icons.css';
 
 import { FbwUserSettings, FbwUserSettingsSaveManager, FlypadTheme } from './FbwUserSettings';
-import { EFB_EVENT_BUS, EfbV4FsInstrumentAircraftSpecificData } from './EfbV4FsInstrument';
+import { EFB_EVENT_BUS } from './EfbV4FsInstrument';
 import { TooltipContainer } from './Components/Tooltip';
 import { ModalContainer } from './Components/Modal';
 import { EFBSimvars } from './EFBSimvarPublisher';
@@ -33,6 +33,7 @@ import { Button } from 'instruments/src/EFBv4/Components/Button';
 
 import { FbwLogo } from './Assets/FbwLogo';
 import { NotificationContainer } from './Components/Notification';
+import { EfbV4FsInstrumentAircraftSpecificData } from './EfbV4FsInstrumentAircraftSpecificData';
 
 interface EfbProps extends ComponentProps {
   aircraftSpecificData: EfbV4FsInstrumentAircraftSpecificData;
@@ -124,6 +125,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
                 <Navbar activePage={this.currentPage} />
                 <MainPage
                   settings={this.settings}
+                  settingsPages={this.props.aircraftSpecificData.settingsPages}
                   activePage={this.currentPage}
                   flypadClient={flypadClient}
                   renderAutomaticCalloutsPage={this.props.aircraftSpecificData.renderAutomaticCalloutsPage}

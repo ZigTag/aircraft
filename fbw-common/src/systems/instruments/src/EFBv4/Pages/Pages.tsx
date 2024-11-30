@@ -29,6 +29,7 @@ import { GroundState } from '../State/GroundState';
 import { NavigationState, NavigraphAuthState, SimbriefState } from '../State/NavigationState';
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 import { PerformanceCalculators } from '@shared/performance';
+import { SettingsPages } from '../EfbV4FsInstrumentAircraftSpecificData';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -37,6 +38,7 @@ interface MainPageProps extends ComponentProps {
   activePage: Subject<number>;
   settings: UserSettingManager<FbwUserSettingsDefs>;
   flypadClient: FlypadClient;
+  settingsPages: SettingsPages;
   renderAutomaticCalloutsPage: (returnHome: () => any, autoCallOuts: UserSetting<number>) => VNode;
   performanceCalculators: PerformanceCalculators;
 }
@@ -85,6 +87,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
       PageEnum.MainPage.Settings,
       <Settings
         settings={this.props.settings}
+        settingsPages={this.props.settingsPages}
         navigraphAuthState={this.navigraphAuthState}
         renderAutomaticCalloutsPage={this.props.renderAutomaticCalloutsPage}
       />,

@@ -1,28 +1,11 @@
-import {
-  Clock,
-  EventBus,
-  FSComponent,
-  FsInstrument,
-  HEventPublisher,
-  InstrumentBackplane,
-  UserSetting,
-  VNode,
-} from '@microsoft/msfs-sdk';
+import { Clock, EventBus, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 
 import { EFBv4 } from './EFBv4';
 import { busContext, initializeEventBusContext } from './Contexts';
 import { EFBSimvarPublisher } from './EFBSimvarPublisher';
-import { PerformanceCalculators } from '@shared/performance';
+import { EfbV4FsInstrumentAircraftSpecificData } from './EfbV4FsInstrumentAircraftSpecificData';
 
 export const EFB_EVENT_BUS = new EventBus();
-
-export interface EfbV4FsInstrumentAircraftSpecificData {
-  renderAutomaticCalloutsPage: (returnHome: () => any, autoCallOuts: UserSetting<number>) => VNode;
-
-  defaultAutoCalloutsSettingValue: number;
-
-  performanceCalculators: PerformanceCalculators;
-}
 
 export class EfbV4FsInstrument implements FsInstrument {
   private readonly bus = EFB_EVENT_BUS;
