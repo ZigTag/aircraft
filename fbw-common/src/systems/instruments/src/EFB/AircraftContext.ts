@@ -45,6 +45,7 @@ interface SimOptions {
   pilotSeat: boolean;
   registrationDecal: boolean;
   wheelChocks: boolean;
+  cabinLighting: boolean;
 }
 
 interface ThrottleOptions {
@@ -94,6 +95,7 @@ export const AircraftContext = createContext<AircraftEfbContext>({
       pilotSeat: false,
       registrationDecal: false,
       wheelChocks: false,
+      cabinLighting: false,
     },
     throttle: {
       numberOfAircraftThrottles: 0,
