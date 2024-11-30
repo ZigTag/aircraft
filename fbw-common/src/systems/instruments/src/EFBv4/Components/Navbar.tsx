@@ -18,8 +18,8 @@ interface NavbarProps extends ComponentProps {
 }
 
 interface NavButtonProps extends ComponentProps {
-  activePage: MutableSubscribable<number>;
-  page: number;
+  activePage: MutableSubscribable<number | string>;
+  page: number | string;
   class?: string;
   activeClass?: string;
   inactiveClass?: string;

@@ -3,12 +3,12 @@ import { NavButton } from './Navbar';
 import { twMerge } from 'tailwind-merge';
 import { TooltipWrapper } from '../Components/Tooltip';
 
-type SelectorTab = readonly [page: number, component: VNode, tooltipText?: string];
+type SelectorTab = readonly [page: number | string, component: VNode, tooltipText?: string];
 interface SelectorProps extends ComponentProps {
   class?: string;
   activeClass?: string;
   tabs: readonly SelectorTab[];
-  activePage: MutableSubscribable<number>;
+  activePage: MutableSubscribable<number | string>;
   innerClass?: string;
 }
 

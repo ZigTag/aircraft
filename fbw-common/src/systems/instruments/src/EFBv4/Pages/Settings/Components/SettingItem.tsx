@@ -153,19 +153,24 @@ export class InputSettingsItem<T extends string | number = string> extends Displ
   }
 }
 
-export interface ChoiceSettingsItemProps<T extends number> extends ValueSettingsItemProps<T> {
+export interface ChoiceSettingsItemProps<T extends number | string> extends ValueSettingsItemProps<T> {
   choices: Record<T, VNode>;
 }
 
-export class ChoiceSettingsItem<T extends number> extends DisplayComponent<ChoiceSettingsItemProps<T>> {
+export class ChoiceSettingsItem<T extends number | string> extends DisplayComponent<ChoiceSettingsItemProps<T>> {
   render(): VNode | null {
     return (
       <SettingsItem {...this.props}>
         <Selector
           activeClass="bg-theme-highlight text-theme-body"
-          tabs={Object.entries(this.props.choices).map(([k, v]) => [parseInt(k), v as VNode])}
+          tabs={Object.entries(this.props.choices).map(([k, v]) => {
+            const number = parseInt(k);
+
+            return [Number.isFinite(number) ? number : k, v as VNode];
+          })}
           activePage={this.props.setting}
         />
+        {this.props.children}
       </SettingsItem>
     );
   }

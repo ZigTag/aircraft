@@ -231,7 +231,7 @@ export class Statusbar extends AbstractUIView<StatusbarProps> {
 
     this.simbridgeConnectionCheckTimeout = setInterval(() => {
       this.simBridgeConnected.set(
-        ClientState.getInstance().getSimBridgeClientState() === SimBridgeClientState.CONNECTED,
+        ClientState.getInstance(this.bus).getSimBridgeClientState() === SimBridgeClientState.CONNECTED,
       );
     });
   }

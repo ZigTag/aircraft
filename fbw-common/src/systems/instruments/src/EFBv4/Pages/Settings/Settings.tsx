@@ -53,7 +53,10 @@ export class Settings extends AbstractUIView<SettingsProps> {
     ],
     [
       PageEnum.SettingsPage.SimOptions,
-      <SettingsSimOptionsPage returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)} />,
+      <SettingsSimOptionsPage
+        settings={this.props.settings}
+        returnHome={() => this.activePageSetter(PageEnum.SettingsPage.Index)}
+      />,
     ],
     [
       PageEnum.SettingsPage.Realism,

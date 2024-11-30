@@ -4,6 +4,8 @@ import { EFBv4 } from './EFBv4';
 import { busContext, initializeEventBusContext } from './Contexts';
 import { EFBSimvarPublisher } from './EFBSimvarPublisher';
 import { EfbV4FsInstrumentAircraftSpecificData } from './EfbV4FsInstrumentAircraftSpecificData';
+import { SimBridgeStatePublisher } from '@shared/simbridge/components/SimBridgeStatePublisher';
+import { FbwUserSettings } from './FbwUserSettings';
 
 export const EFB_EVENT_BUS = new EventBus();
 
@@ -14,9 +16,14 @@ export class EfbV4FsInstrument implements FsInstrument {
 
   private readonly hEventPublisher = new HEventPublisher(this.bus);
 
+  private readonly SimBridgeStatePublisher = new SimBridgeStatePublisher(
+    this.bus,
+    FbwUserSettings.getManager(EFB_EVENT_BUS, this.aircraftSpecificData.defaultAutoCalloutsSettingValue),
+  );
+
   constructor(
     public readonly instrument: BaseInstrument,
-    aircraftSpecificData: EfbV4FsInstrumentAircraftSpecificData, // TODO replace this with a plugin system. ACO settings should be in an aircraft-specific manager
+    private readonly aircraftSpecificData: EfbV4FsInstrumentAircraftSpecificData, // TODO replace this with a plugin system. ACO settings should be in an aircraft-specific manager
   ) {
     this.backplane.addInstrument('clock', new Clock(this.bus));
     this.backplane.addPublisher('efb', new EFBSimvarPublisher(this.bus));
