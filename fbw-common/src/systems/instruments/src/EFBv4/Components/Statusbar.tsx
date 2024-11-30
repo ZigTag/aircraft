@@ -1,22 +1,21 @@
 import {
+  ComponentProps,
+  ConsumerSubject,
   DisplayComponent,
   FSComponent,
-  VNode,
-  ComponentProps,
-  EventBus,
-  Subscribable,
-  ConsumerSubject,
-  Subject,
   MappedSubject,
+  Subject,
+  Subscribable,
   UserSettingManager,
+  VNode,
 } from '@microsoft/msfs-sdk';
 import { LocalizedString } from '../Shared/translation';
 import { PageEnum } from '../Shared/common';
 import { Switch } from '../Pages/Pages';
-import { busContext } from '../Contexts';
 import { EFBSimvars } from '../EFBSimvarPublisher';
-import { FbwUserSettings, FbwUserSettingsDefs, FlypadTimeDisplay, FlypadTimeFormat } from '../FbwUserSettings';
-import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
+import { FbwUserSettingsDefs, FlypadTimeDisplay, FlypadTimeFormat } from '../FbwUserSettings';
+import { AbstractUIView, UIVIew } from '../Shared';
+import { ClientState, SimBridgeClientState } from '@shared/simbridge';
 
 export class QuickControls extends DisplayComponent<any> {
   render(): VNode {
@@ -115,8 +114,8 @@ interface StatusbarProps extends ComponentProps {
   isCharging: Subscribable<boolean>;
 }
 
-export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
-  public override contextType = [busContext] as const;
+export class Statusbar extends AbstractUIView<StatusbarProps> {
+  private simbridgeConnectionCheckTimeout: ReturnType<typeof window.setInterval> | null = null;
 
   private readonly currentUTC = ConsumerSubject.create(null, 0);
 
@@ -175,59 +174,74 @@ export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
     this.timeFormat,
   );
 
-  private readonly simBridgeConnected: Subject<boolean> = Subject.create(false);
+  private readonly simBridgeConnected = Subject.create(false);
 
   private readonly wifiClass = this.simBridgeConnected.map(
     (isConnected) => `bi-${isConnected ? 'wifi' : 'wifi-off'} text-inherit text-[26px]`,
   );
 
-  private get bus() {
-    return this.getContext(busContext).get();
-  }
-
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
     const sub = this.bus.getSubscriber<EFBSimvars>();
-    this.currentUTC.setConsumer(sub.on('currentUTC'));
-    this.currentLocalTime.setConsumer(sub.on('currentLocalTime'));
-    this.dayOfWeek.setConsumer(sub.on('dayOfWeek'));
-    this.monthOfYear.setConsumer(sub.on('monthOfYear'));
-    this.dayOfMonth.setConsumer(sub.on('dayOfMonth'));
-    this.dayOfWeek.setConsumer(sub.on('dayOfWeek'));
+    this.subscriptions.push(
+      this.currentUTC.setConsumer(sub.on('currentUTC')),
+      this.currentLocalTime.setConsumer(sub.on('currentLocalTime')),
+      this.dayOfWeek.setConsumer(sub.on('dayOfWeek')),
+      this.monthOfYear.setConsumer(sub.on('monthOfYear')),
+      this.dayOfMonth.setConsumer(sub.on('dayOfMonth')),
+      this.dayOfWeek.setConsumer(sub.on('dayOfWeek')),
+    );
+    this.subscriptions.push(
+      this.dayOfWeek.sub((value) => {
+        this.dayName.set(
+          [
+            'StatusBar.Sun',
+            'StatusBar.Mon',
+            'StatusBar.Tue',
+            'StatusBar.Wed',
+            'StatusBar.Thu',
+            'StatusBar.Fri',
+            'StatusBar.Sat',
+          ][value],
+        );
+      }, true),
+    );
 
-    this.dayOfWeek.sub((value) => {
-      this.dayName.set(
-        [
-          'StatusBar.Sun',
-          'StatusBar.Mon',
-          'StatusBar.Tue',
-          'StatusBar.Wed',
-          'StatusBar.Thu',
-          'StatusBar.Fri',
-          'StatusBar.Sat',
-        ][value],
-      );
-    }, true);
+    this.subscriptions.push(
+      this.monthOfYear.sub((value) => {
+        this.monthName.set(
+          [
+            'StatusBar.Jan',
+            'StatusBar.Feb',
+            'StatusBar.Mar',
+            'StatusBar.Apr',
+            'StatusBar.May',
+            'StatusBar.Jun',
+            'StatusBar.Jul',
+            'StatusBar.Aug',
+            'StatusBar.Sep',
+            'StatusBar.Oct',
+            'StatusBar.Nov',
+            'StatusBar.Dec',
+          ][value - 1],
+        );
+      }, true),
+    );
 
-    this.monthOfYear.sub((value) => {
-      this.monthName.set(
-        [
-          'StatusBar.Jan',
-          'StatusBar.Feb',
-          'StatusBar.Mar',
-          'StatusBar.Apr',
-          'StatusBar.May',
-          'StatusBar.Jun',
-          'StatusBar.Jul',
-          'StatusBar.Aug',
-          'StatusBar.Sep',
-          'StatusBar.Oct',
-          'StatusBar.Nov',
-          'StatusBar.Dec',
-        ][value - 1],
+    this.simbridgeConnectionCheckTimeout = setInterval(() => {
+      this.simBridgeConnected.set(
+        ClientState.getInstance().getSimBridgeClientState() === SimBridgeClientState.CONNECTED,
       );
-    }, true);
+    });
+  }
+
+  destroy(childFilter?: (child: UIVIew) => boolean) {
+    super.destroy(childFilter);
+
+    if (this.simbridgeConnectionCheckTimeout) {
+      clearInterval(this.simbridgeConnectionCheckTimeout);
+    }
   }
 
   render(): VNode {

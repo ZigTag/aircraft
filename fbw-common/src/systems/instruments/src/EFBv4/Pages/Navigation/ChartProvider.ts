@@ -1,9 +1,13 @@
+import { PageEnum } from '../../Shared';
+
 export interface ChartProvider<C extends string | number> {
   canGetChartsForAirport: boolean;
 
   getChartsForAirport(icao: string): Promise<FlypadAirportCharts<C>>;
 
   getChartImage(chartID: string, theme: ChartTheme, page?: number): Promise<string>;
+
+  getCategoryForTab(tab: PageEnum.ChartCategory): C;
 }
 
 export enum ChartsError {

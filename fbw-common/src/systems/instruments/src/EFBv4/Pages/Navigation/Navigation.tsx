@@ -68,13 +68,11 @@ export interface NavigraphPageProps {
 export class NavigraphPage extends DisplayComponent<NavigraphPageProps> {
   render(): VNode | null {
     return (
-      <NavigraphAuthWrapper>
-        <NavigraphUI
-          simbriefState={this.props.simbriefState}
-          navigationState={this.props.navigationState}
-          navigraphState={this.props.navigraphState}
-        />
-      </NavigraphAuthWrapper>
+      <NavigraphUI
+        simbriefState={this.props.simbriefState}
+        navigationState={this.props.navigationState}
+        navigraphState={this.props.navigraphState}
+      />
     );
   }
 }
@@ -106,7 +104,7 @@ interface ChartSelectorProps<C extends string | number> {
 
   navigationState: NavigationState;
 
-  selectedCategory: Subscribable<C>;
+  selectedCategory: Subscribable<PageEnum.ChartCategory>;
 }
 
 export class ChartSelector<C extends string | number> extends AbstractUIView<ChartSelectorProps<C>> {
@@ -117,19 +115,16 @@ export class ChartSelector<C extends string | number> extends AbstractUIView<Cha
 
     this.subscriptions.push(
       MappedSubject.create(
-        async ([user, selectedCategory]) => {
-          if (!user) {
-            this.charts.set([]);
-            return;
-          }
-
-          const filteredCharts = this.props.navigationState.displayedCharts.get()[selectedCategory];
+        async ([selectedCategory]) => {
+          const filteredCharts =
+            this.props.navigationState.displayedCharts.get()[
+              this.props.provider.getCategoryForTab(selectedCategory).toString().toUpperCase()
+            ];
 
           if (filteredCharts) {
             this.charts.set(filteredCharts);
           }
         },
-        this.props.navigraphState.user,
         this.props.selectedCategory,
         this.props.navigationState.displayedCharts,
       ),

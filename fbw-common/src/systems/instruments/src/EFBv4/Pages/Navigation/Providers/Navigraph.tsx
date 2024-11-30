@@ -24,25 +24,6 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
 
   private readonly selectedCategory = Subject.create(PageEnum.ChartCategory.Star);
 
-  private readonly selectedCategoryAsNavigraphChartCategory: Subscribable<ChartCategory> = this.selectedCategory.map(
-    (it) => {
-      switch (it) {
-        case PageEnum.ChartCategory.Star:
-          return 'ARR';
-        case PageEnum.ChartCategory.App:
-          return 'APP';
-        case PageEnum.ChartCategory.Sid:
-          return 'DEP';
-        case PageEnum.ChartCategory.Taxi:
-          return 'APT';
-        case PageEnum.ChartCategory.Ref:
-          return 'REF';
-        default:
-          throw new Error('[NavigraphUI](selectedCategoryAsNavigraphChartCategory) Unknown selected category');
-      }
-    },
-  );
-
   private provider = new NavigraphChartProvider(this.props.navigraphState);
 
   private handleIcaoChangeTimer = new DebounceTimer();
@@ -141,7 +122,7 @@ export class NavigraphUI extends DisplayComponent<NavigraphUIProps> {
                         provider={this.provider}
                         navigraphState={this.props.navigraphState}
                         navigationState={this.props.navigationState}
-                        selectedCategory={this.selectedCategoryAsNavigraphChartCategory}
+                        selectedCategory={this.selectedCategory}
                       />
                     </ScrollableContainer>
                   }

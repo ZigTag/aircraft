@@ -9,6 +9,7 @@ import {
 import { navigraphCharts } from '../../../../navigraph';
 import { Chart, ChartCategory } from 'navigraph/charts';
 import { NavigraphAuthState } from '../../../State/NavigationState';
+import { PageEnum } from '../../../Shared';
 
 export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
   public canGetChartsForAirport = true;
@@ -115,5 +116,22 @@ export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
     this.chartUrlCache.set(chartUrlKey, url);
 
     return url;
+  }
+
+  getCategoryForTab(tab: PageEnum.ChartCategory): ChartCategory {
+    switch (tab) {
+      case PageEnum.ChartCategory.Star:
+        return 'ARR';
+      case PageEnum.ChartCategory.App:
+        return 'APP';
+      case PageEnum.ChartCategory.Sid:
+        return 'DEP';
+      case PageEnum.ChartCategory.Taxi:
+        return 'APT';
+      case PageEnum.ChartCategory.Ref:
+        return 'REF';
+      default:
+        throw new Error('[NavigraphChartProvider](getCategoryForTab) Unknown selected category');
+    }
   }
 }
