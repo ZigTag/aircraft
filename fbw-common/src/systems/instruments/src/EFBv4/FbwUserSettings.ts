@@ -388,6 +388,7 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     },
 
     // TODO AircraftOptionsPinProgramsPage
+    // TODO SimOptionsPort
     // TODO RealismPage
     // TODO ThirdPartyOptionsPage
     A32NX_CONFIG_ATIS_SRC: {
