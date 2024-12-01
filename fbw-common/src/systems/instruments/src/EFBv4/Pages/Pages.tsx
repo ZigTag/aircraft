@@ -30,6 +30,7 @@ import { NavigationState, NavigraphAuthState, SimbriefState } from '../State/Nav
 import { EFB_EVENT_BUS } from '../EfbV4FsInstrument';
 import { PerformanceCalculators } from '@shared/performance';
 import { SettingsPages } from '../EfbV4FsInstrumentAircraftSpecificData';
+import { SimBridgeState } from '../State/SimBridgeState';
 
 // Page should be an enum
 export type Pages = readonly [page: number, component: VNode][];
@@ -44,13 +45,15 @@ interface MainPageProps extends ComponentProps {
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
-  private navigationState = new NavigationState();
+  private readonly navigationState = new NavigationState();
 
-  private simbriefState = new SimbriefState(this.props.flypadClient);
+  private readonly simbriefState = new SimbriefState(this.props.flypadClient);
 
-  private groundState = new GroundState(EFB_EVENT_BUS);
+  private readonly groundState = new GroundState(EFB_EVENT_BUS);
 
   private readonly navigraphAuthState = new NavigraphAuthState();
+
+  private readonly simBridgeState = new SimBridgeState(EFB_EVENT_BUS);
 
   private readonly pages: Pages = [
     [
@@ -77,6 +80,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
         simbriefState={this.simbriefState}
         navigationState={this.navigationState}
         navigraphState={this.navigraphAuthState}
+        simBridgeState={this.simBridgeState}
       />,
     ],
     [PageEnum.MainPage.ATC, <Atc settings={this.props.settings} />],

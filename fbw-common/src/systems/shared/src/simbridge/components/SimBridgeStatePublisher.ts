@@ -96,12 +96,14 @@ export class SimBridgeStatePublisher {
             this.available = true;
             this.connectionAttemptCounter = 0;
 
+            this.setSimBridgeState();
             this.publish();
           } else {
             this.available = false;
             console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter:
                                     ${this.connectionAttemptCounter} of ${this.maxSimBridgeConnectionAttempts}`);
 
+            this.setSimBridgeState();
             this.publish();
           }
         })
@@ -110,6 +112,7 @@ export class SimBridgeStatePublisher {
           console.log(`[SimBridge-Client] SimBridge is not available. Connection attempt counter:
                             ${this.connectionAttemptCounter} of ${this.maxSimBridgeConnectionAttempts}`);
 
+          this.setSimBridgeState();
           this.publish();
         });
     }
@@ -119,8 +122,8 @@ export class SimBridgeStatePublisher {
   }
 
   private publish() {
-    this.publisher.pub('simbridge.available', this.available, true);
     this.publisher.pub('simbridge.state', this.simBridgeState, true);
+    this.publisher.pub('simbridge.available', this.available, true);
   }
 
   /**

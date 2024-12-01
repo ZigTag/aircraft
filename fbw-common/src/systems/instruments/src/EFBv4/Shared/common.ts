@@ -58,6 +58,10 @@ export namespace PageEnum {
     Sid,
     Taxi,
     Ref,
+    // Local charts
+    Image,
+    Pdf,
+    ImageAndPdf,
   }
 
   export enum FailuresPage {

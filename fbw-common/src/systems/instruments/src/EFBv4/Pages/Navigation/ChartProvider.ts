@@ -3,11 +3,15 @@ import { PageEnum } from '../../Shared';
 export interface ChartProvider<C extends string | number> {
   canGetChartsForAirport: boolean;
 
-  getChartsForAirport(icao: string): Promise<FlypadAirportCharts<C>>;
+  canGetAllCharts: boolean;
+
+  getChartsForAirport(icao: string): Promise<FlypadChartIndex<C>>;
+
+  getAllCharts(): Promise<FlypadChartIndex<C>>;
 
   getChartImage(chartID: string, theme: ChartTheme, page?: number): Promise<string>;
 
-  getCategoryForTab(tab: PageEnum.ChartCategory): C;
+  getCategoriesForTab(tab: PageEnum.ChartCategory): C[];
 }
 
 export enum ChartsError {
@@ -21,7 +25,7 @@ export enum ChartTheme {
   Dark,
 }
 
-export interface FlypadAirportCharts<C extends string | number> {
+export interface FlypadChartIndex<C extends string | number> {
   charts: Record<C, FlypadChart[]>;
 }
 
@@ -30,7 +34,7 @@ export interface FlypadChart<C extends string | number = string | number> {
 
   name: string;
 
-  airportIcao: string;
+  airportIcao: string | null;
 
   indexNumber: string;
 

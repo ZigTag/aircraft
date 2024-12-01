@@ -1,7 +1,7 @@
 import {
   ChartsError,
   ChartProvider,
-  FlypadAirportCharts,
+  FlypadChartIndex,
   FlypadChart,
   ChartTheme,
   ChartSemanticColor,
@@ -12,7 +12,9 @@ import { NavigraphAuthState } from '../../../State/NavigationState';
 import { PageEnum } from '../../../Shared';
 
 export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
-  public canGetChartsForAirport = true;
+  public readonly canGetChartsForAirport = true;
+
+  public readonly canGetAllCharts = false;
 
   private chartCache = new Map<string, Chart>();
 
@@ -20,7 +22,7 @@ export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
 
   constructor(private readonly navigraphState: NavigraphAuthState) {}
 
-  async getChartsForAirport(icao: string): Promise<FlypadAirportCharts<ChartCategory>> {
+  async getChartsForAirport(icao: string): Promise<FlypadChartIndex<ChartCategory>> {
     if (!this.navigraphState.user.get()) {
       throw ChartsError.NotAuthenticated;
     }
@@ -82,6 +84,10 @@ export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
     };
   }
 
+  getAllCharts(): Promise<FlypadChartIndex<ChartCategory>> {
+    throw new Error('Method not implemented.');
+  }
+
   async getChartImage(chartID: string, theme: ChartTheme, page = 1): Promise<string> {
     if (page !== 1) {
       console.warn(
@@ -118,18 +124,18 @@ export class NavigraphChartProvider implements ChartProvider<ChartCategory> {
     return url;
   }
 
-  getCategoryForTab(tab: PageEnum.ChartCategory): ChartCategory {
+  getCategoriesForTab(tab: PageEnum.ChartCategory): ChartCategory[] {
     switch (tab) {
       case PageEnum.ChartCategory.Star:
-        return 'ARR';
+        return ['ARR'];
       case PageEnum.ChartCategory.App:
-        return 'APP';
+        return ['APP'];
       case PageEnum.ChartCategory.Sid:
-        return 'DEP';
+        return ['DEP'];
       case PageEnum.ChartCategory.Taxi:
-        return 'APT';
+        return ['APT'];
       case PageEnum.ChartCategory.Ref:
-        return 'REF';
+        return ['REF'];
       default:
         throw new Error('[NavigraphChartProvider](getCategoryForTab) Unknown selected category');
     }

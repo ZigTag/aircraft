@@ -1,7 +1,7 @@
 import { FlypadClient } from '@shared/flypad-server';
 import { ArraySubject, Subject, Subscribable, SubscribableArray } from '@microsoft/msfs-sdk';
 import { ISimbriefData, simbriefDataParser } from '../../EFB/Apis/Simbrief';
-import { ChartProvider, ChartsError, FlypadAirportCharts, FlypadChart } from '../Pages/Navigation/ChartProvider';
+import { ChartProvider, ChartsError, FlypadChartIndex, FlypadChart } from '../Pages/Navigation/ChartProvider';
 import { DeviceFlowParams, User } from 'navigraph/auth';
 import { navigraphAuth } from '../../navigraph';
 import { NotificationKind, showNotification } from '../Components';
@@ -38,14 +38,14 @@ export class NavigationState {
 
   public readonly pinnedCharts: SubscribableArray<FlypadChart> = this._pinnedCharts;
 
-  public async displayChartsForAirport(provider: ChartProvider<any>, icao: string): Promise<void> {
+  public async displayChartsForAirport(provider: ChartProvider<string | number>, icao: string): Promise<void> {
     const validatedIcao = icao.match(/[A-Za-z][A-Za-z][A-Za-z][A-Za-z]?/);
 
     if (!validatedIcao) {
       return;
     }
 
-    let charts: FlypadAirportCharts<any> | null = null;
+    let charts: FlypadChartIndex<any> | null = null;
 
     this._chartsLoading.set(true);
 
@@ -68,6 +68,38 @@ export class NavigationState {
     }
 
     if (charts) {
+      this._displayedCharts.set(charts.charts);
+    }
+  }
+
+  public async displayAllCharts<C extends string | number>(provider: ChartProvider<C>): Promise<void> {
+    let charts: FlypadChartIndex<C> | null = null;
+
+    this._chartsLoading.set(true);
+
+    try {
+      charts = await provider.getAllCharts();
+    } catch (e) {
+      switch (e as ChartsError) {
+        case ChartsError.NotAuthenticated:
+          // TODO i18n
+          showNotification({ kind: NotificationKind.Error, text: 'Not authenticated to Navigraph' });
+          break;
+        case ChartsError.ServerError:
+          // TODO i18n
+          showNotification({ kind: NotificationKind.Error, text: 'Server error while requesting charts' });
+          break;
+        case ChartsError.Unknown:
+          // TODO i18n
+          showNotification({ kind: NotificationKind.Error, text: 'Unknown error while request charts' });
+          break;
+      }
+    } finally {
+      this._chartsLoading.set(false);
+    }
+
+    if (charts) {
+      console.log('SETTING _displayedCharts:', charts.charts);
       this._displayedCharts.set(charts.charts);
     }
   }

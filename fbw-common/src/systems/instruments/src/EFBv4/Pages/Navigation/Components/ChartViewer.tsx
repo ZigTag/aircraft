@@ -1,4 +1,5 @@
 import {
+  Accessible,
   CssTransformBuilder,
   CssTransformSubject,
   FSComponent,
@@ -16,7 +17,7 @@ import { twMerge } from 'tailwind-merge';
 import { LoadingSpinner } from '../../../Components/LoadingSpinner';
 
 export interface ChartViewerProps {
-  provider: ChartProvider<string | number>;
+  provider: Accessible<ChartProvider<string | number>>;
 
   shownChartID: Subscribable<string | null>;
 
@@ -113,11 +114,11 @@ export class ChartViewer extends AbstractUIView<ChartViewerProps> {
           return;
         }
 
-        const nightUrl = await this.props.provider.getChartImage(chartID, ChartTheme.Dark);
+        const nightUrl = await this.props.provider.get().getChartImage(chartID, ChartTheme.Dark);
 
         this.chartImageDarkUrl.set(nightUrl);
 
-        const dayUrl = await this.props.provider.getChartImage(chartID, ChartTheme.Light);
+        const dayUrl = await this.props.provider.get().getChartImage(chartID, ChartTheme.Light);
 
         this.chartImageDarkUrl.set(nightUrl);
         this.chartImageLightUrl.set(dayUrl);

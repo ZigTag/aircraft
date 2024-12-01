@@ -1,8 +1,16 @@
-import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  Accessible,
+  DisplayComponent,
+  FSComponent,
+  MappedSubject,
+  Subject,
+  Subscribable,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { PageTitle } from '../../Components/PageTitle';
 import { t } from '../../Components/LocalizedText';
 import { Selector } from '../../Components/Selector';
-import { Pages, Switch, SwitchIf } from '../Pages';
+import { Pages, SwitchIf, SwitchOn } from '../Pages';
 import { PageEnum } from '../../Shared/common';
 import { NavigraphKeys } from '@shared/navigraph';
 import { twMerge } from 'tailwind-merge';
@@ -11,7 +19,8 @@ import { ChartProvider, FlypadChart } from './ChartProvider';
 import { Button } from '../../Components/Button';
 import { NavigationState, NavigraphAuthState, SimbriefState } from '../../State/NavigationState';
 import { AbstractUIView } from '../../Shared';
-import { NavigraphUI } from './Providers/Navigraph';
+import { ChartsUI, ChosenChartsProvider } from './Providers/ChartsUI';
+import { SimBridgeState } from '../../State/SimBridgeState';
 
 export interface NavigationProps {
   simbriefState: SimbriefState;
@@ -19,10 +28,26 @@ export interface NavigationProps {
   navigationState: NavigationState;
 
   navigraphState: NavigraphAuthState;
+
+  simBridgeState: SimBridgeState;
 }
 
 export class Navigation extends DisplayComponent<NavigationProps> {
   private readonly activePage = Subject.create(PageEnum.NavigationPage.Navigraph);
+
+  private readonly activePageIsChartProvider = this.activePage.map(
+    (it) => it === PageEnum.NavigationPage.Navigraph || it === PageEnum.NavigationPage.LocalFiles,
+  );
+
+  private readonly activePageChartProvider = this.activePage.map((it) => {
+    switch (it) {
+      case PageEnum.NavigationPage.Navigraph:
+        return ChosenChartsProvider.Navigraph;
+      default:
+      case PageEnum.NavigationPage.LocalFiles:
+        return ChosenChartsProvider.SimBridge;
+    }
+  });
 
   private readonly tabs: Pages = [
     [PageEnum.NavigationPage.Navigraph, <>{t('NavigationAndCharts.Navigraph.Title')}</>],
@@ -37,42 +62,19 @@ export class Navigation extends DisplayComponent<NavigationProps> {
           <PageTitle>{t('NavigationAndCharts.Title')}</PageTitle>
           <Selector tabs={this.tabs} activePage={this.activePage} />
         </div>
-        <Switch
-          activePage={this.activePage}
-          pages={[
-            [
-              PageEnum.NavigationPage.Navigraph,
-              <NavigraphPage
-                simbriefState={this.props.simbriefState}
-                navigationState={this.props.navigationState}
-                navigraphState={this.props.navigraphState}
-              />,
-            ],
-            [PageEnum.NavigationPage.LocalFiles, <span />],
-            [PageEnum.NavigationPage.PinnedCharts, <span />],
-          ]}
+        <SwitchOn
+          condition={this.activePageIsChartProvider}
+          on={
+            <ChartsUI
+              currentProvider={this.activePageChartProvider}
+              simbriefState={this.props.simbriefState}
+              navigationState={this.props.navigationState}
+              navigraphState={this.props.navigraphState}
+              simBridgeState={this.props.simBridgeState}
+            />
+          }
         />
       </div>
-    );
-  }
-}
-
-export interface NavigraphPageProps {
-  simbriefState: SimbriefState;
-
-  navigationState: NavigationState;
-
-  navigraphState: NavigraphAuthState;
-}
-
-export class NavigraphPage extends DisplayComponent<NavigraphPageProps> {
-  render(): VNode | null {
-    return (
-      <NavigraphUI
-        simbriefState={this.props.simbriefState}
-        navigationState={this.props.navigationState}
-        navigraphState={this.props.navigraphState}
-      />
     );
   }
 }
@@ -89,16 +91,8 @@ export class NavigraphAuthWrapper extends DisplayComponent<any> {
   }
 }
 
-export interface NavigraphUIProps {
-  simbriefState: SimbriefState;
-
-  navigationState: NavigationState;
-
-  navigraphState: NavigraphAuthState;
-}
-
 interface ChartSelectorProps<C extends string | number> {
-  provider: ChartProvider<C>;
+  provider: Accessible<ChartProvider<C>>;
 
   navigraphState: NavigraphAuthState;
 
@@ -116,14 +110,20 @@ export class ChartSelector<C extends string | number> extends AbstractUIView<Cha
     this.subscriptions.push(
       MappedSubject.create(
         async ([selectedCategory]) => {
-          const filteredCharts =
-            this.props.navigationState.displayedCharts.get()[
-              this.props.provider.getCategoryForTab(selectedCategory).toString().toUpperCase()
-            ];
+          const allCharts = this.props.navigationState.displayedCharts.get();
+          const filteredCharts: FlypadChart[] = [];
 
-          if (filteredCharts) {
-            this.charts.set(filteredCharts);
+          console.log(`NOW: ${PageEnum.ChartCategory[selectedCategory]}`, allCharts);
+
+          const categoryForTab = this.props.provider.get().getCategoriesForTab(selectedCategory);
+
+          for (const category of categoryForTab) {
+            if (category in allCharts) {
+              filteredCharts.push(...allCharts[category]);
+            }
           }
+
+          this.charts.set(filteredCharts);
         },
         this.props.selectedCategory,
         this.props.navigationState.displayedCharts,
@@ -216,7 +216,7 @@ class ChartCard extends AbstractUIView<ChartCardProps> {
           </Button>
         </div>
         <div class="m-2 flex flex-col">
-          <span>{this.props.chart.name || 'BRUH'}</span>
+          <span class="w-72 truncate">{this.props.chart.name}</span>
           <span class="mr-auto rounded-sm bg-theme-secondary px-2 text-sm text-theme-text">
             {this.props.chart.indexNumber}
           </span>
