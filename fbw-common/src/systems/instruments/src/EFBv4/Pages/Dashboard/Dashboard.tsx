@@ -2,7 +2,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import {
+  ArraySubject,
+  DisplayComponent,
+  FSComponent,
+  Subject,
+  Subscribable,
+  UserSettingManager,
+  VNode,
+} from '@microsoft/msfs-sdk';
 import { FlypadClient } from '@flybywiresim/fbw-sdk';
 import { t } from '../../Components/LocalizedText';
 import { WeatherReminder } from './Widgets/WeatherWidget';
@@ -12,7 +20,7 @@ import { PageTitle } from '../../Components/PageTitle';
 import { PageBox } from '../../Components/PageBox';
 import { Button } from '../../Components/Button';
 import { flypadClientContext } from '../../Contexts';
-import { NavigationState, NavigraphAuthState, Pages, SimbriefState, Switch, SwitchIf, SwitchOn } from '../Pages';
+import { Pages, Switch, SwitchIf, SwitchOn } from '../Pages';
 import { ISimbriefData } from '../../../EFB/Apis/Simbrief';
 import { RemindersSection } from './Widgets/ReminderSection';
 import { ScrollableContainer } from '../../Components/ScrollableContainer';
@@ -21,6 +29,8 @@ import { PinnedChartCard } from '../Navigation/Components/PinnedChart';
 import { twMerge } from 'tailwind-merge';
 import { AirplaneIndicator } from 'instruments/src/EFBv4/Assets/AirplaneIndicator';
 import { TooltipWrapper } from 'instruments/src/EFBv4/Components/Tooltip';
+import { FbwUserSettingsDefs } from '../../FbwUserSettings';
+import { NavigationState, NavigraphAuthState, SimbriefState } from '../../State/NavigationState';
 
 export interface FlightWidgetProps {
   simbriefState: SimbriefState;
@@ -353,6 +363,8 @@ interface RemindersWidgetProps {
   simbriefState: SimbriefState;
 
   navigationState: NavigationState;
+
+  settings: UserSettingManager<FbwUserSettingsDefs>;
 }
 
 interface ReminderKeyEditCardProps {
@@ -484,7 +496,7 @@ export class RemindersWidget extends DisplayComponent<RemindersWidgetProps> {
               render={(key) => {
                 switch (key) {
                   case PageEnum.ReminderWidgets.Weather:
-                    return <WeatherReminder simbriefState={this.props.simbriefState} />;
+                    return <WeatherReminder simbriefState={this.props.simbriefState} settings={this.props.settings} />;
                   case PageEnum.ReminderWidgets.PinnedCharts:
                     return <PinnedChartsReminder navigationState={this.props.navigationState} />;
                   case PageEnum.ReminderWidgets.Maintenance:
@@ -541,8 +553,12 @@ class InformationEntry extends DisplayComponent<InformationEntryProps> {
 }
 export interface DashboardProps {
   simbriefState: SimbriefState;
+
   navigraphAuthState: NavigraphAuthState;
+
   navigationState: NavigationState;
+
+  settings: UserSettingManager<FbwUserSettingsDefs>;
 }
 
 export class Dashboard extends AbstractUIView<DashboardProps> {
@@ -550,7 +566,11 @@ export class Dashboard extends AbstractUIView<DashboardProps> {
     return (
       <div ref={this.rootRef} class="flex w-full space-x-8">
         <FlightWidget simbriefState={this.props.simbriefState} navigraphAuthState={this.props.navigraphAuthState} />
-        <RemindersWidget simbriefState={this.props.simbriefState} navigationState={this.props.navigationState} />
+        <RemindersWidget
+          simbriefState={this.props.simbriefState}
+          navigationState={this.props.navigationState}
+          settings={this.props.settings}
+        />
       </div>
     );
   }

@@ -62,6 +62,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
         simbriefState={this.simbriefState}
         navigraphAuthState={this.navigraphAuthState}
         navigationState={this.navigationState}
+        settings={this.props.settings}
       />,
     ],
     [PageEnum.MainPage.Dispatch, <Dispatch settings={this.props.settings} simbriefState={this.simbriefState} />],

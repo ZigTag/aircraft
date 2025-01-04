@@ -5,18 +5,21 @@ import {
   MappedSubject,
   Subject,
   Subscribable,
+  UserSettingManager,
   VNode,
 } from '@microsoft/msfs-sdk';
 import { FlypadClient, MetarParserType } from '@flybywiresim/fbw-sdk';
 import { PageEnum } from '../../../Shared/common';
-import { Pages, SimbriefState, Switch } from '../../Pages';
+import { Pages, Switch } from '../../Pages';
 import { flypadClientContext } from '../../../Contexts';
 import { ColoredMetar } from './ColoredMetar';
 import { t } from '../../../Components/LocalizedText';
 import { RemindersSection } from './ReminderSection';
 import { SimpleInput } from 'instruments/src/EFBv4/Components/SimpleInput';
 import { Toggle } from '../../../Components/Toggle';
+import { FbwUserSettingsDefs, InitBaroUnit } from '../../../FbwUserSettings';
 import WeatherWidgetType = PageEnum.WeatherWidgetType;
+import { SimbriefState } from '../../../State/NavigationState';
 
 const emptyMetar = {
   raw_text: '',
@@ -65,6 +68,8 @@ const emptyMetar = {
 
 interface WeatherReminderProps {
   simbriefState: SimbriefState;
+
+  settings: UserSettingManager<FbwUserSettingsDefs>;
 }
 
 export class WeatherReminder extends DisplayComponent<WeatherReminderProps> {
@@ -72,9 +77,9 @@ export class WeatherReminder extends DisplayComponent<WeatherReminderProps> {
     return (
       <RemindersSection title={t('Dashboard.ImportantInformation.Weather.Title')}>
         <div class="space-y-6">
-          <WeatherWidget name="origin" simbriefState={this.props.simbriefState} />
+          <WeatherWidget name="origin" simbriefState={this.props.simbriefState} settings={this.props.settings} />
           <div class="h-1 w-full rounded-full bg-theme-accent" />
-          <WeatherWidget name="destination" simbriefState={this.props.simbriefState} />
+          <WeatherWidget name="destination" simbriefState={this.props.simbriefState} settings={this.props.settings} />
         </div>
       </RemindersSection>
     );
@@ -83,7 +88,10 @@ export class WeatherReminder extends DisplayComponent<WeatherReminderProps> {
 
 interface WeatherWidgetProps extends ComponentProps {
   name: string;
+
   simbriefState: SimbriefState;
+
+  settings: UserSettingManager<FbwUserSettingsDefs>;
 }
 
 export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadClient]> {
@@ -140,6 +148,7 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
           metarError={this.metarError}
           icaoSuggestion={this.icaoSuggestion}
           onIcaoEntered={(icao) => this.showMetarForIcao(icao)}
+          settings={this.props.settings}
         />
       </div>
     );
@@ -148,10 +157,12 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
 
 interface WeatherWidgetVisualProps {
   metar: Subscribable<MetarParserType | null>;
+
+  settings: UserSettingManager<FbwUserSettingsDefs>;
 }
 
 class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
-  private readonly baroType = Subject.create('HPA');
+  private readonly baroType = this.props.settings.getSetting('fbwInitBaroUnit');
 
   private readonly baroOutput: Subscribable<string>;
 
@@ -164,8 +175,10 @@ class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
   constructor(props: any) {
     super(props);
 
-    const getBaroTypeForAirport = (icao: string) =>
-      ['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA';
+    const getBaroTypeForAirport = (icao: string): InitBaroUnit =>
+      ['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ'].some((r) => icao.toUpperCase().startsWith(r))
+        ? InitBaroUnit.InHg
+        : InitBaroUnit.Hpa;
 
     this.baroOutput = MappedSubject.create(
       ([metar, baroType]) => {
@@ -173,7 +186,7 @@ class WeatherWidgetVisual extends DisplayComponent<WeatherWidgetVisualProps> {
           return 'N/A';
         }
 
-        const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
+        const displayedBaroType = baroType === InitBaroUnit.Auto ? getBaroTypeForAirport(metar.icao) : baroType;
 
         switch (displayedBaroType) {
           case 'IN HG':
@@ -273,6 +286,8 @@ interface WeatherWidgetDataProps {
   icaoSuggestion: Subscribable<string>;
 
   onIcaoEntered: (icao: string) => void;
+
+  settings: UserSettingManager<FbwUserSettingsDefs>;
 }
 
 export class WeatherWidgetData extends DisplayComponent<WeatherWidgetDataProps> {
@@ -281,7 +296,10 @@ export class WeatherWidgetData extends DisplayComponent<WeatherWidgetDataProps> 
   private readonly icao = Subject.create<string | null>(null);
 
   private readonly widgetTypePages: Pages = [
-    [PageEnum.WeatherWidgetType.Visual, <WeatherWidgetVisual metar={this.props.metar} />],
+    [
+      PageEnum.WeatherWidgetType.Visual,
+      <WeatherWidgetVisual metar={this.props.metar} settings={this.props.settings} />,
+    ],
     [PageEnum.WeatherWidgetType.Raw, <ColoredMetar metar={this.props.metar} />],
   ];
 
