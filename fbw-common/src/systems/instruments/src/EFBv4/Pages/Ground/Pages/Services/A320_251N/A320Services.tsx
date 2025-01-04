@@ -7,6 +7,8 @@ import { A320GroundOutline } from '../../Widgets/GroundOutlines';
 import { ServiceButtons, ServiceButtonType } from '../../Widgets/ServiceButtons';
 
 export class A320Services extends DisplayComponent<ServicesProps> {
+  // TODO port over GPU (PR #9470)
+
   private readonly chocksClassOuter = this.props.groundState.wheelChocksVisible.map((value) => {
     return twMerge(
       `flex cursor-pointer flex-row items-center space-x-6 p-6`,
