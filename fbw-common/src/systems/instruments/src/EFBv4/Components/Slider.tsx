@@ -1,4 +1,12 @@
-import { FSComponent, DisplayComponent, Subscribable, VNode, Subject, Subscription } from '@microsoft/msfs-sdk';
+import {
+  FSComponent,
+  DisplayComponent,
+  Subscribable,
+  VNode,
+  Subject,
+  Subscription,
+  SubscribableUtils,
+} from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
 
 export interface SliderProps {
@@ -9,6 +17,8 @@ export interface SliderProps {
   max: number;
 
   onChange: (newValue: number) => void;
+
+  disabled?: boolean | Subscribable<boolean>;
 
   class?: string;
 }
@@ -25,6 +35,11 @@ export class Slider extends DisplayComponent<SliderProps> {
   private readonly thumbXPosition = Subject.create(0);
 
   private readonly isDraggingSlider = Subject.create(false);
+
+  private readonly disabled: Subscribable<boolean> = SubscribableUtils.toSubscribable(
+    this.props.disabled ?? false,
+    true,
+  );
 
   private readonly handleThumbClick = () => {
     this.isDraggingSlider.set(true);
@@ -83,6 +98,10 @@ export class Slider extends DisplayComponent<SliderProps> {
     document.removeEventListener('mousemove', this.handleThumbMove);
   }
 
+  private readonly containerClassName = this.disabled.map((it) =>
+    twMerge('flex h-3 w-60 flex-col justify-center', it && 'pointer-events-none', this.props.class),
+  );
+
   private readonly thumbClassName = this.isDraggingSlider.map((it) =>
     twMerge(
       'absolute size-5 rounded-full border-2 border-transparent bg-theme-highlight transition-colors duration-100 hover:border-white',
@@ -92,7 +111,7 @@ export class Slider extends DisplayComponent<SliderProps> {
 
   render(): VNode | null {
     return (
-      <span class={twMerge('flex h-3 w-60 flex-col justify-center', this.props.class ?? '')}>
+      <span class={this.containerClassName}>
         <span ref={this.trackRef} class="h-2.5 w-full rounded-[6px] bg-theme-accent"></span>
 
         <span

@@ -16,16 +16,8 @@ import { EFBSimvars } from '../EFBSimvarPublisher';
 import { FbwUserSettingsDefs, FlypadTimeDisplay, FlypadTimeFormat } from '../FbwUserSettings';
 import { AbstractUIView, UIVIew } from '../Shared';
 import { ClientState, SimBridgeClientState } from '@shared/simbridge';
-
-export class QuickControls extends DisplayComponent<any> {
-  render(): VNode {
-    return (
-      <div>
-        <i class="bi-gear text-[26px] text-inherit" />
-      </div>
-    );
-  }
-}
+import { QuickControls } from './QuickControls';
+import { SettingsPages } from '../EfbV4FsInstrumentAircraftSpecificData';
 
 interface BatteryStatusIconProps extends ComponentProps {
   batteryLevel: Subscribable<number>;
@@ -110,7 +102,11 @@ export class Battery extends DisplayComponent<BatteryProps> {
 }
 interface StatusbarProps extends ComponentProps {
   settings: UserSettingManager<FbwUserSettingsDefs>;
+
+  settingsPages: SettingsPages;
+
   batteryLevel: Subscribable<number>;
+
   isCharging: Subscribable<boolean>;
 }
 
@@ -256,7 +252,7 @@ export class Statusbar extends AbstractUIView<StatusbarProps> {
         </div>
 
         <div class="flex items-center space-x-4">
-          <QuickControls class="" />
+          <QuickControls settings={this.props.settings} settingsPages={this.props.settingsPages} />
           <i class={this.wifiClass} />
           <Battery batteryLevel={this.props.batteryLevel} isCharging={this.props.isCharging} />
         </div>

@@ -118,6 +118,7 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
             <>
               <Statusbar
                 settings={this.settings}
+                settingsPages={this.props.aircraftSpecificData.settingsPages}
                 batteryLevel={powerManager.batteryCharge}
                 isCharging={powerManager.isBatteryCharging}
               />

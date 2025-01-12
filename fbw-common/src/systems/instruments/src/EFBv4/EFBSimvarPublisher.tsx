@@ -46,6 +46,11 @@ export interface EFBSimvars {
   // Presets page
   loadPreset: number;
   loadPresetsExpedite: boolean;
+
+  // Quick controls
+  cabinAutoBrightness: number;
+  pauseAtTodArmed: boolean;
+  simRate: number;
 }
 
 export enum EFBVars {
@@ -95,6 +100,11 @@ export enum EFBVars {
   // Presets page
   loadPreset = 'L:A32NX_AIRCRAFT_PRESET_LOAD',
   loadPresetsExpedite = 'L:A32NX_AIRCRAFT_PRESET_LOAD_EXPEDITE',
+
+  // Quick settings
+  cabinAutoBrightness = 'L:A32NX_CABIN_AUTOBRIGHTNESS',
+  pauseAtTodArmed = 'L:A32NX_PAUSE_AT_TOD_ARMED',
+  simRate = 'SIMULATION RATE',
 }
 
 export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
@@ -145,6 +155,11 @@ export class EFBSimvarPublisher extends SimVarPublisher<EFBSimvars> {
     // Presets
     ['loadPreset', { name: EFBVars.loadPreset, type: SimVarValueType.Number }],
     ['loadPresetsExpedite', { name: EFBVars.loadPresetsExpedite, type: SimVarValueType.Bool }],
+
+    // Quick controls
+    ['cabinAutoBrightness', { name: EFBVars.cabinAutoBrightness, type: SimVarValueType.Number }],
+    ['pauseAtTodArmed', { name: EFBVars.pauseAtTodArmed, type: SimVarValueType.Bool }],
+    ['simRate', { name: EFBVars.simRate, type: SimVarValueType.Number }],
   ]);
 
   public constructor(bus: EventBus) {

@@ -6,13 +6,15 @@ import {
   Subscribable,
   SubscribableUtils,
   MappedSubject,
+  StyleRecord,
 } from '@microsoft/msfs-sdk';
 import { twMerge } from 'tailwind-merge';
 
-interface ButtonProps extends ComponentProps {
+export interface ButtonProps extends ComponentProps {
   onClick: (event: MouseEvent) => any;
   theme?: ButtonTheme | Subscribable<ButtonTheme>;
   class?: string | Subscribable<string>;
+  style?: string | StyleRecord;
   unstyled?: boolean;
   key?: string;
   disabled?: boolean | Subscribable<boolean>;
@@ -58,7 +60,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
   render(): VNode {
     return (
-      <button ref={this.root} type="button" class={this.className} key={this.props.key ?? ''}>
+      <button ref={this.root} type="button" class={this.className} key={this.props.key ?? ''} style={this.props.style}>
         {this.props.children}
       </button>
     );

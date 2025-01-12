@@ -145,6 +145,14 @@ const fbwUserSettings = (defaultAutoCallouts: number) =>
       defaultValue: false as boolean,
     },
     {
+      name: 'fbwPauseAtTod',
+      defaultValue: false as boolean,
+    },
+    {
+      name: 'fbwPauseAtTodDistance',
+      defaultValue: 500 as number,
+    },
+    {
       name: 'fbwAtsuAocAtisSource',
       defaultValue: AtisSource.FAA as AtisSource,
     },
@@ -238,6 +246,14 @@ const fbwUserSettings = (defaultAutoCallouts: number) =>
     },
     {
       name: 'fbwModelConesEnabled',
+      defaultValue: true as boolean,
+    },
+    {
+      name: 'fbwCabinBrightness',
+      defaultValue: 0 as number,
+    },
+    {
+      name: 'fbwCabinAutoBrightness',
       defaultValue: true as boolean,
     },
     {
@@ -389,7 +405,17 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
 
     // TODO AircraftOptionsPinProgramsPage
     // TODO SimOptionsPort
-    // TODO RealismPage
+
+    // RealismPage
+    A32NX_CONFIG_PAUSE_AT_TOD: {
+      newSettingName: 'fbwPauseAtTod',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_CONFIG_PAUSE_AT_TOD_DISTANCE: {
+      newSettingName: 'fbwPauseAtTodDistance',
+      valueMapper: (value) => parseInt(value),
+    },
+
     // TODO ThirdPartyOptionsPage
     A32NX_CONFIG_ATIS_SRC: {
       newSettingName: 'fbwAtsuAocAtisSource',
@@ -501,6 +527,14 @@ export class FbwUserSettingsSaveManager extends UserSettingSaveManager {
     },
     A32NX_MODEL_CONES_ENABLED: {
       newSettingName: 'fbwModelConesEnabled',
+      valueMapper: (value) => value === '1',
+    },
+    A32NX_CABIN_MANUAL_BRIGHTNESS: {
+      newSettingName: 'fbwCabinBrightness',
+      valueMapper: (value) => parseInt(value),
+    },
+    A32NX_CABIN_USING_AUTOBRIGHTNESS: {
+      newSettingName: 'fbwCabinAutoBrightness',
       valueMapper: (value) => value === '1',
     },
     A32NX_GSX_FUEL_SYNC: {
