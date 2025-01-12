@@ -4,6 +4,7 @@ import { MetarParserType } from '../../../instruments/src/metarTypes';
 import { Failure } from '../failures';
 import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
 import { Runway } from '../../../instruments/src/EFB/Performance/Data/Runways';
+import { MetarSource } from '../../../instruments/src/EFBv4/FbwUserSettings';
 
 type UnwrapPromise<T> = T extends PromiseLike<infer V> ? V : T;
 
@@ -13,7 +14,7 @@ type UnwrapPromise<T> = T extends PromiseLike<infer V> ? V : T;
 export interface FlypadClientEvents {
   fpc_HelloWorld: void;
 
-  fpc_GetMetar: string;
+  fpc_GetMetar: { icao: string; source: MetarSource };
 
   fpc_GetMagvar: string;
 

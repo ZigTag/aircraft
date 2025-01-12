@@ -344,7 +344,9 @@ export class Takeoff extends AbstractUIView<TakeoffProps> {
       return;
     }
 
-    const parsedMetar = await this.client.getMetar(icao);
+    const source = this.props.settings.getSetting('fbwAtsuAocMetarSource').get();
+
+    const parsedMetar = await this.client.getMetar(icao, source);
 
     try {
       const magvar = await this.client.getMagvar(icao);

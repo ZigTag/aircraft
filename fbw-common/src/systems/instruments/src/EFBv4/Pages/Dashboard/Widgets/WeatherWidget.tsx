@@ -118,11 +118,13 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
   });
 
   private async showMetarForIcao(icao: string, isSimbrief?: boolean): Promise<void> {
-    let metar = await this.client.getMetar(icao);
+    const source = this.props.settings.getSetting('fbwAtsuAocMetarSource').get();
+
+    let metar = await this.client.getMetar(icao, source);
 
     // Debounce for async metar return
     if (metar.icao !== icao) {
-      metar = await this.client.getMetar(icao);
+      metar = await this.client.getMetar(icao, source);
     }
 
     this.metar.set(metar);

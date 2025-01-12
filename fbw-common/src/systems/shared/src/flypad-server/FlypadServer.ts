@@ -8,6 +8,8 @@ import { FailuresOrchestrator } from '../failures';
 import { FailuresOrchestratorState } from '../failures/failures-orchestrator';
 import { Runway } from '../../../instruments/src/EFB/Performance/Data/Runways';
 import { RunwayDesignatorChar } from '../navdata';
+import { MetarSource } from '../../../instruments/src/EFBv4/FbwUserSettings';
+import { ConfigWeatherMap } from '../config';
 
 export class FlypadServer {
   private readonly eventSub = this.bus.getSubscriber<FlypadClientEvents>();
@@ -38,13 +40,10 @@ export class FlypadServer {
     this.sendFailureList();
   }
 
-  private async handleGetMetar(icao: string): Promise<void> {
-    const source: string = 'MSFS';
-
+  private async handleGetMetar({ icao, source }: { icao: string; source: MetarSource }): Promise<void> {
     let metar: MetarParserType;
     switch (source) {
-      default:
-      case 'MSFS': {
+      case MetarSource.MSFS: {
         let msfsMetar: MsfsMetar;
 
         // Catch parsing error separately
@@ -65,12 +64,12 @@ export class FlypadServer {
 
         break;
       }
-      case 'API': {
+      default: {
         let fbwApiMetar: FbwApiMetarResponse;
 
         // Catch parsing error separately
         try {
-          fbwApiMetar = await FbwApiMetar.get(icao, 'vatsim');
+          fbwApiMetar = await FbwApiMetar.get(icao, ConfigWeatherMap[source]);
           if (fbwApiMetar.icao !== icao.toUpperCase()) {
             throw new Error('No METAR available');
           }
