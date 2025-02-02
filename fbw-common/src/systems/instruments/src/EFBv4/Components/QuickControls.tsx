@@ -165,13 +165,13 @@ export class QuickControlsContainer extends AbstractUIView<QuickControlsContaine
   private readonly simBridgeButtonText = this.simBridgeConnectionState.map((simBridgeClientState) => {
     switch (simBridgeClientState) {
       case SimBridgeClientState.CONNECTED:
-        return t('QuickControls.SimBridgeConnected');
+        return 'QuickControls.SimBridgeConnected';
       case SimBridgeClientState.CONNECTING:
-        return t('QuickControls.SimBridgeConnecting');
+        return 'QuickControls.SimBridgeConnecting';
       case SimBridgeClientState.OFFLINE:
-        return t('QuickControls.SimBridgeOffline');
+        return 'QuickControls.SimBridgeOffline';
       default:
-        return t('QuickControls.SimBridgeOff');
+        return 'QuickControls.SimBridgeOff';
     }
   });
 
@@ -196,11 +196,11 @@ export class QuickControlsContainer extends AbstractUIView<QuickControlsContaine
   private readonly pauseAtTodString = MappedSubject.create(
     ([pauseAtTod, todArmed]) => {
       if (pauseAtTod && todArmed) {
-        return t('QuickControls.PauseAtTodArmed');
+        return 'QuickControls.PauseAtTodArmed';
       } else if (pauseAtTod) {
-        return t('QuickControls.PauseAtTodStandby');
+        return 'QuickControls.PauseAtTodStandby';
       } else {
-        return t('QuickControls.PauseAtTodInactive');
+        return 'QuickControls.PauseAtTodInactive';
       }
     },
     this.pauseAtTodSetting,
@@ -423,7 +423,7 @@ export class QuickControlsContainer extends AbstractUIView<QuickControlsContaine
               >
                 {t('QuickControls.SimBridge')}
                 <br />
-                {this.simBridgeButtonText}
+                {t(this.simBridgeButtonText)}
               </QuickSettingsToggle>
             </TooltipWrapper>
 
@@ -447,7 +447,7 @@ export class QuickControlsContainer extends AbstractUIView<QuickControlsContaine
                   class={this.pauseAtTodClass}
                 >
                   {t('QuickControls.PauseAtTod')} <br />
-                  {this.pauseAtTodString}
+                  {t(this.pauseAtTodString)}
                 </LargeQuickSettingsToggle>
               </TooltipWrapper>
             )}
@@ -484,7 +484,7 @@ class QuickSettingsButton extends AbstractUIView<ButtonProps> {
 
   render(): VNode | null {
     return (
-      <Button ref={this.rootRef} class={this.buttonClass} {...this.props}>
+      <Button {...this.props} ref={this.rootRef} unstyled class={this.buttonClass}>
         {this.props.children}
       </Button>
     );
@@ -514,10 +514,11 @@ class QuickSettingsToggle extends AbstractUIView<QuickSettingsToggleProps> {
   render(): VNode | null {
     return (
       <Button
+        {...this.props}
         ref={this.rootRef}
+        unstyled
         class={this.buttonClass}
         style={{ width: `${this.props.width ?? 130}px` }}
-        {...this.props}
       >
         {this.props.icon}
         <div class="mt-1 flex flex-col items-center text-sm text-inherit">{this.props.children}</div>
@@ -547,10 +548,11 @@ class LargeQuickSettingsToggle extends AbstractUIView<LargeQuickSettingsTogglePr
   render(): VNode | null {
     return (
       <Button
+        {...this.props}
         ref={this.rootRef}
+        unstyled
         class={this.buttonClass}
         style={{ width: `${this.props.width ?? 275}px` }}
-        {...this.props}
       >
         <div class="flex flex-row items-center justify-center">
           <div class="mr-5 flex flex-col items-center justify-center">
