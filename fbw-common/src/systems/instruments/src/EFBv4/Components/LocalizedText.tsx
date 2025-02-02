@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, VNode, Fragment } from '@microsoft/msfs-sdk';
+import { FSComponent, VNode, Fragment, Subscribable, SubscribableUtils } from '@microsoft/msfs-sdk';
 
 import { LocalizedString } from '../Shared/translation';
 import { AbstractUIView } from '../Shared/UIView';
 
 export interface LocalizedTextProps {
-  locKey: string;
+  locKey: string | Subscribable<string>;
 }
 
 export class LocalizedText extends AbstractUIView<LocalizedTextProps> {
-  private readonly locStringSub = LocalizedString.create(this.props.locKey);
+  private readonly locStringSub = LocalizedString.create('');
 
   pause() {
     super.pause();
@@ -25,6 +25,7 @@ export class LocalizedText extends AbstractUIView<LocalizedTextProps> {
   onAfterRender(node: VNode) {
     super.onAfterRender(node);
 
+    this.subscriptions.push(SubscribableUtils.toSubscribable(this.props.locKey, true).pipe(this.locStringSub));
     this.subscriptions.push(this.locStringSub);
   }
 
@@ -33,6 +34,6 @@ export class LocalizedText extends AbstractUIView<LocalizedTextProps> {
   }
 }
 
-export function t(locKey: string): VNode {
+export function t(locKey: string | Subscribable<string>): VNode {
   return <LocalizedText locKey={locKey} />;
 }
